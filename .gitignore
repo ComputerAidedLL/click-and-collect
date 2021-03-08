@@ -1,0 +1,9 @@
+# JetBrains IDE
+.idea/
+
+# Ocsigen / Eliom
+_client/
+_deps/
+_server/
+local/
+.depend

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <script src="jquery-3.6.0.min.js" type="text/javascript"></script>
+        <script src="jquery-ui.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="app.js"></script>
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+
+        <title>Some basic javascript interactions for the Sequent Calculus</title>
+    </head>
+    <body>
+
+        <div class="page">
+            <table>
+                <tr>
+                    <td class="cell">
+                        Syntax :
+                    </td>
+                    <td class="cell">
+                        <ul class="no-margin">
+                            <li><span class="code">|-</span> for thesis sign</li>
+                            <li><span class="code">A</span>, <span class="code">B</span> or any letter for formulas</li>
+                            <li><span class="code">,</span> to separate formulas</li>
+                            <li><span class="code">-></span> for implication</li>
+                            <li><span class="code">~</span> for negation</li>
+                            <li><span class="code">/\</span> for conjunction</li>
+                            <li><span class="code">\/</span> for disjunction</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <form action="#" id="usrform">
+                <table>
+                    <tr>
+                        <td class="cell">
+                            Logic :
+                        </td>
+                        <td class="cell">
+                            <input type="radio" id="mll" name="logic" value="mll"> <label for="mll">MLL</label><br>
+                            <input type="radio" id="ll" name="logic" value="ll" disabled> <label for="ll">LL</label><br>
+                            <input type="radio" id="lk" name="logic" value="lk" disabled> <label for="lk">LK</label><br>
+                            <input type="radio" id="lj" name="logic" value="lj" disabled> <label for="lj">LJ</label>
+                        </td>
+                    </tr>
+                </table>
+
+                <br>
+                Please enter a formula :
+                <br>
+                <textarea name="proofAsString" class="proof code"></textarea>
+                <br>
+                <input type="submit">
+            </form>
+        </div>
+
+        <div class="page">
+            <h3>Some basic javascript interactions for the Sequent Calculus</h3>
+
+            <p>
+                Click on formula
+            </p>
+            <div class="proofIsIncomplete">
+                <div class="proof">
+                    <span>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div id="uw-3">
+                                        <ul class="commaList">
+                                            <li id="uw-1">
+                                                <span class="junct" onclick="validate(this);">A</span>
+                                            </li>
+                                        </ul>
+                                        <span class="turnstile explained" onclick="reset(this);" original-title="reset">⊢</span>
+                                        <ul class="commaList">
+                                            <li id="uw-2">
+                                                <span class="junct" onclick="validate(this);">A</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </span>
+                </div>
+            </div>
+
+            <p>
+                Drag and drop formulas to sort them
+            </p>
+            <div class="proofIsIncomplete">
+                <div class="proof">
+                    <span>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div id="uw-15">
+                                        <span class="turnstile explained" original-title="reset">⊢</span>
+                                        <ul class="commaList sortable">
+                                            <li id="uw-12">
+                                                <span class="junct">Γ</span>
+                                            </li>
+                                            <li id="uw-30">
+                                                <span class="junct">A <span class="primaryConnective">∧</span> B</span>
+                                            </li>
+                                            <li id="uw-41">
+                                                <span class="junct">Δ</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td class="tagBox">&nbsp;</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </span>
+                </div>
+            </div>
+
+            <p>
+                Circular permutation of formulas
+            </p>
+            <div class="proofIsIncomplete">
+                <div class="proof">
+                    <span>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <span class="turnstile explained" original-title="reset">⊢</span>
+                                        <span class="arrow" onclick="moveleft(this);">←</span>
+                                        <ul id="nav" class="commaList">
+                                            <li>
+                                                <span class="junct">A</span>
+                                            </li>
+
+                                            <li>
+                                                <span class="junct">B</span>
+                                            </li>
+
+                                            <li>
+                                                <span class="junct">C</span>
+                                            </li>
+
+                                            <li>
+                                                <span class="junct">D</span>
+                                            </li>
+                                        </ul>
+                                        <span class="arrow" onclick="moveright(this);">→</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </span>
+                </div>
+            </div>
+
+            <p>
+                Popup with options
+            </p>
+            <div class="proofIsIncomplete">
+                <div class="proof">
+                    <span>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div id="uw-278">
+                                        </ul> <span class="turnstile">⊢</span>
+                                        <ul class="commaList">
+                                            <li id="uw-275" original-title="" class="explained">
+                                                <span class="junct" onclick="openpopupoptions()">?A</span>
+                                            </li>
+                                            <li id="uw-277">
+                                                <span class="junct">Δ</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </span>
+                </div>
+            </div>
+
+            <p>
+                Popup with text input
+            </p>
+            <div class="proofIsIncomplete">
+                <div class="proof">
+                    <span>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <ul class="commaList">
+                                            <li>
+                                                <span class="junct">Γ</span>
+                                            </li>
+                                            <li>
+                                                <span class="junct">P(<ul class="commaList"><li>a<sub></sub></li></ul>)</span>
+                                            </li>
+                                        </ul> <span class="turnstile">⊢</span>
+                                        <ul class="commaList">
+                                            <li original-title="" class="explained">
+                                                <span class="junct" onclick="openpopuptext()">
+                                                    <span class="primaryConnective">∃</span>x<sub></sub>. P(<ul class="commaList"><li>x<sub></sub></li></ul>)
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span class="junct">Δ</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
