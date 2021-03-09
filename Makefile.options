@@ -6,14 +6,14 @@
 PROJECT_NAME := linearon
 
 # Source files for the server
-SERVER_FILES := $(wildcard *.eliomi *.eliom *.ml)
+SERVER_FILES := $(filter-out test.ml, $(wildcard *.eliomi *.eliom *.ml))
 # Source files for the client
-CLIENT_FILES := $(wildcard *.eliomi *.eliom *.ml)
+CLIENT_FILES := $(wildcard *.eliomi *.eliom)
 
 # OCamlfind packages for the server
-SERVER_PACKAGES := lwt_ppx js_of_ocaml-ppx_deriving_json str
+SERVER_PACKAGES := lwt_ppx js_of_ocaml-ppx_deriving_json str yojson
 # OCamlfind packages for the client
-CLIENT_PACKAGES := lwt_ppx js_of_ocaml-ppx js_of_ocaml-ppx_deriving_json str
+CLIENT_PACKAGES := lwt_ppx js_of_ocaml-ppx js_of_ocaml-ppx_deriving_json
 
 # Directory with files to be statically served
 LOCAL_STATIC = static

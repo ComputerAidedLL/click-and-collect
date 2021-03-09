@@ -27,5 +27,8 @@ let _ =
     ~service:parse_proof_string_service
     (fun proof_as_string () ->
       let success, result = safe_parse proof_as_string in
-        Lwt.return ("{\"is_valid\":" ^ (Bool.to_string success) ^", \"proof_as_json\": " ^ result ^ "}", "application/json"));;
+        let response =
+            if success then "{\"is_valid\": true, \"proof_as_json\": " ^ result ^ "}"
+            else "{\"is_valid\": false, \"error_message\": \"" ^ result ^ "\"}" in
+        Lwt.return (response, "application/json"));;
 

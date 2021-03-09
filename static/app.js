@@ -1,4 +1,8 @@
 $( function() {
+    $("#usrform").submit(function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
+
     $( ".sortable" ).sortable()
         .disableSelection();
 
@@ -47,6 +51,61 @@ $( function() {
         }
     });
 } );
+
+function submitproof(element) {
+    cleanproof();
+
+    var form = $(element).closest('form');
+    var url = '/parse_proof_string';
+
+    $.ajax({
+           type: "GET",
+           url: url,
+           data: {
+                'proofAsString': form.find('textarea[name=proofAsString]').val()
+           },
+           success: function(data)
+           {
+                if (data.is_valid) {
+                    updateproof(data.proof_as_json);
+                } else {
+                    alert(data.error_message);
+                }
+           }
+     });
+}
+
+function cleanproof() {
+    $('#main-proof').html('');
+}
+
+function updateproof(proofAsJson) {
+    console.log(proofAsJson);
+    var proofdiv = $('#main-proof');
+
+    var $div = $("<div>", {"class": "proofIsIncomplete"});
+    var $div2 = $("<div>", {"class": "proof"});
+    if ('hyp' in proofAsJson) {
+        $div2.append(createFormulas(proofAsJson['hyp']));
+    }
+    $div2.append($('<span class="turnstile explained">⊢</span>'));
+    if ('cons' in proofAsJson) {
+        $div2.append(createFormulas(proofAsJson['cons']));
+    }
+    $div.append($div2);
+    proofdiv.append($div);
+}
+
+function createFormulas(formulasAsJson) {
+    var $ul = $("<ul>", {"class": "commaList"});
+    for (var i = 0; i < formulasAsJson.length; i++) {
+        var $li = $("<li>");
+        var $span = $("<span>", {"class": "junct"}).text(formulasAsJson[i]);
+        $li.append($span);
+        $ul.append($li);
+    }
+    return $ul;
+}
 
 function validate(element) {
     let p = $(element).closest('.proofIsIncomplete');
