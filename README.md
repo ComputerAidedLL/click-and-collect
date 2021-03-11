@@ -7,7 +7,7 @@ for an online by-click sequent prover.
 ```
 sudo apt-get install opam
 opam init
-sudo apt-get install libsqlite3-dev
+sudo apt-get install libgdbm-dev libsqlite3-dev
 opam depext ocsigen-start
 opam install ocsigen-start
 ```
