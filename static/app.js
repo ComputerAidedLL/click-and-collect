@@ -85,13 +85,17 @@ function updateproof(proofAsJson) {
 
     var $div = $("<div>", {"class": "proofIsIncomplete"});
     var $div2 = $("<div>", {"class": "proof"});
+    var $table = $("<table>");
+    var $td = $("<td>");
     if ('hyp' in proofAsJson) {
-        $div2.append(createFormulas(proofAsJson['hyp']));
+        $td.append(createFormulas(proofAsJson['hyp']));
     }
-    $div2.append($('<span class="turnstile explained">⊢</span>'));
+    $td.append($('<span class="turnstile explained">⊢</span>'));
     if ('cons' in proofAsJson) {
-        $div2.append(createFormulas(proofAsJson['cons']));
+        $td.append(createFormulas(proofAsJson['cons']));
     }
+    $table.append($td);
+    $div2.append($table);
     $div.append($div2);
     proofdiv.append($div);
 }
@@ -100,11 +104,21 @@ function createFormulas(formulasAsJson) {
     var $ul = $("<ul>", {"class": "commaList"});
     for (var i = 0; i < formulasAsJson.length; i++) {
         var $li = $("<li>");
-        var $span = $("<span>", {"class": "junct"}).text(formulasAsJson[i]);
+        var $span = $("<span>", {"class": "junct"}).html(createFormula(formulasAsJson[i]));
         $li.append($span);
         $ul.append($li);
     }
     return $ul;
+}
+
+function createFormula(formulaAsJson) {
+    switch (formulaAsJson.type) {
+        case "litteral":
+            return formulaAsJson.value;
+
+        case "negation":
+            return '<span>¬</span>' + createFormula(formulaAsJson.value);
+    }
 }
 
 function validate(element) {

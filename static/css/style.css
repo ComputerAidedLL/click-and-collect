@@ -13,6 +13,7 @@ h2 { font-family:sans-serif; font-size:1.3em; border-bottom:1px solid #BBB; }
 .proof .tagBox { font-size: 0.8em; color: #444; vertical-align: top; width: 2.1em; padding-left:0.3em; padding-right:0.6em; }
 .proof .tagBox .tag { position:relative; top:-0.7em;}
 .proof .inference { border-top: 1px solid #000; }
+.proof .junct:after { content: ' '; }
 .proof .junct:hover { background: #DDF; cursor:pointer; }
 .proof .turnstile:hover { background: #FDD; cursor:pointer; }
 .proof .junct:hover .primaryConnective { background: #005; color: #FFF; }

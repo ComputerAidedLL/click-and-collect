@@ -10,8 +10,8 @@ let parse_and_print proof_as_string =
         print_string result;
         print_newline ();;
 
-parse_and_print "hello,world,bar,foo";;
-parse_and_print "hello,world|-bar,foo";;
+parse_and_print "hello, world,bar   ,foo";;
+parse_and_print "hello,~world|-bar,(foo)";;
 parse_and_print "";;
 parse_and_print "hello,world|-bar,foo|-too,much";;
 parse_and_print "hello,world|-|-";;

@@ -5,8 +5,16 @@ exception SyntaxException of string
 
 let thesis_sign = "|-";;
 
-let parse_formula formula =
-    `String formula;;
+let parentheses_regex = regexp "^(\\(.*\\))$";;
+let negation_regex = regexp "^~\\(.*\\)$";;
+
+let rec parse_formula formula =
+    let trimed_formula = String.trim formula in
+    if Str.string_match parentheses_regex trimed_formula 0 then
+        parse_formula (matched_group 1 trimed_formula)
+    else if Str.string_match negation_regex trimed_formula 0 then
+        `Assoc (("type", `String "negation") :: ("value", parse_formula (matched_group 1 trimed_formula)) :: [])
+    else `Assoc (("type", `String "litteral") :: ("value", `String trimed_formula) :: []);;
 
 let parse_formulas formulas_as_one_string =
     let formulas_as_string = split (regexp ",") formulas_as_one_string in
