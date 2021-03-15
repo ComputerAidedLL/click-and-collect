@@ -29,4 +29,5 @@ let parse proof_as_string =
 
 let safe_parse proof_as_string =
     try true, parse proof_as_string
-    with SyntaxException error_message -> false, error_message;;
+    with SyntaxException error_message -> false, error_message
+    | Stdlib.Parsing.Parse_error -> false, "Syntax error: please read the syntax rules";;
