@@ -25,7 +25,6 @@ server {
 }
 ```
 - Allow https by adding a certificate `sudo certbot --nginx`
-- Execute commands in "Modify parser" section
 - Launch
 ```
 cd linearon
