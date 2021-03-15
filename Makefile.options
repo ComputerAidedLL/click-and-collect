@@ -6,7 +6,7 @@
 PROJECT_NAME := linearon
 
 # Source files for the server
-SERVER_FILES := $(filter-out test.ml, $(wildcard *.eliomi *.eliom *.ml))
+SERVER_FILES := $(filter-out test.ml, $(wildcard *.eliomi *.eliom *.ml *.mli))
 # Source files for the client
 CLIENT_FILES := $(wildcard *.eliomi *.eliom)
 

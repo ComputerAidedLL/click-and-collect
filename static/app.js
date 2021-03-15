@@ -111,14 +111,39 @@ function createFormulas(formulasAsJson) {
     return $ul;
 }
 
-function createFormula(formulaAsJson) {
+const BINARY_OPERATORS = {
+    "implication": '→',
+    "conjunction": '∧',
+    "disjunction": '∨'
+};
+
+function createFormula(formulaAsJson, needParentheses = false) {
     switch (formulaAsJson.type) {
         case "litteral":
             return formulaAsJson.value;
 
         case "negation":
-            return '<span>¬</span>' + createFormula(formulaAsJson.value);
+            return '<span>¬</span>' + createFormula(formulaAsJson.value, true);
+
+        case "implication":
+        case "conjunction":
+        case "disjunction":
+            let formula = createFormula(formulaAsJson.value1, true)
+                + '<span>' + BINARY_OPERATORS[formulaAsJson.type] + '</span>'
+                + createFormula(formulaAsJson.value2, true);
+            return addParentheses(formula, needParentheses);
+
+        default:
+            console.error('No display rule for type ' + formulaAsJson.type);
     }
+}
+
+function addParentheses(formula, needParentheses) {
+    if (needParentheses) {
+        return '(' + formula + ')';
+    }
+
+    return  formula;
 }
 
 function validate(element) {

@@ -2,6 +2,7 @@
 .idea/
 
 # Ocsigen / Eliom
+_build
 _client/
 _deps/
 _server/

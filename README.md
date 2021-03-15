@@ -25,6 +25,7 @@ server {
 }
 ```
 - Allow https by adding a certificate `sudo certbot --nginx`
+- Execute commands in "Modify parser" section
 - Launch
 ```
 cd linearon
@@ -32,8 +33,11 @@ make all # first time you'll need to comment ocaml dependencies
 make test.byte
 ```
 
-# Test
-`ocaml test.ml`
+# Modify parser
+Do not modify `parser.mli` or `lexer.mll`, but just `parser.mly` and `lexer.mll` and then run
+```
+ocamllex lexer.mll && ocamlyacc parser.mly
+```
 
 # Files description
 
