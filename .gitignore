@@ -1,6 +1,10 @@
 # JetBrains IDE
 .idea/
 
+# OCaml build
+*.cmi
+*.cmo
+
 # Ocsigen / Eliom
 _build
 _client/
@@ -8,3 +12,6 @@ _deps/
 _server/
 local/
 .depend
+
+# Executable
+test/execute
