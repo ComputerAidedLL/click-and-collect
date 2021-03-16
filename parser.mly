@@ -6,21 +6,33 @@ open Formula
 %token NEG
 %token CONJ DISJ IMPL
 %token LPAREN RPAREN
+%token COMMA
+%token THESIS
 %token EOL
-%left IMPL              /* lowest precedence */
-%left CONJ DISJ         /* medium precedence */
+%left THESIS            /* lowest precedence */
+%left COMMA             /* low precedence */
+%left IMPL              /* medium precedence */
+%left CONJ DISJ         /* high precedence */
 %nonassoc NEG           /* highest precedence */
 %start main             /* the entry point */
-%type <Formula.f> main
+%type <Formula.f list * Formula.f list> main
 %%
 main:
-    expr EOL                { $1 }
+    EOL                                { [], [] }
+  | THESIS EOL                         { [], [] }
+  | formulalist EOL                    { [], $1 }
+  | THESIS formulalist EOL             { [], $2 }
+  | formulalist THESIS formulalist EOL { $1, $3 }
 ;
-expr:
-    LITT                    { Litt $1 }
-  | LPAREN expr RPAREN      { $2 }
-  | NEG expr				{ Neg ($2) }
-  | expr CONJ expr          { Conj ($1, $3) }
-  | expr DISJ expr          { Disj ($1, $3) }
-  | expr IMPL expr          { Impl ($1, $3) }
+formulalist:
+    formula                     { [$1] }
+  | formula COMMA formulalist   {  $1 :: $3 }
+;
+formula:
+    LITT                    	{ Litt $1 }
+  | LPAREN formula RPAREN      	{ $2 }
+  | NEG formula					{ Neg ($2) }
+  | formula CONJ formula        { Conj ($1, $3) }
+  | formula DISJ formula        { Disj ($1, $3) }
+  | formula IMPL formula        { Impl ($1, $3) }
 ;

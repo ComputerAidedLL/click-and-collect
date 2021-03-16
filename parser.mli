@@ -6,7 +6,9 @@ type token =
   | IMPL
   | LPAREN
   | RPAREN
+  | COMMA
+  | THESIS
   | EOL
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Formula.f
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Formula.f list * Formula.f list
