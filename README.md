@@ -39,14 +39,14 @@ ocamllex lexer.mll && ocamlyacc parser.mly
 ```
 
 # Test API
-There are some API tests in `test/api_test.ml`. It calls API and checks its response.
+There are some API tests in `test/api_test.ml`, which uses test data in `api_test_data.json`. It calls API and checks its response.
 
 First time:
 ```
 opam install alcotest
 ```
 
-First time and whenever you change test script:
+First time and whenever you change test script (no need if you change only the json file):
 ```
 ocamlfind ocamlc -thread -linkpkg -package alcotest -package lwt -package cohttp -package cohttp-lwt-unix -package threads -package yojson -o test/execute test/api_test.ml
 ```

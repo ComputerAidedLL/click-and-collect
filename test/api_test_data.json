@@ -1,0 +1,40 @@
+{
+  "call_api_parse_proof_string_proof": [
+    {
+      "proof_as_string": "a",
+      "expected_proof_as_json": {"cons":[{"type":"litteral","value":"a"}]}
+    },
+    {
+      "proof_as_string": "",
+      "expected_proof_as_json": {"cons":[]}
+    },
+    {
+      "proof_as_string": "|-",
+      "expected_proof_as_json": {"hyp":[],"cons":[]}
+    },
+    {
+      "proof_as_string": "a,b",
+      "expected_proof_as_json": {"cons":[
+        {"type":"litteral","value":"a"},
+        {"type":"litteral","value":"b"}
+      ]}
+    },
+    {
+      "proof_as_string": "a,b,c",
+      "expected_proof_as_json": {"cons":[
+        {"type":"litteral","value":"a"},
+        {"type":"litteral","value":"b"},
+        {"type":"litteral","value":"c"}
+      ]}
+    },
+    {
+      "proof_as_string": "a|-b,c",
+      "expected_proof_as_json": {"hyp":[
+        {"type":"litteral","value":"a"}
+      ],"cons":[
+        {"type":"litteral","value":"b"},
+        {"type":"litteral","value":"c"}
+      ]}
+    }
+  ]
+}
