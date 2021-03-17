@@ -19,7 +19,7 @@ let rec formula_to_json =
 
 let negative e = Neg e;;
 
-let get_monolatery_sequent (lk1, lk2) = ([], lk2 @ List.map negative lk1)
+let get_monolatery_sequent (lk1, lk2) = ([], lk2 @ List.map negative lk1);;
 
 let sequent_to_json (lk1, lk2) = `Assoc [
         ("hyp", `List (List.map formula_to_json lk1));

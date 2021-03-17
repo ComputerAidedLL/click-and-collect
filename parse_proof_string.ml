@@ -14,7 +14,6 @@ let lk_parse proof_as_string =
 
 let safe_parse proof_as_string =
     try true, ll_parse proof_as_string
-    with Stdlib.Parsing.Parse_error ->
-        try true, lk_parse proof_as_string
-        with Stdlib.Parsing.Parse_error -> false, "Syntax error: please read the syntax rules"
-    ;;
+    with t -> try true, lk_parse proof_as_string
+    with t -> print_string (Printexc.to_string t);
+        false, "Syntax error: please read the syntax rules";;

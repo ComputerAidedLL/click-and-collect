@@ -31,7 +31,7 @@ let rec formula_to_json =
 
 let negative e = Orth e;;
 
-let get_monolatery_sequent (ll1, ll2) = ([], ll2 @ List.map negative ll1)
+let get_monolatery_sequent (ll1, ll2) = ([], ll2 @ List.map negative ll1);;
 
 let sequent_to_json (ll1, ll2) = `Assoc [
         ("hyp", `List (List.map formula_to_json ll1));
