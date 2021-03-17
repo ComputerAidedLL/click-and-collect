@@ -5,12 +5,6 @@ type token =
   | LPAREN
   | RPAREN
   | EOL
-  | NEG
-  | CONJ
-  | DISJ
-  | TRUE
-  | FALSE
-  | IMPL
   | ORTH
   | TENSOR
   | PAR
@@ -25,4 +19,4 @@ type token =
   | WHYNOT
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Formula.sequent
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Linear_logic.formula list * Linear_logic.formula list

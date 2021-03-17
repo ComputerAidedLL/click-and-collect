@@ -1,5 +1,5 @@
 {
-open Parser        (* The type token is defined in parser.mli *)
+open Ll_parser        (* The type token is defined in ll_parser.mli *)
 }
 rule token = parse
     [' ' '\t']               { token lexbuf }     (* skip blanks *)
@@ -9,12 +9,6 @@ rule token = parse
     | ['a'-'z' 'A'-'Z'] as l { LITT (String.make 1 l) }
     | '('                    { LPAREN }
     | ')'                    { RPAREN }
-    | '~' | "¬"              { NEG }
-    | "/\\"                  { CONJ }
-    | "\\/"                  { DISJ }
-    | "true"                 { TRUE }
-    | "false"                { FALSE }
-    | "=>" | "->" | "→"      { IMPL }
     | '^'                    { ORTH }
     | '*' | "⊗"              { TENSOR }
     | '|'                    { PAR }
