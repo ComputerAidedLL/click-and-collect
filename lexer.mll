@@ -4,27 +4,27 @@ open Parser        (* The type token is defined in parser.mli *)
 rule token = parse
     [' ' '\t']               { token lexbuf }     (* skip blanks *)
     | ['\n']                 { EOL }
-    | "|-"                   { THESIS }
+    | "|-" | "⊢"             { THESIS }
     | ','                    { COMMA }
     | ['a'-'z' 'A'-'Z'] as l { LITT (String.make 1 l) }
     | '('                    { LPAREN }
     | ')'                    { RPAREN }
-    | '~'                    { NEG }
+    | '~' | "¬"              { NEG }
     | "/\\"                  { CONJ }
     | "\\/"                  { DISJ }
     | "true"                 { TRUE }
     | "false"                { FALSE }
-    | "=>" | "->"            { IMPL }
+    | "=>" | "->" | "→"      { IMPL }
     | '^'                    { ORTH }
-    | '*'                    { TENSOR }
+    | '*' | "⊗"              { TENSOR }
     | '|'                    { PAR }
     | '&'                    { WITH }
-    | '+'                    { PLUS }
+    | '+' | "⊕"              { PLUS }
     | '1'                    { ONE }
     | "top"                  { TOP }
     | "bot"                  { BOTTOM }
     | '0'                    { ZERO }
-    | "-o"                   { LOLLIPOP }
+    | "-o" | "⊸"             { LOLLIPOP }
     | '!'                    { OFCOURSE }
     | '?'                    { WHYNOT }
     | eof                    { EOL }
