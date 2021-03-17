@@ -5,10 +5,10 @@
         <script src="jquery-3.6.0.min.js" type="text/javascript"></script>
         <script src="jquery-ui.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="app.js"></script>
-        <link href="css/style.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
         <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
         <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
+        <link href="css/style.css" rel="stylesheet" type="text/css">
 
         <title>Some basic javascript interactions for the Sequent Calculus</title>
     </head>
@@ -18,37 +18,60 @@
             <table>
                 <tr>
                     <td class="cell">
-                        Syntax :
+                        Common syntax :
                     </td>
                     <td class="cell">
                         <ul class="no-margin">
                             <li><span class="code">|-</span> for thesis sign</li>
                             <li><span class="code">A</span>, <span class="code">B</span> or any letter for formulas</li>
                             <li><span class="code">,</span> to separate formulas</li>
-                            <li><span class="code">-></span> or <span class="code">=></span> for implication</li>
-                            <li><span class="code">~</span> for negation</li>
-                            <li><span class="code">/\</span> for conjunction</li>
-                            <li><span class="code">\/</span> for disjunction</li>
                             <li><span class="code">(</span> and <span class="code">)</span> around a sub-formula</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell">
+                        For classical logic :
+                    </td>
+                    <td class="cell">
+                        <ul class="no-margin">
+                            <table class="syntax">
+                                <tr><td><span class="code">~</span></td><td>negation</td></tr>
+                                <tr><td><span class="code">/\</span></td><td>conjunction</td></tr>
+                                <tr><td><span class="code">\/</span></td><td>disjunction</td></tr>
+                                <tr><td><span class="code">true</span></td><td>true</td></tr>
+                                <tr><td><span class="code">false</span></td><td>false</td></tr>
+                                <tr><td><span class="code">-></span> or <span class="code">=></span></td><td>implication</td></tr>
+                            </table>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="cell">
+                        For linear logic :
+                    </td>
+                    <td class="cell">
+                        <ul class="no-margin">
+                            <table class="syntax">
+                                <tr><td><span class="code">^</span></td><td>negation (e.g. <span class="code">A^</span>)</td></tr>
+                                <tr><td><span class="code">*</span></td><td>tensor (multiplicative conjunction)</td></tr>
+                                <tr><td><span class="code">|</span></td><td>par (multiplicative disjunction)</td></tr>
+                                <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
+                                <tr><td><span class="code">+</span></td><td>plus (additive disjunction)</td></tr>
+                                <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction neutral element)</td></tr>
+                                <tr><td><span class="code">top</span></td><td>top (multiplicative disjunction neutral element)</td></tr>
+                                <tr><td><span class="code">bot</span></td><td>bottom (additive conjunction neutral element)</td></tr>
+                                <tr><td><span class="code">0</span></td><td>zero (additive disjunction neutral element)</td></tr>
+                                <tr><td><span class="code">-o</span></td><td>lollipop (linear implication)</td></tr>
+                                <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
+                                <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
+                            </table>
                         </ul>
                     </td>
                 </tr>
             </table>
 
             <form action="#" id="usrform">
-                <table>
-                    <tr>
-                        <td class="cell">
-                            Logic :
-                        </td>
-                        <td class="cell">
-                            <input type="radio" id="ll" name="logic" value="ll"> <label for="ll">LL</label><br>
-                            <input type="radio" id="lk" name="logic" value="lk" disabled> <label for="lk">LK</label><br>
-                            <input type="radio" id="lj" name="logic" value="lj" disabled> <label for="lj">LJ</label>
-                        </td>
-                    </tr>
-                </table>
-
                 <br>
                 Please enter a formula :
                 <br>
