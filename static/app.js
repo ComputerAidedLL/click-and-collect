@@ -111,25 +111,61 @@ function createFormulas(formulasAsJson) {
     return $ul;
 }
 
-const BINARY_OPERATORS = {
-    "implication": '→',
-    "conjunction": '∧',
-    "disjunction": '∨'
+const UNARY_OPERATORS = {
+    "negation": '<span>¬</span>',
+    "ofcourse": '<span>!</span>',
+    "whynot": '<span>?</span>'
 };
+
+const BINARY_OPERATORS = {
+    "implication": '<span class="binary-operator">→</span>',
+    "conjunction": '<span class="binary-operator">∧</span>',
+    "disjunction": '<span class="binary-operator">∨</span>',
+    "tensor": '<span class="binary-operator">⊗</span>',
+    "par": '<span class="binary-operator flip">&</span>',
+    "with": '<span class="binary-operator">&</span>',
+    "plus": '<span class="binary-operator">⊕</span>',
+    "lollipop": '<span class="binary-operator">⊸</span>'
+};
+
+const NEUTRAL_ELEMENTS = {
+    "true": '<span class="neutral-element">true</span>',
+    "false": '<span class="neutral-element">false</span>',
+    "one": '<span class="neutral-element">1</span>',
+    "bottom": '<span class="neutral-element flip">T</span>',
+    "top": '<span class="binary-operator">T</span>',
+    "zero": '<span class="binary-operator">0</span>'
+};
+
+
 
 function createFormula(formulaAsJson, needParentheses = false) {
     switch (formulaAsJson.type) {
         case "litteral":
             return formulaAsJson.value;
 
+        case "neutral":
+            return NEUTRAL_ELEMENTS[formulaAsJson.value];
+
         case "negation":
-            return '<span>¬</span>' + createFormula(formulaAsJson.value, true);
+        case "ofcourse":
+        case "whynot":
+            return UNARY_OPERATORS[formulaAsJson.type] + createFormula(formulaAsJson.value, true);
+
+        case "orthogonal":
+            return createFormula(formulaAsJson.value, true)
+                + '<span class="orthogonal"><span class="flip">T</span></span>';
 
         case "implication":
         case "conjunction":
         case "disjunction":
+        case "tensor":
+        case "par":
+        case "with":
+        case "plus":
+        case "lollipop":
             let formula = createFormula(formulaAsJson.value1, true)
-                + '<span>' + BINARY_OPERATORS[formulaAsJson.type] + '</span>'
+                + '<span class="binary-operator">' + BINARY_OPERATORS[formulaAsJson.type] + '</span>'
                 + createFormula(formulaAsJson.value2, true);
             return addParentheses(formula, needParentheses);
 

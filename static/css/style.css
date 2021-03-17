@@ -78,3 +78,22 @@ sub {font-size:0.6em;}
 .code {
     font-family: "Courier New", sans-serif;
 }
+
+.binary-operator {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.neutral-element {
+    font-family: "Courier New", sans-serif;
+}
+
+.orthogonal {
+    vertical-align: super;
+    font-family: "Courier New", sans-serif;
+}
+
+.flip{
+    transform: scale(-1, -1);
+    display: inline-block;
+}
