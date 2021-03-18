@@ -15,62 +15,6 @@
     <body>
 
         <div class="page">
-            <table>
-                <tr>
-                    <td class="cell">
-                        Common syntax :
-                    </td>
-                    <td class="cell">
-                        <ul class="no-margin">
-                            <li><span class="code">|-</span> or <span>⊢</span> for thesis sign</li>
-                            <li><span class="code">A</span>, <span class="code">B</span> or any letter for formulas</li>
-                            <li><span class="code">,</span> to separate formulas</li>
-                            <li><span class="code">(</span> and <span class="code">)</span> around a sub-formula</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="cell">
-                        For classical logic :
-                    </td>
-                    <td class="cell">
-                        <ul class="no-margin">
-                            <table class="syntax">
-                                <tr><td><span class="code">~</span> or <span class="code">¬</span></td><td>negation</td></tr>
-                                <tr><td><span class="code">/\</span></td><td>conjunction</td></tr>
-                                <tr><td><span class="code">\/</span></td><td>disjunction</td></tr>
-                                <tr><td><span class="code">true</span></td><td>true</td></tr>
-                                <tr><td><span class="code">false</span></td><td>false</td></tr>
-                                <tr><td><span class="code">-></span> or <span class="code">=></span> or <span>→</span></td><td>implication</td></tr>
-                            </table>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="cell">
-                        For linear logic :
-                    </td>
-                    <td class="cell">
-                        <ul class="no-margin">
-                            <table class="syntax">
-                                <tr><td><span class="code">^</span></td><td>negation (e.g. <span class="code">A^</span>)</td></tr>
-                                <tr><td><span class="code">*</span> or <span>⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
-                                <tr><td><span class="code">|</span></td><td>par (multiplicative disjunction)</td></tr>
-                                <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
-                                <tr><td><span class="code">+</span> or <span>⊕</span></td><td>plus (additive disjunction)</td></tr>
-                                <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
-                                <tr><td><span class="code">bot</span> or <span>⊥</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
-                                <tr><td><span class="code">top</span> or <span>⊤</span></td><td>top (additive conjunction unit)</td></tr>
-                                <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
-                                <tr><td><span class="code">-o</span> or <span>⊸</span></td><td>lollipop (linear implication)</td></tr>
-                                <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
-                                <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
-                            </table>
-                        </ul>
-                    </td>
-                </tr>
-            </table>
-
             <form action="#" id="usrform">
                 <br>
                 Please enter a formula :
@@ -86,7 +30,63 @@
         </div>
 
         <div class="page">
-            <h3>Some basic javascript interactions for the Sequent Calculus</h3>
+            <h3>Syntax rules</h3>
+
+            <h4>
+                Common syntax
+            </h4>
+            <table class="syntax">
+                <tr><td><span class="code">|-</span> or <span>⊢</span></td><td>thesis sign</td></tr>
+                <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas</td></tr>
+                <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
+                <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
+            </table>
+            <p>
+                <span class="example">Example:</span> <span class="code">A |- B,C</span>
+            </p>
+
+            <h4>
+                Linear logic syntax
+            </h4>
+            <table class="syntax">
+                <tr><td><span class="code">^</span></td><td>negation (e.g. <span class="code">A^</span>)</td></tr>
+                <tr><td><span class="code">*</span> or <span>⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
+                <tr><td><span class="code">|</span></td><td>par (multiplicative disjunction)</td></tr>
+                <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
+                <tr><td><span class="code">+</span> or <span>⊕</span></td><td>plus (additive disjunction)</td></tr>
+                <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
+                <tr><td><span class="code">bot</span> or <span>⊥</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
+                <tr><td><span class="code">top</span> or <span>⊤</span></td><td>top (additive conjunction unit)</td></tr>
+                <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
+                <tr><td><span class="code">-o</span> or <span>⊸</span></td><td>lollipop (linear implication)</td></tr>
+                <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
+                <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
+            </table>
+            <p>
+                <span class="example">Example:</span> <span class="code">|- A^,A|B,!C</span>
+            </p>
+
+            <h4>
+                Classical logic syntax
+            </h4>
+            <p>
+                You can also use classical logic, but <span class="bold">you can't mix it</span> with linear logic syntax.
+            </p>
+            <table class="syntax">
+                <tr><td><span class="code">~</span> or <span class="code">¬</span></td><td>negation</td></tr>
+                <tr><td><span class="code">/\</span></td><td>conjunction</td></tr>
+                <tr><td><span class="code">\/</span></td><td>disjunction</td></tr>
+                <tr><td><span class="code">true</span></td><td>true</td></tr>
+                <tr><td><span class="code">false</span></td><td>false</td></tr>
+                <tr><td><span class="code">-></span> or <span class="code">=></span> or <span>→</span></td><td>implication</td></tr>
+            </table>
+            <p>
+                <span class="example">Example:</span> <span class="code">A,~B,(A\/C)/\(A\/B) |-</span>
+            </p>
+        </div>
+
+        <div class="page">
+            <h3>Some basic javascript interactions for sequent calculus</h3>
 
             <p>
                 Click on formula
