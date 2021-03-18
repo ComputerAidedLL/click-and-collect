@@ -50,7 +50,8 @@ let call_api_parse_proof_syntax_exception () =
     assert_syntax_exception "|-,a";
     assert_syntax_exception "|-a,";
     assert_syntax_exception ",,";
-    assert_syntax_exception "a^,~a"
+    assert_syntax_exception "a^,~a";
+    assert_syntax_exception "!a,b\\/c"
 
 let test_parse_proof_string = [
     "Test full response", `Quick, call_api_parse_proof_string_full_response;
