@@ -29,11 +29,17 @@
     },
     {
       "proof_as_string": "a|-b,c",
-      "expected_proof_as_json": {"hyp":[
-        {"type":"litteral","value":"a"}
-      ],"cons":[
+      "expected_proof_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"b"},
-        {"type":"litteral","value":"c"}
+        {"type":"litteral","value":"c"},
+        {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
+      ]}
+    },
+    {
+      "proof_as_string": "a,!a",
+      "expected_proof_as_json": {"hyp":[],"cons":[
+        {"type":"litteral","value":"a"},
+        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}
     }
   ]

@@ -11,8 +11,8 @@ type token =
   | WITH
   | PLUS
   | ONE
-  | TOP
   | BOTTOM
+  | TOP
   | ZERO
   | LOLLIPOP
   | OFCOURSE

@@ -15,8 +15,8 @@ rule token = parse
     | '&'                    { WITH }
     | '+' | "⊕"              { PLUS }
     | '1'                    { ONE }
-    | "top"                  { TOP }
     | "bot"                  { BOTTOM }
+    | "top"                  { TOP }
     | '0'                    { ZERO }
     | "-o" | "⊸"             { LOLLIPOP }
     | '!'                    { OFCOURSE }

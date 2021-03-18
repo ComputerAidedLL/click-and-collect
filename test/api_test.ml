@@ -30,8 +30,8 @@ let assert_syntax_exception proof_as_string =
 
 (* The tests *)
 let call_api_parse_proof_string_full_response () =
-    Alcotest.(check string) "valid" "{\"is_valid\": true, \"proof_as_json\": {\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"}]}}" (call_api "parse_proof_string?proofAsString=a");
-    Alcotest.(check string) "invalid" "{\"is_valid\": false, \"error_message\": \"Syntax error: please read the syntax rules\"}" (call_api "parse_proof_string?proofAsString=aa")
+    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof_as_json\":{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"}]}}" (call_api "parse_proof_string?proofAsString=a");
+    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules\"}" (call_api "parse_proof_string?proofAsString=aa")
 
 let call_api_parse_proof_string_proof () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
@@ -47,9 +47,10 @@ let call_api_parse_proof_syntax_exception () =
     assert_syntax_exception "a|-a|-";
     assert_syntax_exception "|-a|-a";
     assert_syntax_exception "|-|-";
-    (*assert_syntax_exception "|-,a";
-    assert_syntax_exception "|-a,";*)
-    assert_syntax_exception ",,"
+    assert_syntax_exception "|-,a";
+    assert_syntax_exception "|-a,";
+    assert_syntax_exception ",,";
+    assert_syntax_exception "a^,~a"
 
 let test_parse_proof_string = [
     "Test full response", `Quick, call_api_parse_proof_string_full_response;

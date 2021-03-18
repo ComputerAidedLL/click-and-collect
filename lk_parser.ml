@@ -109,27 +109,27 @@ let yyact = [|
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 26 "lk_parser.mly"
-              ( ([], []) )
+                                          ( ([], []) )
 # 114 "lk_parser.ml"
                : Classical_logic.formula list * Classical_logic.formula list))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 27 "lk_parser.mly"
-                      ( ([], []) )
+                                          ( ([], []) )
 # 120 "lk_parser.ml"
                : Classical_logic.formula list * Classical_logic.formula list))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 28 "lk_parser.mly"
-                         ( ([], _1) )
+                                          ( ([], _1) )
 # 127 "lk_parser.ml"
                : Classical_logic.formula list * Classical_logic.formula list))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 29 "lk_parser.mly"
-                              ( ([], _2) )
+                                          ( ([], _2) )
 # 134 "lk_parser.ml"
                : Classical_logic.formula list * Classical_logic.formula list))
 ; (fun __caml_parser_env ->
@@ -137,14 +137,14 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 30 "lk_parser.mly"
-                                       ( (_1, _3) )
+                                          ( (_1, _3) )
 # 142 "lk_parser.ml"
                : Classical_logic.formula list * Classical_logic.formula list))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 34 "lk_parser.mly"
-              ( [_1] )
+                                 ( [_1] )
 # 149 "lk_parser.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
@@ -152,40 +152,40 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'formulalist) in
     Obj.repr(
 # 35 "lk_parser.mly"
-                              ( _1 :: _3 )
+                                 ( _1 :: _3 )
 # 157 "lk_parser.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 39 "lk_parser.mly"
-            ( True )
+                                ( True )
 # 163 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 40 "lk_parser.mly"
-                ( False )
+                                ( False )
 # 169 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 41 "lk_parser.mly"
-               ( Litt _1 )
+                                ( Litt _1 )
 # 176 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formula) in
     Obj.repr(
 # 42 "lk_parser.mly"
-                            ( _2 )
+                                ( _2 )
 # 183 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 43 "lk_parser.mly"
-                    ( Neg (_2) )
+                                ( Neg (_2) )
 # 190 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
@@ -193,7 +193,7 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 44 "lk_parser.mly"
-                          ( Conj (_1, _3) )
+                                ( Conj (_1, _3) )
 # 198 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
@@ -201,7 +201,7 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 45 "lk_parser.mly"
-                          ( Disj (_1, _3) )
+                                ( Disj (_1, _3) )
 # 206 "lk_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
@@ -209,7 +209,7 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 46 "lk_parser.mly"
-                          ( Impl (_1, _3) )
+                                ( Impl (_1, _3) )
 # 214 "lk_parser.ml"
                : 'formula))
 (* Entry main *)

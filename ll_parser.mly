@@ -10,7 +10,7 @@ open Linear_logic
 
 %token ORTH
 %token TENSOR PAR WITH PLUS
-%token ONE TOP BOTTOM ZERO
+%token ONE BOTTOM TOP ZERO
 %token LOLLIPOP
 %token OFCOURSE WHYNOT
 
@@ -38,8 +38,8 @@ formulalist:
 
 formula:
     ONE                         { One }
-  | TOP                         { Top }
   | BOTTOM                      { Bottom }
+  | TOP                         { Top }
   | ZERO                        { Zero }
   | LITT                        { Litt $1 }
   | LPAREN formula RPAREN       { $2 }

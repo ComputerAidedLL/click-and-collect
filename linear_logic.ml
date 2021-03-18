@@ -1,7 +1,7 @@
 type formula =
   | One
-  | Top
   | Bottom
+  | Top
   | Zero
   | Litt of string
   | Orth of formula
@@ -16,8 +16,8 @@ type formula =
 let rec formula_to_json =
   function
   | One -> `Assoc ([("type", `String "neutral") ; ("value", `String "one")])
-  | Top -> `Assoc ([("type", `String "neutral") ; ("value", `String "top")])
   | Bottom -> `Assoc ([("type", `String "neutral") ; ("value", `String "bottom")])
+  | Top -> `Assoc ([("type", `String "neutral") ; ("value", `String "top")])
   | Zero -> `Assoc ([("type", `String "neutral") ; ("value", `String "zero")])
   | Litt x -> `Assoc ([("type", `String "litteral") ; ("value", `String x)])
   | Orth e -> `Assoc ([("type", `String "orthogonal") ; ("value", formula_to_json e)])

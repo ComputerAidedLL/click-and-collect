@@ -6,6 +6,7 @@ open Eliom_parameter
 ]
 
 open Parse_proof_string
+open Yojson
 
 module Linearon_app =
   Eliom_registration.App (
@@ -28,7 +29,12 @@ let _ =
     (fun proof_as_string () ->
       let success, result = safe_parse proof_as_string in
         let response =
-            if success then "{\"is_valid\": true, \"proof_as_json\": " ^ result ^ "}"
-            else "{\"is_valid\": false, \"error_message\": \"" ^ result ^ "\"}" in
-        Lwt.return (response, "application/json"));;
+            if success then `Assoc [
+                ("is_valid", `Bool true);
+                ("proof_as_json", result)
+            ] else `Assoc [
+                ("is_valid", `Bool false);
+                ("error_message", result)
+            ] in
+        Lwt.return (Yojson.to_string response, "application/json"));;
 
