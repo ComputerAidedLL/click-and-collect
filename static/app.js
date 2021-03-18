@@ -133,8 +133,8 @@ const NEUTRAL_ELEMENTS = {
     "false": '<span class="neutral-element">false</span>',
     "one": '<span class="neutral-element">1</span>',
     "bottom": '<span class="neutral-element">⊥</span>',
-    "top": '<span class="binary-operator">T</span>',
-    "zero": '<span class="binary-operator">0</span>'
+    "top": '<span class="neutral-element">⊤</span>',
+    "zero": '<span class="neutral-element">0</span>'
 };
 
 
@@ -154,7 +154,7 @@ function createFormula(formulaAsJson, needParentheses = false) {
 
         case "orthogonal":
             return createFormula(formulaAsJson.value, true)
-                + '<span class="orthogonal">⊥</span>';
+                + '<span class="exponent">⊥</span>';
 
         case "implication":
         case "conjunction":

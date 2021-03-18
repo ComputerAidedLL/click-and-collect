@@ -88,9 +88,9 @@ sub {font-size:0.6em;}
     font-family: "Courier New", sans-serif;
 }
 
-.orthogonal {
+.exponent {
     vertical-align: super;
-    font-family: "Courier New", sans-serif;
+    font-size: .7em;
 }
 
 .flip{
