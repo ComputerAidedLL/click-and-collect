@@ -29,9 +29,39 @@ let rec formula_to_json =
   | Ofcourse e -> `Assoc ([("type", `String "ofcourse") ; ("value", formula_to_json e)])
   | Whynot e -> `Assoc ([("type", `String "whynot") ; ("value", formula_to_json e)]);;
 
-let negative e = Orth e;;
+let rec orthogonal =
+    function
+    | One -> Bottom
+    | Bottom -> One
+    | Top -> Zero
+    | Zero -> Top
+    | Litt x -> Orth (Litt x)
+    | Orth e -> e
+    | Tensor (e1, e2) -> Par (orthogonal e1, orthogonal e2)
+    | Par (e1, e2) -> Tensor (orthogonal e1, orthogonal e2)
+    | With (e1, e2) -> Plus (orthogonal e1, orthogonal e2)
+    | Plus (e1, e2) -> With (orthogonal e1, orthogonal e2)
+    | Lollipop (e1, e2) -> Tensor (e1, orthogonal e2)
+    | Ofcourse e -> Whynot (orthogonal e)
+    | Whynot e -> Ofcourse (orthogonal e);;
 
-let get_monolatery_sequent (ll1, ll2) = ([], ll2 @ List.map negative ll1);;
+let rec simplify =
+    function
+    | One -> One
+    | Bottom -> Bottom
+    | Top -> Top
+    | Zero -> Zero
+    | Litt x -> Litt x
+    | Orth e -> orthogonal (simplify e)
+    | Tensor (e1, e2) -> Tensor (simplify e1, simplify e2)
+    | Par (e1, e2) -> Par (simplify e1, simplify e2)
+    | With (e1, e2) -> With (simplify e1, simplify e2)
+    | Plus (e1, e2) -> Plus (simplify e1, simplify e2)
+    | Lollipop (e1, e2) -> Lollipop (simplify e1, simplify e2)
+    | Ofcourse e -> Ofcourse (simplify e)
+    | Whynot e -> Whynot (simplify e);;
+
+let get_monolatery_sequent (ll1, ll2) = ([], List.map simplify ll2 @ List.map orthogonal (List.map simplify ll1));;
 
 let sequent_to_json (ll1, ll2) = `Assoc [
         ("hyp", `List (List.map formula_to_json ll1));

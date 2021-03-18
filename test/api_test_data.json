@@ -13,13 +13,6 @@
       "expected_proof_as_json": {"hyp":[],"cons":[]}
     },
     {
-      "proof_as_string": "a,b",
-      "expected_proof_as_json": {"hyp":[],"cons":[
-        {"type":"litteral","value":"a"},
-        {"type":"litteral","value":"b"}
-      ]}
-    },
-    {
       "proof_as_string": "a,b,c",
       "expected_proof_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"a"},
@@ -41,6 +34,14 @@
         {"type":"litteral","value":"a"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}
+    },
+    {
+      "proof_as_string": "~a|-",
+      "expected_proof_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
+    },
+    {
+      "proof_as_string": "a^^|-",
+      "expected_proof_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
     }
   ]
 }

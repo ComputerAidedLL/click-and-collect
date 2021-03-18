@@ -26,6 +26,7 @@ main:
     EOL                                   { ([], []) }
   | THESIS EOL                            { ([], []) }
   | formulalist EOL                       { ([], $1) }
+  | formulalist THESIS EOL                { ($1, []) }
   | THESIS formulalist EOL                { ([], $2) }
   | formulalist THESIS formulalist EOL    { ($1, $3) }
 ;
