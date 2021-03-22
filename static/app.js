@@ -124,13 +124,13 @@ function addSequentListPremisses($td, sequentList) {
 
 function createSequent(sequentAsJson) {
     let $table = $("<table>");
-    let $td = $("<td>");
+    let $td = $("<td>").data('sequent', sequentAsJson);
     if ('hyp' in sequentAsJson) {
-        $td.append(createFormulas(sequentAsJson, sequentAsJson['hyp'], $td));
+        createFormulas(sequentAsJson, 'hyp', $td);
     }
     $td.append($('<span class="turnstile explained">⊢</span>'));
     if ('cons' in sequentAsJson) {
-        $td.append(createFormulas(sequentAsJson, sequentAsJson['cons'], $td));
+        createFormulas(sequentAsJson, 'cons', $td);
     }
     $table.append($td);
     let $tagBox = $("<td>", {"class": "tagBox"})
@@ -139,21 +139,21 @@ function createSequent(sequentAsJson) {
     return $table;
 }
 
-function createFormulas(sequentAsJson, formulasAsJson, $td) {
-    let $ul = $("<ul>", {"class": "commaList"});
-    for (let i = 0; i < formulasAsJson.length; i++) {
-        let formulaAsJson = formulasAsJson[i];
-        let $li = $("<li>");
+function createFormulas(sequentAsJson, field, $td) {
+    let $ul = $("<ul>", {"class": ["commaList " + field]}).sortable();
+    for (let i = 0; i < sequentAsJson[field].length; i++) {
+        let formulaAsJson = sequentAsJson[field][i];
+        let $li = $("<li>").data('initialPosition', i);
         let $span = $("<span>", {"class": "junct"})
             .html(createFormula(formulaAsJson));
         let possibleRules = getRules(formulaAsJson);
         for (let j = 0; j < possibleRules.length; j++) {
-            $span.click(applyRule(possibleRules[j], sequentAsJson, i, $td));
+            $span.click(applyRule(possibleRules[j], $li));
         }
         $li.append($span);
         $ul.append($li);
     }
-    return $ul;
+    $td.append($ul);
 }
 
 const UNARY_OPERATORS = {
@@ -250,16 +250,39 @@ function getRules(formulaAsJson) {
     }
 }
 
-function applyRule(rule, sequentAsJson, formulaPosition, $td) {
+function getSequentWithPermutations($td) {
+    let sequent = $td.data('sequent');
+
+    return {
+        'hyp': getFormulasWithPermutation($td.find('ul.hyp'), sequent['hyp']),
+        'cons': getFormulasWithPermutation($td.find('ul.cons'), sequent['cons'])
+    };
+}
+
+function getFormulasWithPermutation($ul, initialFormulas) {
+    let newFormulas = [];
+
+    $ul.find('li').each(function(i, obj) {
+        let initialPosition = $(obj).data('initialPosition');
+        newFormulas.push(initialFormulas[initialPosition]);
+    })
+
+    return newFormulas;
+}
+
+function applyRule(rule, $li) {
     return function() {
-        let url = '/apply_rule';
+        let $td = $li.closest('td');
+        let formulaPosition = $li.parent().children().index($li);
+        let newSequent = getSequentWithPermutations($td);
+
         $.ajax({
             type: "POST",
-            url: url,
+            url: '/apply_rule',
             contentType:"application/json; charset=utf-8",
             data: JSON.stringify({
                 'rule': rule,
-                'sequent': sequentAsJson,
+                'sequent': newSequent,
                 'formulaPosition': formulaPosition
             }),
             success: function(data)
