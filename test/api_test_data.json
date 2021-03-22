@@ -43,5 +43,62 @@
       "sequent_as_string": "a^^|-",
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
     }
+  ],
+  "call_api_apply_rule": [
+    {
+      "request": {
+        "rule":"par",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"litteral","value":"a"},
+            {"type": "par",
+              "value1":{"type": "neutral", "value":"top"},
+              "value2":{"type": "neutral", "value":"one"}
+            },
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{
+        "hyp":[],
+        "cons":[
+          {"type":"litteral","value":"a"},
+          {"type": "neutral", "value":"top"},
+          {"type": "neutral", "value":"one"},
+          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        ]
+      }]
+    },
+    {
+      "request": {
+        "rule":"tensor",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"litteral","value":"a"},
+            {"type": "tensor",
+              "value1":{"type": "neutral", "value":"top"},
+              "value2":{"type": "neutral", "value":"one"}
+            },
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{
+        "hyp":[],
+        "cons":[
+          {"type":"litteral","value":"a"},
+          {"type": "neutral", "value":"top"}
+        ]}, {
+        "hyp":[],
+        "cons":[
+          {"type": "neutral", "value":"one"},
+          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        ]
+      }]
+    }
   ]
 }
