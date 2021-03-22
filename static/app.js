@@ -67,7 +67,7 @@ function submitproof(element) {
            success: function(data)
            {
                 if (data.is_valid) {
-                    updateproof(data.proof_as_json);
+                    initProof(data.proof_as_json);
                 } else {
                     alert(data.error_message);
                 }
@@ -76,39 +76,70 @@ function submitproof(element) {
 }
 
 function cleanproof() {
-    $('#main-proof').html('');
+    $('#main-proof-container').html('');
 }
 
-function updateproof(proofAsJson) {
-    console.log(proofAsJson);
-    var proofdiv = $('#main-proof');
+function initProof(sequentAsJson) {
+    console.log(sequentAsJson);
+    var proofdiv = $('#main-proof-container');
 
     var $div = $("<div>", {"class": "proofIsIncomplete"});
     var $div2 = $("<div>", {"class": "proof"});
-    var $table = $("<table>");
-    var $td = $("<td>");
-    if ('hyp' in proofAsJson) {
-        $td.append(createFormulas(proofAsJson['hyp']));
-    }
-    $td.append($('<span class="turnstile explained">⊢</span>'));
-    if ('cons' in proofAsJson) {
-        $td.append(createFormulas(proofAsJson['cons']));
-    }
-    $table.append($td);
-    $div2.append($table);
+    $div2.append(createSequent(sequentAsJson));
     $div.append($div2);
     proofdiv.append($div);
 }
 
-function createFormulas(formulasAsJson) {
+function createSequent(sequentAsJson) {
+    var $table = $("<table>");
+    var $td = $("<td>");
+    if ('hyp' in sequentAsJson) {
+        $td.append(createFormulas(sequentAsJson, sequentAsJson['hyp'], $td));
+    }
+    $td.append($('<span class="turnstile explained">⊢</span>'));
+    if ('cons' in sequentAsJson) {
+        $td.append(createFormulas(sequentAsJson, sequentAsJson['cons'], $td));
+    }
+    $table.append($td);
+    return $table;
+}
+
+function createFormulas(sequentAsJson, formulasAsJson, $td) {
     var $ul = $("<ul>", {"class": "commaList"});
     for (var i = 0; i < formulasAsJson.length; i++) {
         var $li = $("<li>");
-        var $span = $("<span>", {"class": "junct"}).html(createFormula(formulasAsJson[i]));
+        var $span = $("<span>", {"class": "junct"})
+            .html(createFormula(formulasAsJson[i]))
+            .click(applyRule(sequentAsJson, i, $td));
         $li.append($span);
         $ul.append($li);
     }
     return $ul;
+}
+
+function applyRule(sequentAsJson, formulaPosition, $td) {
+    return function() {
+        var url = '/apply_rule';
+        $.ajax({
+            type: "POST",
+            url: url,
+            contentType:"application/json; charset=utf-8",
+            data: JSON.stringify({
+                'rule': 'par',
+                'sequent': sequentAsJson,
+                'formulaPosition': formulaPosition
+            }),
+            success: function(data)
+            {
+                console.log(data);
+                $td.addClass("inference");
+                $td.closest('.proof').prepend(createSequent(data));
+            },
+            error: function(XMLHttpRequest) {
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+    }
 }
 
 const UNARY_OPERATORS = {
@@ -139,7 +170,7 @@ const NEUTRAL_ELEMENTS = {
 
 
 
-function createFormula(formulaAsJson, needParentheses = false) {
+function createFormula(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case "litteral":
             return formulaAsJson.value;
@@ -150,10 +181,10 @@ function createFormula(formulaAsJson, needParentheses = false) {
         case "negation":
         case "ofcourse":
         case "whynot":
-            return UNARY_OPERATORS[formulaAsJson.type] + createFormula(formulaAsJson.value, true);
+            return UNARY_OPERATORS[formulaAsJson.type] + createFormula(formulaAsJson.value, false);
 
         case "orthogonal":
-            return createFormula(formulaAsJson.value, true)
+            return createFormula(formulaAsJson.value, false)
                 + '<span class="exponent">⊥</span>';
 
         case "implication":
@@ -164,18 +195,24 @@ function createFormula(formulaAsJson, needParentheses = false) {
         case "with":
         case "plus":
         case "lollipop":
-            let formula = createFormula(formulaAsJson.value1, true)
-                + '<span class="binary-operator">' + BINARY_OPERATORS[formulaAsJson.type] + '</span>'
-                + createFormula(formulaAsJson.value2, true);
-            return addParentheses(formula, needParentheses);
+            let classField = 'binary-operator';
+            if (isMainFormula) {
+                classField += ' primaryConnective';
+            }
+            let formula = createFormula(formulaAsJson.value1, false)
+                + '<span class="' + classField + '">'
+                + BINARY_OPERATORS[formulaAsJson.type]
+                + '</span>'
+                + createFormula(formulaAsJson.value2, false);
+            return addParentheses(formula, isMainFormula);
 
         default:
             console.error('No display rule for type ' + formulaAsJson.type);
     }
 }
 
-function addParentheses(formula, needParentheses) {
-    if (needParentheses) {
+function addParentheses(formula, isMainFormula) {
+    if (!isMainFormula) {
         return '(' + formula + ')';
     }
 

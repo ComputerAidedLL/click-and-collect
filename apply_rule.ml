@@ -23,13 +23,13 @@ let get_list d k =
 
 let apply_rule_with_exceptions request_as_json =
     let rule = get_string request_as_json "rule" in
-    let formula_list_as_json = get_list request_as_json "formulaList" in
+    let sequent_as_json = get_key request_as_json "sequent" in
     let formula_position = get_int request_as_json "formulaPosition" in
-    let formula_list = List.map Linear_logic.json_to_formula formula_list_as_json in
-    Linear_logic.apply_rule rule formula_list formula_position
+    let sequent = Linear_logic.json_to_sequent sequent_as_json in
+    Linear_logic.apply_rule rule sequent formula_position
 
 let apply_rule request_as_json =
-    try true, `List (List.map Linear_logic.formula_to_json (apply_rule_with_exceptions request_as_json))
+    try true, Linear_logic.sequent_to_json (apply_rule_with_exceptions request_as_json)
     with
         | Bad_request_exception m -> false, `String m
         | Linear_logic.Bad_formula_json_exception m -> false, `String  ("Bad formula json: " ^ m)

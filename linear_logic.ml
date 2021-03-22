@@ -39,7 +39,7 @@ exception Bad_formula_json_exception of string;;
 let required_field json key =
     let value =
         try Yojson.Basic.Util.member key json
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("A formula (or sub-formula) must be a json object"))
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("A sequent and a formula (or sub-formula) must be a json object"))
     in
     if value = `Null
     then raise (Bad_formula_json_exception ("required field " ^ key ^" is missing"))
@@ -49,6 +49,11 @@ let get_json_string json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_string value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("field " ^ key ^" must be a string"))
+
+let get_json_list json key =
+    let value = required_field json key in
+    try Yojson.Basic.Util.to_list value
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("field " ^ key ^ " must be a list"))
 
 let rec json_to_formula json =
   let formula_type = get_json_string json "type" in
@@ -70,6 +75,11 @@ let rec json_to_formula json =
   | "ofcourse" -> Ofcourse (json_to_formula (required_field json "value"))
   | "whynot" -> Whynot (json_to_formula (required_field json "value"))
   | _ -> raise (Bad_formula_json_exception ("unknown formula type " ^ formula_type));;
+
+let json_to_sequent sequent_as_json =
+    let hyp_formulas = List.map json_to_formula (get_json_list sequent_as_json "hyp") in
+    let cons_formulas = List.map json_to_formula (get_json_list sequent_as_json "cons") in
+    hyp_formulas, cons_formulas
 
 let rec orthogonal =
     function
@@ -113,10 +123,11 @@ let rec head_formula_tail n = function
         then [], e, l
         else let head, formula, tail = head_formula_tail (n-1) l in e::head, formula, tail;;
 
-let apply_rule rule formula_list formula_position =
+let apply_rule rule sequent formula_position =
+    let hyp_formulas, cons_formulas = sequent in
     match rule with
-    "par" -> (let head, formula, tail = head_formula_tail formula_position formula_list in
+    "par" -> (let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
-        Par (e1, e2) -> head @ [e1; e2] @ tail
+        Par (e1, e2) -> hyp_formulas, (head @ [e1; e2] @ tail)
         | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula")))
     | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;
