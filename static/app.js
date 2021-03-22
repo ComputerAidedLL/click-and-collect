@@ -1,10 +1,16 @@
 $( function() {
+    // SEQUENT FORM
     $("#usrform").submit(function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
     });
 
+    // SORTABLE FORMULA LIST
     $( ".sortable" ).sortable()
         .disableSelection();
+
+    // *****
+    // POPUP
+    // *****
 
     $("body").append("<div id=\"dialog-form-options\" title=\"Select option\">\n" +
         "                <form>\n" +
@@ -52,17 +58,21 @@ $( function() {
     });
 } );
 
-function submitproof(element) {
-    cleanproof();
+// ************
+// SEQUENT FORM
+// ************
 
-    var form = $(element).closest('form');
-    var url = '/parse_proof_string';
+function submitSequent(element) {
+    cleanSequentInput();
+
+    let form = $(element).closest('form');
+    let url = '/parse_proof_string';
 
     $.ajax({
            type: "GET",
            url: url,
            data: {
-                'proofAsString': form.find('textarea[name=proofAsString]').val()
+                'proofAsString': form.find('input[name=sequentAsString]').val()
            },
            success: function(data)
            {
@@ -75,24 +85,44 @@ function submitproof(element) {
      });
 }
 
-function cleanproof() {
+function cleanSequentInput() {
     $('#main-proof-container').html('');
 }
 
+// *************
+// PROOF DISPLAY
+// *************
+
 function initProof(sequentAsJson) {
     console.log(sequentAsJson);
-    var proofdiv = $('#main-proof-container');
+    let proofdiv = $('#main-proof-container');
 
-    var $div = $("<div>", {"class": "proofIsIncomplete"});
-    var $div2 = $("<div>", {"class": "proof"});
+    let $div = $("<div>", {"class": "proofIsIncomplete"});
+    let $div2 = $("<div>", {"class": "proof"});
     $div2.append(createSequent(sequentAsJson));
     $div.append($div2);
     proofdiv.append($div);
 }
 
+function addSequentListPremisses($td, sequentList) {
+    $td.addClass("inference");
+    let $table = $td.closest('table');
+    if (sequentList.length === 1) {
+        createSequent(sequentList[0]).insertBefore($table);
+    } else {
+        let $div = $("<div>");
+        for (let i = 0; i < sequentList.length; i++) {
+            let $sibling = $("<div>", {"class": "sibling"})
+            $sibling.append(createSequent(sequentList[i]))
+            $div.append($sibling);
+        }
+        $div.insertBefore($table);
+    }
+}
+
 function createSequent(sequentAsJson) {
-    var $table = $("<table>");
-    var $td = $("<td>");
+    let $table = $("<table>");
+    let $td = $("<td>");
     if ('hyp' in sequentAsJson) {
         $td.append(createFormulas(sequentAsJson, sequentAsJson['hyp'], $td));
     }
@@ -101,45 +131,24 @@ function createSequent(sequentAsJson) {
         $td.append(createFormulas(sequentAsJson, sequentAsJson['cons'], $td));
     }
     $table.append($td);
+    let $tagBox = $("<td>", {"class": "tagBox"})
+        .html('&nbsp;');
+    $table.append($tagBox);
     return $table;
 }
 
 function createFormulas(sequentAsJson, formulasAsJson, $td) {
-    var $ul = $("<ul>", {"class": "commaList"});
-    for (var i = 0; i < formulasAsJson.length; i++) {
-        var $li = $("<li>");
-        var $span = $("<span>", {"class": "junct"})
-            .html(createFormula(formulasAsJson[i]))
-            .click(applyRule(sequentAsJson, i, $td));
+    let $ul = $("<ul>", {"class": "commaList"});
+    for (let i = 0; i < formulasAsJson.length; i++) {
+        let formulaAsJson = formulasAsJson[i];
+        let $li = $("<li>");
+        let $span = $("<span>", {"class": "junct"})
+            .html(createFormula(formulaAsJson))
+            .click(applyRule(formulaAsJson, sequentAsJson, i, $td));
         $li.append($span);
         $ul.append($li);
     }
     return $ul;
-}
-
-function applyRule(sequentAsJson, formulaPosition, $td) {
-    return function() {
-        var url = '/apply_rule';
-        $.ajax({
-            type: "POST",
-            url: url,
-            contentType:"application/json; charset=utf-8",
-            data: JSON.stringify({
-                'rule': 'par',
-                'sequent': sequentAsJson,
-                'formulaPosition': formulaPosition
-            }),
-            success: function(data)
-            {
-                console.log(data);
-                $td.addClass("inference");
-                $td.closest('.proof').prepend(createSequent(data));
-            },
-            error: function(XMLHttpRequest) {
-                alert(XMLHttpRequest.responseText);
-            }
-        });
-    }
 }
 
 const UNARY_OPERATORS = {
@@ -167,8 +176,6 @@ const NEUTRAL_ELEMENTS = {
     "top": '<span class="neutral-element">⊤</span>',
     "zero": '<span class="neutral-element">0</span>'
 };
-
-
 
 function createFormula(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
@@ -219,6 +226,34 @@ function addParentheses(formula, isMainFormula) {
     return  formula;
 }
 
+// **********
+// OPERATIONS
+// **********
+
+function applyRule(formulaAsJson, sequentAsJson, formulaPosition, $td) {
+    return function() {
+        let url = '/apply_rule';
+        $.ajax({
+            type: "POST",
+            url: url,
+            contentType:"application/json; charset=utf-8",
+            data: JSON.stringify({
+                'rule': formulaAsJson.type,
+                'sequent': sequentAsJson,
+                'formulaPosition': formulaPosition
+            }),
+            success: function(data)
+            {
+                console.log(data);
+                addSequentListPremisses($td, data);
+            },
+            error: function(XMLHttpRequest) {
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+    }
+}
+
 function validate(element) {
     let p = $(element).closest('.proofIsIncomplete');
     p.removeClass('proofIsIncomplete');
@@ -237,6 +272,10 @@ function reset(element) {
     q.removeClass('inference');
 }
 
+// *****
+// POPUP
+// *****
+
 function openpopupoptions() {
     $("#dialog-form-options").dialog( "open" );
 }
@@ -244,6 +283,10 @@ function openpopupoptions() {
 function openpopuptext() {
     $("#dialog-form-text").dialog( "open" );
 }
+
+// ************************
+// MOVE WITHIN FORMULA LIST
+// ************************
 
 function moveleft(element) {
     let ul = $(element).closest('div').find('ul');

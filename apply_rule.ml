@@ -29,8 +29,9 @@ let apply_rule_with_exceptions request_as_json =
     Linear_logic.apply_rule rule sequent formula_position
 
 let apply_rule request_as_json =
-    try true, Linear_logic.sequent_to_json (apply_rule_with_exceptions request_as_json)
+    try let sequent_list = apply_rule_with_exceptions request_as_json in
+        true, `List (List.map Linear_logic.sequent_to_json sequent_list)
     with
         | Bad_request_exception m -> false, `String m
-        | Linear_logic.Bad_formula_json_exception m -> false, `String  ("Bad formula json: " ^ m)
+        | Linear_logic.Bad_sequent_json_exception m -> false, `String  ("Bad formula json: " ^ m)
         | Linear_logic.Apply_rule_exception m -> false, `String  m

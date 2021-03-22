@@ -1,3 +1,5 @@
+(* DEFINITION *)
+
 type formula =
   | One
   | Bottom
@@ -12,6 +14,9 @@ type formula =
   | Lollipop of formula * formula
   | Ofcourse of formula
   | Whynot of formula;;
+
+
+(* SEQUENT -> JSON *)
 
 let rec formula_to_json =
   function
@@ -34,26 +39,29 @@ let sequent_to_json (ll1, ll2) = `Assoc [
         ("cons", `List (List.map formula_to_json ll2))
     ];;
 
-exception Bad_formula_json_exception of string;;
+
+(* JSON -> SEQUENT *)
+
+exception Bad_sequent_json_exception of string;;
 
 let required_field json key =
     let value =
         try Yojson.Basic.Util.member key json
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("A sequent and a formula (or sub-formula) must be a json object"))
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("A sequent and a formula (or sub-formula) must be a json object"))
     in
     if value = `Null
-    then raise (Bad_formula_json_exception ("required field " ^ key ^" is missing"))
+    then raise (Bad_sequent_json_exception ("required field " ^ key ^" is missing"))
     else value
 
 let get_json_string json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("field " ^ key ^" must be a string"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field " ^ key ^" must be a string"))
 
 let get_json_list json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_list value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("field " ^ key ^ " must be a list"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field " ^ key ^ " must be a list"))
 
 let rec json_to_formula json =
   let formula_type = get_json_string json "type" in
@@ -64,7 +72,7 @@ let rec json_to_formula json =
        | "bottom" -> Bottom
        | "top" -> Top
        | "zero" -> Zero
-       | _ -> raise (Bad_formula_json_exception ("unknown neutral value " ^ neutral_value)) )
+       | _ -> raise (Bad_sequent_json_exception ("unknown neutral value " ^ neutral_value)) )
   | "litteral" -> Litt (get_json_string json "value")
   | "orthogonal" -> Orth (json_to_formula (required_field json "value"))
   | "tensor" -> Tensor ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
@@ -74,12 +82,15 @@ let rec json_to_formula json =
   | "lollipop" -> Lollipop ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
   | "ofcourse" -> Ofcourse (json_to_formula (required_field json "value"))
   | "whynot" -> Whynot (json_to_formula (required_field json "value"))
-  | _ -> raise (Bad_formula_json_exception ("unknown formula type " ^ formula_type));;
+  | _ -> raise (Bad_sequent_json_exception ("unknown formula type " ^ formula_type));;
 
 let json_to_sequent sequent_as_json =
     let hyp_formulas = List.map json_to_formula (get_json_list sequent_as_json "hyp") in
     let cons_formulas = List.map json_to_formula (get_json_list sequent_as_json "cons") in
     hyp_formulas, cons_formulas
+
+
+(* OPERATIONS *)
 
 let rec orthogonal =
     function
@@ -113,21 +124,35 @@ let rec simplify =
     | Ofcourse e -> Ofcourse (simplify e)
     | Whynot e -> Whynot (simplify e);;
 
-let get_monolatery_sequent (ll1, ll2) = ([], List.map simplify ll2 @ List.map orthogonal (List.map simplify ll1));;
+let get_monolatery_sequent sequent =
+    let hyp_formulas, cons_formulas = sequent in
+    ([], List.map simplify cons_formulas @ List.map orthogonal (List.map simplify hyp_formulas));;
+
+
+(* APPLY RULE *)
 
 exception Apply_rule_exception of string;;
 
-let rec head_formula_tail n = function
+let rec head_formula_tail formula_position = function
     | [] -> raise (Apply_rule_exception "formula_position is out of range")
-    | e :: l -> if n = 0
-        then [], e, l
-        else let head, formula, tail = head_formula_tail (n-1) l in e::head, formula, tail;;
+    | f :: formula_list -> if formula_position = 0
+        then [], f, formula_list
+        else let head, formula, tail = head_formula_tail (formula_position - 1) formula_list
+        in f::head, formula, tail;;
 
 let apply_rule rule sequent formula_position =
     let hyp_formulas, cons_formulas = sequent in
     match rule with
-    "par" -> (let head, formula, tail = head_formula_tail formula_position cons_formulas in
+    "par" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
-        Par (e1, e2) -> hyp_formulas, (head @ [e1; e2] @ tail)
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula")))
+        Par (e1, e2) -> [hyp_formulas, (head @ [e1; e2] @ tail)]
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
+    | "tensor" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Tensor (e1, e2) -> [hyp_formulas, (head @ [e1]); hyp_formulas, ([e2] @ tail)]
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
     | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;

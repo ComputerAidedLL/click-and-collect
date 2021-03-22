@@ -16,12 +16,11 @@
 
         <div class="page">
             <form action="#" id="usrform">
-                <br>
-                Please enter a formula :
-                <br>
-                <textarea name="proofAsString" class="proof code"></textarea>
-                <br>
-                <input type="submit" onclick="submitproof(this)">
+                <label>
+                    Please enter a formula :<br>
+                    <input type="text" name="sequentAsString" class="code"/>
+                </label>
+                <input type="submit" onclick="submitSequent(this)">
             </form>
 
             <div id="main-proof-container">
