@@ -107,7 +107,9 @@ function initProof(sequentAsJson) {
 function addSequentListPremisses($td, sequentList) {
     $td.addClass("inference");
     let $table = $td.closest('table');
-    if (sequentList.length === 1) {
+    if (sequentList.length === 0) {
+        // Do nothing
+    } else if (sequentList.length === 1) {
         createSequent(sequentList[0]).insertBefore($table);
     } else {
         let $div = $("<div>");
@@ -143,8 +145,11 @@ function createFormulas(sequentAsJson, formulasAsJson, $td) {
         let formulaAsJson = formulasAsJson[i];
         let $li = $("<li>");
         let $span = $("<span>", {"class": "junct"})
-            .html(createFormula(formulaAsJson))
-            .click(applyRule(formulaAsJson, sequentAsJson, i, $td));
+            .html(createFormula(formulaAsJson));
+        let possibleRules = getRules(formulaAsJson);
+        for (let j = 0; j < possibleRules.length; j++) {
+            $span.click(applyRule(possibleRules[j], sequentAsJson, i, $td));
+        }
         $li.append($span);
         $ul.append($li);
     }
@@ -230,7 +235,22 @@ function addParentheses(formula, isMainFormula) {
 // OPERATIONS
 // **********
 
-function applyRule(formulaAsJson, sequentAsJson, formulaPosition, $td) {
+function getRules(formulaAsJson) {
+    switch (formulaAsJson.type) {
+        case "litteral":
+        case "orthogonal":
+            return ["axiom"];
+
+        case "tensor":
+        case "par":
+            return [formulaAsJson.type];
+
+        default:
+            return [];
+    }
+}
+
+function applyRule(rule, sequentAsJson, formulaPosition, $td) {
     return function() {
         let url = '/apply_rule';
         $.ajax({
@@ -238,7 +258,7 @@ function applyRule(formulaAsJson, sequentAsJson, formulaPosition, $td) {
             url: url,
             contentType:"application/json; charset=utf-8",
             data: JSON.stringify({
-                'rule': formulaAsJson.type,
+                'rule': rule,
                 'sequent': sequentAsJson,
                 'formulaPosition': formulaPosition
             }),

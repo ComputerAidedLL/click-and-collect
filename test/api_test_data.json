@@ -47,6 +47,20 @@
   "call_api_apply_rule": [
     {
       "request": {
+        "rule":"axiom",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"litteral","value":"a"},
+            {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": []
+    },
+    {
+      "request": {
         "rule":"par",
         "sequent": {
           "hyp": [],

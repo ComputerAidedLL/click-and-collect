@@ -142,17 +142,27 @@ let rec head_formula_tail formula_position = function
 
 let apply_rule rule sequent formula_position =
     let hyp_formulas, cons_formulas = sequent in
-    match rule with
-    "par" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
-        match formula with
-        Par (e1, e2) -> [hyp_formulas, (head @ [e1; e2] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    (* Applying rule on sequent with non empty hypotheses is not implemented yet *)
+    if hyp_formulas != [] then raise (Apply_rule_exception ("Can apply rule only on monaltery sequent"))
+    else match rule with
+    "axiom" -> (
+        let can_apply = match cons_formulas with
+        | e1 :: (Orth e2) :: [] -> e1 = e2
+        | (Orth e1) :: e2 :: [] -> e1 = e2
+        | _ -> false in
+        if can_apply then []
+        else raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this sequent"))
     )
     | "tensor" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
-        Tensor (e1, e2) -> [hyp_formulas, (head @ [e1]); hyp_formulas, ([e2] @ tail)]
+        Tensor (e1, e2) -> [[], (head @ [e1]); [], ([e2] @ tail)]
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
+    | "par" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Par (e1, e2) -> [[], (head @ [e1; e2] @ tail)]
         | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
     )
     | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;

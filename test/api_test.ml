@@ -93,6 +93,8 @@ let call_api_apply_rule_exception () =
     assert_apply_rule_exception "{\"rule\":\"hello\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
     (* invalid sequent *)
     assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"hello\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
+    (* sequent with hypotheses *)
+    assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [{\"type\": \"litteral\", \"value\":\"a\"}],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
     (* formulaPosition out of range *)
     assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":1}";
     (* negative formulaPosition *)
