@@ -1,47 +1,47 @@
 {
-  "call_api_parse_proof_string_proof": [
+  "call_api_parse_sequent": [
     {
-      "proof_as_string": "a",
-      "expected_proof_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
+      "sequent_as_string": "a",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
     },
     {
-      "proof_as_string": "",
-      "expected_proof_as_json": {"hyp":[],"cons":[]}
+      "sequent_as_string": "",
+      "expected_sequent_as_json": {"hyp":[],"cons":[]}
     },
     {
-      "proof_as_string": "|-",
-      "expected_proof_as_json": {"hyp":[],"cons":[]}
+      "sequent_as_string": "|-",
+      "expected_sequent_as_json": {"hyp":[],"cons":[]}
     },
     {
-      "proof_as_string": "a,b,c",
-      "expected_proof_as_json": {"hyp":[],"cons":[
+      "sequent_as_string": "a,b,c",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"a"},
         {"type":"litteral","value":"b"},
         {"type":"litteral","value":"c"}
       ]}
     },
     {
-      "proof_as_string": "a|-b,c",
-      "expected_proof_as_json": {"hyp":[],"cons":[
+      "sequent_as_string": "a|-b,c",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"b"},
         {"type":"litteral","value":"c"},
         {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
       ]}
     },
     {
-      "proof_as_string": "a,!a",
-      "expected_proof_as_json": {"hyp":[],"cons":[
+      "sequent_as_string": "a,!a",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"a"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}
     },
     {
-      "proof_as_string": "~a|-",
-      "expected_proof_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
+      "sequent_as_string": "~a|-",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
     },
     {
-      "proof_as_string": "a^^|-",
-      "expected_proof_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
+      "sequent_as_string": "a^^|-",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
     }
   ]
 }

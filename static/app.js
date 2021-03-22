@@ -66,18 +66,18 @@ function submitSequent(element) {
     cleanSequentInput();
 
     let form = $(element).closest('form');
-    let url = '/parse_proof_string';
+    let url = '/parse_sequent';
 
     $.ajax({
            type: "GET",
            url: url,
            data: {
-                'proofAsString': form.find('input[name=sequentAsString]').val()
+                'sequentAsString': form.find('input[name=sequentAsString]').val()
            },
            success: function(data)
            {
                 if (data.is_valid) {
-                    initProof(data.proof_as_json);
+                    initProof(data.sequent_as_json);
                 } else {
                     alert(data.error_message);
                 }
