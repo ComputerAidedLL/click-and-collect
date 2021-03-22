@@ -56,13 +56,13 @@ let read_raw_content ?(length = 4096) raw_content =
 
 let apply_rule_handler () (content_type, raw_content_opt) =
     match raw_content_opt with
-    | None ->
-      send_json ~code:400 "Body content is missing"
+    | None -> send_json ~code:400 "Body content is missing"
     | Some raw_content -> read_raw_content raw_content >>= fun location_str ->
         try
             let request_as_json = Yojson.Basic.from_string location_str in
             let success, json_response = apply_rule request_as_json in
-            send_json ~code:200 (Yojson.Basic.to_string json_response)
+            if success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+            else send_json ~code:400 (Yojson.Basic.to_string json_response)
         with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json"
 
 let () =

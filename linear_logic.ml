@@ -29,6 +29,48 @@ let rec formula_to_json =
   | Ofcourse e -> `Assoc ([("type", `String "ofcourse") ; ("value", formula_to_json e)])
   | Whynot e -> `Assoc ([("type", `String "whynot") ; ("value", formula_to_json e)]);;
 
+let sequent_to_json (ll1, ll2) = `Assoc [
+        ("hyp", `List (List.map formula_to_json ll1));
+        ("cons", `List (List.map formula_to_json ll2))
+    ];;
+
+exception Bad_formula_json_exception of string;;
+
+let required_field json key =
+    let value =
+        try Yojson.Basic.Util.member key json
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("A formula (or sub-formula) must be a json object"))
+    in
+    if value = `Null
+    then raise (Bad_formula_json_exception ("required field " ^ key ^" is missing"))
+    else value
+
+let get_json_string json key =
+    let value = required_field json key in
+    try Yojson.Basic.Util.to_string value
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_formula_json_exception ("field " ^ key ^" must be a string"))
+
+let rec json_to_formula json =
+  let formula_type = get_json_string json "type" in
+  match formula_type with
+  "neutral" -> ( let neutral_value = get_json_string json "value" in
+     match neutral_value with
+       "one" -> One
+       | "bottom" -> Bottom
+       | "top" -> Top
+       | "zero" -> Zero
+       | _ -> raise (Bad_formula_json_exception ("unknown neutral value " ^ neutral_value)) )
+  | "litteral" -> Litt (get_json_string json "value")
+  | "orthogonal" -> Orth (json_to_formula (required_field json "value"))
+  | "tensor" -> Tensor ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
+  | "par" -> Par ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
+  | "with" -> With ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
+  | "plus" -> Plus ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
+  | "lollipop" -> Lollipop ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
+  | "ofcourse" -> Ofcourse (json_to_formula (required_field json "value"))
+  | "whynot" -> Whynot (json_to_formula (required_field json "value"))
+  | _ -> raise (Bad_formula_json_exception ("unknown formula type " ^ formula_type));;
+
 let rec orthogonal =
     function
     | One -> Bottom
@@ -63,7 +105,18 @@ let rec simplify =
 
 let get_monolatery_sequent (ll1, ll2) = ([], List.map simplify ll2 @ List.map orthogonal (List.map simplify ll1));;
 
-let sequent_to_json (ll1, ll2) = `Assoc [
-        ("hyp", `List (List.map formula_to_json ll1));
-        ("cons", `List (List.map formula_to_json ll2))
-    ]
+exception Apply_rule_exception of string;;
+
+let rec head_formula_tail n = function
+    | [] -> raise (Apply_rule_exception "formula_position is out of range")
+    | e :: l -> if n = 0
+        then [], e, l
+        else let head, formula, tail = head_formula_tail (n-1) l in e::head, formula, tail;;
+
+let apply_rule rule formula_list formula_position =
+    match rule with
+    "par" -> (let head, formula, tail = head_formula_tail formula_position formula_list in
+        match formula with
+        Par (e1, e2) -> head @ [e1; e2] @ tail
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula")))
+    | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;
