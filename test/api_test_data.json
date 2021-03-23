@@ -21,6 +21,14 @@
       ]}
     },
     {
+      "sequent_as_string": "S,T,U",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
+        {"type":"litteral","value":"S"},
+        {"type":"neutral","value":"top"},
+        {"type":"litteral","value":"U"}
+      ]}
+    },
+    {
       "sequent_as_string": "a|-b,c",
       "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"b"},
