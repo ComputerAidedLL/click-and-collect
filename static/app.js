@@ -160,13 +160,16 @@ function addSequentListPremisses($td, sequentList, rule) {
     $td.data('rule', rule);
     $td.next('.tagBox').html(getRuleSymbol(rule));
 
-    // Remove click events
-    $td.find('span').each(function (i,e) {
-        $(e).off('click');
-    })
+    // Remove old premisses if any
+    let $table = $td.closest('table');
+    $table.prev().each(function (i, e) {
+        e.remove();
+    });
+
+    // Mark proof as incomplete
+    markAsIncomplete();
 
     // Add new sequents
-    let $table = $td.closest('table');
     if (sequentList.length === 0) {
         checkProofIsComplete();
     } else if (sequentList.length === 1) {
@@ -194,7 +197,9 @@ function createSequent(sequentAsJson) {
     if ('hyp' in sequentAsJson) {
         createFormulas(sequentAsJson, 'hyp', $td);
     }
-    $td.append($('<span class="turnstile explained">⊢</span>'));
+    let $thesisSpan = $('<span class="turnstile explained">⊢</span>');
+    $thesisSpan.on('click', function () {applyRule('axiom', $td, 0);});
+    $td.append($thesisSpan);
     if ('cons' in sequentAsJson) {
         createFormulas(sequentAsJson, 'cons', $td);
     }
@@ -220,7 +225,7 @@ function createFormulas(sequentAsJson, field, $td) {
         let possibleRules = getRules(formulaAsJson);
         for (let ruleEvent of possibleRules) {
             let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
-            $spanForEvent.on(ruleEvent.event, applyRule(ruleEvent.rule, $li));
+            $spanForEvent.on(ruleEvent.event, buildApplyRuleCallBack(ruleEvent.rule, $li));
             $spanForEvent.addClass('primaryExpr');
         }
 
@@ -343,31 +348,36 @@ function getFormulasWithPermutation($ul, initialFormulas) {
     return newFormulas;
 }
 
-function applyRule(rule, $li) {
+function buildApplyRuleCallBack(rule, $li) {
     return function() {
         let $td = $li.closest('td');
         let formulaPosition = $li.parent().children().index($li);
-        let newSequent = getSequentWithPermutations($td);
 
-        $.ajax({
-            type: "POST",
-            url: '/apply_rule',
-            contentType:"application/json; charset=utf-8",
-            data: JSON.stringify({
-                'rule': rule,
-                'sequent': newSequent,
-                'formulaPosition': formulaPosition
-            }),
-            success: function(data)
-            {
-                console.log(data);
-                addSequentListPremisses($td, data, rule);
-            },
-            error: function(XMLHttpRequest) {
-                alert(XMLHttpRequest.responseText);
-            }
-        });
+        applyRule(rule, $td, formulaPosition);
     }
+}
+
+function applyRule(rule, $td, formulaPosition) {
+    let newSequent = getSequentWithPermutations($td);
+
+    $.ajax({
+        type: "POST",
+        url: '/apply_rule',
+        contentType:"application/json; charset=utf-8",
+        data: JSON.stringify({
+            'rule': rule,
+            'sequent': newSequent,
+            'formulaPosition': formulaPosition
+        }),
+        success: function(data)
+        {
+            console.log(data);
+            addSequentListPremisses($td, data, rule);
+        },
+        error: function(XMLHttpRequest) {
+            alert(XMLHttpRequest.responseText);
+        }
+    });
 }
 
 // ************
@@ -424,13 +434,11 @@ function recCheckIsComplete(proofAsJson) {
     return response;
 }
 
-function reset(element) {
-    let p = $(element).closest('.proofIsDone');
-    p.removeClass('proofIsDone');
-    p.addClass('proofIsIncomplete');
-
-    let q = $(element).closest('td');
-    q.removeClass('inference');
+function markAsIncomplete() {
+    let $mainDiv = $('#main-proof-container')
+        .children('div');
+    $mainDiv.removeClass('proofIsDone');
+    $mainDiv.addClass('proofIsIncomplete');
 }
 
 // *****
