@@ -111,19 +111,25 @@ function submitSequent(element) {
     let url = '/parse_sequent';
 
     $.ajax({
-           type: "GET",
-           url: url,
-           data: {
-                'sequentAsString': form.find('input[name=sequentAsString]').val()
-           },
-           success: function(data)
-           {
-                if (data.is_valid) {
-                    initProof(data.sequent_as_json);
-                } else {
-                    alert(data.error_message);
-                }
-           }
+        type: "GET",
+        url: url,
+        data: {
+            'sequentAsString': form.find('input[name=sequentAsString]').val()
+        },
+        success: function(data)
+        {
+            if (data.is_valid) {
+                initProof(data.sequent_as_json);
+            } else {
+                alert(data.error_message);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+            alert(textStatus);
+        }
      });
 }
 
@@ -202,8 +208,8 @@ function createFormulas(sequentAsJson, field, $td) {
         let $span = $("<span>", {"class": "junct"})
             .html(createFormula(formulaAsJson));
         let possibleRules = getRules(formulaAsJson);
-        for (let j = 0; j < possibleRules.length; j++) {
-            $span.click(applyRule(possibleRules[j], $li));
+        for (let rule of possibleRules) {
+            $span.click(applyRule(rule, $li));
         }
         $li.append($span);
         $ul.append($li);
@@ -273,6 +279,17 @@ function getRules(formulaAsJson) {
         case "tensor":
         case "par":
             return [formulaAsJson.type];
+
+        case "neutral":
+            switch (formulaAsJson.value) {
+                case "one":
+                case "top":
+                case "bottom":
+                    return [formulaAsJson.value];
+
+                default:
+                    return [];
+            }
 
         default:
             return [];
