@@ -120,7 +120,7 @@ let rec simplify =
     | Par (e1, e2) -> Par (simplify e1, simplify e2)
     | With (e1, e2) -> With (simplify e1, simplify e2)
     | Plus (e1, e2) -> Plus (simplify e1, simplify e2)
-    | Lollipop (e1, e2) -> Lollipop (simplify e1, simplify e2)
+    | Lollipop (e1, e2) -> Par (orthogonal (simplify e1), simplify e2)
     | Ofcourse e -> Ofcourse (simplify e)
     | Whynot e -> Whynot (simplify e);;
 

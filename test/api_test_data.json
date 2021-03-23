@@ -50,6 +50,16 @@
     {
       "sequent_as_string": "a^^|-",
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
+    },
+    {
+      "sequent_as_string": "1-ob",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
+        {
+          "type": "par",
+          "value1": {"type":"neutral","value":"bottom"},
+          "value2": {"type":"litteral","value":"b"}
+        }
+      ]}
     }
   ],
   "call_api_apply_rule": [
