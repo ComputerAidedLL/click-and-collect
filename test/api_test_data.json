@@ -60,6 +60,25 @@
     },
     {
       "request": {
+        "rule":"bottom",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"bottom"},
+            {"type":"litteral","value":"a"}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{"hyp": [], "cons": [
+          {"type":"neutral","value":"one"},
+          {"type":"litteral","value":"a"}
+        ]
+      }]
+    },
+    {
+      "request": {
         "rule":"axiom",
         "sequent": {
           "hyp": [],
@@ -199,6 +218,18 @@
       ]
       },
       "formulaPosition": 0
+    },
+    {
+      "rule":"bottom",
+      "sequent": {
+        "hyp": [],
+        "cons": [
+          {"type":"neutral","value":"one"},
+          {"type":"neutral","value":"bottom"},
+          {"type":"litteral","value":"a"}
+        ]
+      },
+      "formulaPosition":0
     }
   ]
 }
