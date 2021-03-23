@@ -72,10 +72,25 @@
         "formulaPosition":1
       },
       "expected_sequent_list_as_json": [{"hyp": [], "cons": [
-          {"type":"neutral","value":"one"},
-          {"type":"litteral","value":"a"}
-        ]
+        {"type":"neutral","value":"one"},
+        {"type":"litteral","value":"a"}
+      ]
       }]
+    },
+    {
+      "request": {
+        "rule":"top",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"bottom"},
+            {"type":"neutral","value":"top"}
+          ]
+        },
+        "formulaPosition":2
+      },
+      "expected_sequent_list_as_json": []
     },
     {
       "request": {
@@ -230,6 +245,17 @@
         ]
       },
       "formulaPosition":0
+    },
+    {
+      "rule":"top",
+      "sequent": {
+        "hyp": [],
+        "cons": [
+          {"type":"neutral","value":"top"},
+          {"type":"neutral","value":"one"}
+        ]
+      },
+      "formulaPosition":1
     }
   ]
 }

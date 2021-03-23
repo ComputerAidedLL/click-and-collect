@@ -164,6 +164,12 @@ let apply_rule rule sequent formula_position =
         | Bottom -> [[], head @ tail]
         | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
     )
+    | "top" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        | Top -> []
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
     | "tensor" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
