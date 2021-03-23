@@ -278,6 +278,7 @@ function getRules(formulaAsJson) {
 
         case "tensor":
         case "par":
+        case "with":
             return [formulaAsJson.type];
 
         case "neutral":

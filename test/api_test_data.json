@@ -108,32 +108,6 @@
     },
     {
       "request": {
-        "rule":"par",
-        "sequent": {
-          "hyp": [],
-          "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "par",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
-            },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
-          ]
-        },
-        "formulaPosition":1
-      },
-      "expected_sequent_list_as_json": [{
-        "hyp":[],
-        "cons":[
-          {"type":"litteral","value":"a"},
-          {"type": "neutral", "value":"top"},
-          {"type": "neutral", "value":"one"},
-          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
-        ]
-      }]
-    },
-    {
-      "request": {
         "rule":"tensor",
         "sequent": {
           "hyp": [],
@@ -160,6 +134,58 @@
           {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
         ]
       }]
+    },
+    {
+      "request": {
+        "rule":"par",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"litteral","value":"a"},
+            {"type": "par",
+              "value1":{"type": "neutral", "value":"top"},
+              "value2":{"type": "neutral", "value":"one"}
+            },
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{
+        "hyp":[],
+        "cons":[
+          {"type":"litteral","value":"a"},
+          {"type": "neutral", "value":"top"},
+          {"type": "neutral", "value":"one"},
+          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        ]
+      }]
+    },
+    {
+      "request": {
+        "rule":"with",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"litteral","value":"a"},
+            {"type": "with",
+              "value1":{"type": "neutral", "value":"top"},
+              "value2":{"type": "neutral", "value":"one"}
+            },
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[
+        {"type":"litteral","value":"a"},
+        {"type": "neutral", "value":"top"},
+        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+      ]},{"hyp":[], "cons":[
+        {"type":"litteral","value":"a"},
+        {"type": "neutral", "value":"one"},
+        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+      ]}]
     }
   ],
   "call_api_apply_rule_exception": [
