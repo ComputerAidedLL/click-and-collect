@@ -188,4 +188,16 @@ let apply_rule rule sequent formula_position =
         With (e1, e2) -> [[], (head @ [e1] @ tail); [], (head @ [e2] @ tail)]
         | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
     )
+    | "plus_left" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Plus (e1, e2) -> [[], (head @ [e1] @ tail)]
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
+    | "plus_right" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Plus (e1, e2) -> [[], (head @ [e2] @ tail)]
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+    )
     | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;

@@ -29,8 +29,8 @@ const RULES = {
     "tensor": '<span class="rule">⊗</span>',
     "par": '<span class="rule flip">&</span>',
     "with": '<span class="rule">&</span>',
-    "plus_left": '<span class="rule">⊕1</span>',
-    "plus_right": '<span class="rule">⊕2</span>',
+    "plus_left": '<span class="rule">⊕<span class="index">1</span></span>',
+    "plus_right": '<span class="rule">⊕<span class="index">2</span></span>',
     "one": '<span class="rule">1</span>',
     "bottom": '<span class="rule">⊥</span>',
     "top": '<span class="rule">⊤</span>',
@@ -160,6 +160,11 @@ function addSequentListPremisses($td, sequentList, rule) {
     $td.data('rule', rule);
     $td.next('.tagBox').html(getRuleSymbol(rule));
 
+    // Remove click events
+    $td.find('span').each(function (i,e) {
+        $(e).off('click');
+    })
+
     // Add new sequents
     let $table = $td.closest('table');
     if (sequentList.length === 0) {
@@ -205,19 +210,26 @@ function createFormulas(sequentAsJson, field, $td) {
     for (let i = 0; i < sequentAsJson[field].length; i++) {
         let formulaAsJson = sequentAsJson[field][i];
         let $li = $("<li>").data('initialPosition', i);
-        let $span = $("<span>", {"class": "junct"})
-            .html(createFormula(formulaAsJson));
-        let possibleRules = getRules(formulaAsJson);
-        for (let rule of possibleRules) {
-            $span.click(applyRule(rule, $li));
-        }
+
+        // Build formula
+        let $span = $("<span>", {"class": "main-formula"})
+            .html(createFormulaHTML(formulaAsJson, true));
         $li.append($span);
+
+        // Add event (click, ...)
+        let possibleRules = getRules(formulaAsJson);
+        for (let ruleEvent of possibleRules) {
+            let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
+            $spanForEvent.on(ruleEvent.event, applyRule(ruleEvent.rule, $li));
+            $spanForEvent.addClass('primaryExpr');
+        }
+
         $ul.append($li);
     }
     $td.append($ul);
 }
 
-function createFormula(formulaAsJson, isMainFormula = true) {
+function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case "litteral":
             return formulaAsJson.value;
@@ -228,10 +240,10 @@ function createFormula(formulaAsJson, isMainFormula = true) {
         case "negation":
         case "ofcourse":
         case "whynot":
-            return UNARY_OPERATORS[formulaAsJson.type] + createFormula(formulaAsJson.value, false);
+            return UNARY_OPERATORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
 
         case "orthogonal":
-            return createFormula(formulaAsJson.value, false)
+            return createFormulaHTML(formulaAsJson.value, false)
                 + '<span class="exponent">⊥</span>';
 
         case "implication":
@@ -242,19 +254,19 @@ function createFormula(formulaAsJson, isMainFormula = true) {
         case "with":
         case "plus":
         case "lollipop":
-            let classField = 'binary-operator';
-            if (isMainFormula) {
-                classField += ' primaryConnective';
-            }
-            let formula = createFormula(formulaAsJson.value1, false)
-                + '<span class="' + classField + '">'
-                + BINARY_OPERATORS[formulaAsJson.type]
+            let formula =
+                '<span class="left-formula">'
+                + createFormulaHTML(formulaAsJson.value1, false)
                 + '</span>'
-                + createFormula(formulaAsJson.value2, false);
+                + addPrimaryOperator(BINARY_OPERATORS[formulaAsJson.type], isMainFormula)
+                + '<span class="right-formula">'
+                + createFormulaHTML(formulaAsJson.value2, false)
+                + '</span>';
             return addParentheses(formula, isMainFormula);
 
         default:
             console.error('No display rule for type ' + formulaAsJson.type);
+            return '';
     }
 }
 
@@ -266,6 +278,14 @@ function addParentheses(formula, isMainFormula) {
     return  formula;
 }
 
+function addPrimaryOperator(operator, isMainFormula) {
+    if (isMainFormula) {
+        return '<span class="primaryOperator">' + operator + '</span>';
+    }
+
+    return  operator;
+}
+
 // **********
 // OPERATIONS
 // **********
@@ -274,19 +294,25 @@ function getRules(formulaAsJson) {
     switch (formulaAsJson.type) {
         case "litteral":
         case "orthogonal":
-            return ["axiom"];
+            return [{'event': 'click', 'element': 'main-formula', 'rule': 'axiom'}];
 
         case "tensor":
         case "par":
         case "with":
-            return [formulaAsJson.type];
+            return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.type}];
+
+        case "plus":
+            return [
+                {'event': 'click', 'element': 'left-formula', 'rule': 'plus_left'},
+                {'event': 'click', 'element': 'right-formula', 'rule': 'plus_right'}
+            ];
 
         case "neutral":
             switch (formulaAsJson.value) {
                 case "one":
                 case "top":
                 case "bottom":
-                    return [formulaAsJson.value];
+                    return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.value}];
 
                 default:
                     return [];
