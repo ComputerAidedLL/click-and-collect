@@ -146,12 +146,10 @@ let apply_rule rule sequent formula_position =
     if hyp_formulas != [] then raise (Apply_rule_exception ("Can apply rule only on monaltery sequent"))
     else match rule with
     "axiom" -> (
-        let can_apply = match cons_formulas with
-        | e1 :: (Orth e2) :: [] -> e1 = e2
-        | (Orth e1) :: e2 :: [] -> e1 = e2
-        | _ -> false in
-        if can_apply then []
-        else raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this sequent"))
+        match cons_formulas with
+        | e1 :: e2 :: [] -> if orthogonal e1 = e2 then []
+            else raise (Apply_rule_exception ("Can not apply rule axiom : the two formulas are not orthogonal"))
+        | _ -> raise (Apply_rule_exception ("Can apply rule " ^ rule ^ " only on sequent with two formulas"))
     )
     | "one" -> (
         match cons_formulas with

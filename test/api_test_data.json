@@ -116,6 +116,20 @@
     },
     {
       "request": {
+        "rule":"axiom",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"bottom"}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": []
+    },
+    {
+      "request": {
         "rule":"tensor",
         "sequent": {
           "hyp": [],
@@ -348,6 +362,35 @@
         ]
       },
       "formulaPosition": 0
+    },
+    {
+      "request": {
+        "rule":"axiom",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"zero"}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": []
+    },
+    {
+      "request": {
+        "rule":"axiom",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"bottom"},
+            {"type":"neutral","value":"top"}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": []
     }
   ]
 }
