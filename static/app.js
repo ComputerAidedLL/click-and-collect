@@ -151,12 +151,13 @@ function addSequentListPremisses($td, sequentList, rule) {
     $td.addClass("inference");
 
     // Add rule symbol
+    $td.data('rule', rule);
     $td.next('.tagBox').html(getRuleSymbol(rule));
 
     // Add new sequents
     let $table = $td.closest('table');
     if (sequentList.length === 0) {
-        // Do nothing
+        checkProofIsComplete();
     } else if (sequentList.length === 1) {
         createSequent(sequentList[0]).insertBefore($table);
     } else {
@@ -177,7 +178,8 @@ function getRuleSymbol(rule) {
 
 function createSequent(sequentAsJson) {
     let $table = $("<table>");
-    let $td = $("<td>").data('sequent', sequentAsJson);
+    let $td = $("<td>", {'class': 'sequent'})
+        .data('sequent', sequentAsJson);
     if ('hyp' in sequentAsJson) {
         createFormulas(sequentAsJson, 'hyp', $td);
     }
@@ -324,13 +326,58 @@ function applyRule(rule, $li) {
     }
 }
 
-function validate(element) {
-    let p = $(element).closest('.proofIsIncomplete');
-    p.removeClass('proofIsIncomplete');
-    p.addClass('proofIsDone');
+// ************
+// GLOBAL PROOF
+// ************
 
-    let q = $(element).closest('td');
-    q.addClass('inference');
+function checkProofIsComplete() {
+    let $mainDiv = $('#main-proof-container')
+        .children('div');
+    let $mainTable = $mainDiv.children('div.proof')
+        .children('table').last();
+    if (recCheckIsComplete(recGetProofAsJson($mainTable))) {
+        $mainDiv.removeClass('proofIsIncomplete');
+        $mainDiv.addClass('proofIsDone');
+    }
+}
+
+function recGetProofAsJson($table) {
+    let $td = $table.children('td.sequent');
+    let sequent = $td.data('sequent');
+    let rule = $td.data('rule') || null;
+    let premisses = [];
+    if (rule !== null) {
+        let $prev = $table.prev();
+        if ($prev.length) {
+            if ($prev.prop("tagName") === 'TABLE') {
+                premisses = [recGetProofAsJson($prev)];
+            } else {
+                $prev.children('div.sibling').each(function (i, sibling) {
+                    premisses.push(recGetProofAsJson($(sibling).children('table')));
+                })
+            }
+        }
+    }
+
+    return {
+        'sequent': sequent,
+        'rule': rule,
+        'premisses': premisses
+    }
+}
+
+function recCheckIsComplete(proofAsJson) {
+    if (proofAsJson.rule === null) {
+        return false;
+    }
+
+    let response = true;
+
+    for (let i = 0; i < proofAsJson.premisses.length; i++) {
+        response = response && recCheckIsComplete(proofAsJson.premisses[i]);
+    }
+
+    return response;
 }
 
 function reset(element) {
