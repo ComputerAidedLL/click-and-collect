@@ -1,3 +1,45 @@
+const UNARY_OPERATORS = {
+    "negation": '<span>¬</span>',
+    "ofcourse": '<span>!</span>',
+    "whynot": '<span>?</span>'
+};
+
+const BINARY_OPERATORS = {
+    "implication": '<span class="binary-operator">→</span>',
+    "conjunction": '<span class="binary-operator">∧</span>',
+    "disjunction": '<span class="binary-operator">∨</span>',
+    "tensor": '<span class="binary-operator">⊗</span>',
+    "par": '<span class="binary-operator flip">&</span>',
+    "with": '<span class="binary-operator">&</span>',
+    "plus": '<span class="binary-operator">⊕</span>',
+    "lollipop": '<span class="binary-operator">⊸</span>'
+};
+
+const NEUTRAL_ELEMENTS = {
+    "true": '<span class="neutral-element">true</span>',
+    "false": '<span class="neutral-element">false</span>',
+    "one": '<span class="neutral-element">1</span>',
+    "bottom": '<span class="neutral-element">⊥</span>',
+    "top": '<span class="neutral-element">⊤</span>',
+    "zero": '<span class="neutral-element">0</span>'
+};
+
+const RULES = {
+    "axiom": '<span class="rule">ax</span>',
+    "tensor": '<span class="rule">⊗</span>',
+    "par": '<span class="rule flip">&</span>',
+    "with": '<span class="rule">&</span>',
+    "plus_left": '<span class="rule">⊕1</span>',
+    "plus_right": '<span class="rule">⊕2</span>',
+    "one": '<span class="rule">1</span>',
+    "bottom": '<span class="rule">⊥</span>',
+    "top": '<span class="rule">⊤</span>',
+    "promotion": '<span class="rule">!</span>',
+    "dereliction": '<span class="rule">?d</span>',
+    "contraction": '<span class="rule">?c</span>',
+    "weakening": '<span class="rule">?w</span>'
+};
+
 $( function() {
     // SEQUENT FORM
     $("#usrform").submit(function(e) {
@@ -104,8 +146,14 @@ function initProof(sequentAsJson) {
     proofdiv.append($div);
 }
 
-function addSequentListPremisses($td, sequentList) {
+function addSequentListPremisses($td, sequentList, rule) {
+    // Add line
     $td.addClass("inference");
+
+    // Add rule symbol
+    $td.next('.tagBox').html(getRuleSymbol(rule));
+
+    // Add new sequents
     let $table = $td.closest('table');
     if (sequentList.length === 0) {
         // Do nothing
@@ -120,6 +168,11 @@ function addSequentListPremisses($td, sequentList) {
         }
         $div.insertBefore($table);
     }
+}
+
+function getRuleSymbol(rule) {
+    return $('<div>', {'class': 'tag'})
+        .html(RULES[rule]);
 }
 
 function createSequent(sequentAsJson) {
@@ -155,32 +208,6 @@ function createFormulas(sequentAsJson, field, $td) {
     }
     $td.append($ul);
 }
-
-const UNARY_OPERATORS = {
-    "negation": '<span>¬</span>',
-    "ofcourse": '<span>!</span>',
-    "whynot": '<span>?</span>'
-};
-
-const BINARY_OPERATORS = {
-    "implication": '<span class="binary-operator">→</span>',
-    "conjunction": '<span class="binary-operator">∧</span>',
-    "disjunction": '<span class="binary-operator">∨</span>',
-    "tensor": '<span class="binary-operator">⊗</span>',
-    "par": '<span class="binary-operator flip">&</span>',
-    "with": '<span class="binary-operator">&</span>',
-    "plus": '<span class="binary-operator">⊕</span>',
-    "lollipop": '<span class="binary-operator">⊸</span>'
-};
-
-const NEUTRAL_ELEMENTS = {
-    "true": '<span class="neutral-element">true</span>',
-    "false": '<span class="neutral-element">false</span>',
-    "one": '<span class="neutral-element">1</span>',
-    "bottom": '<span class="neutral-element">⊥</span>',
-    "top": '<span class="neutral-element">⊤</span>',
-    "zero": '<span class="neutral-element">0</span>'
-};
 
 function createFormula(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
@@ -288,7 +315,7 @@ function applyRule(rule, $li) {
             success: function(data)
             {
                 console.log(data);
-                addSequentListPremisses($td, data);
+                addSequentListPremisses($td, data, rule);
             },
             error: function(XMLHttpRequest) {
                 alert(XMLHttpRequest.responseText);
