@@ -12,8 +12,8 @@ input { margin: 1em 0; }
 .proof table { width:100%; border-collapse:collapse; margin: auto; }
 .proof td { padding:0; border:0; margin:0; text-align:center; }
 .proof .sibling { display: inline-block; vertical-align:bottom; }
-.proof .tagBox { font-size: 0.8em; color: #444; vertical-align: top; width: 2.1em; padding-left:0.3em; padding-right:0.6em; }
-.proof .tagBox .tag { position:relative; top:-0.7em;}
+.proof .tagBox { font-size: 0.8em; color: #444; vertical-align: top; width: 1.5em; padding-right:2em; }
+.proof .tagBox .tag { position:relative; top:-0.6em;}
 .proof .inference { border-top: 1px solid #000; }
 .proof .junct:after { content: ' '; }
 .proof .junct:hover { background: #DDF; cursor:pointer; }
@@ -64,15 +64,11 @@ sub {font-size:0.6em;}
 .no-margin { margin: 0; }
 
 .code { font-family: "Courier New", sans-serif; }
-
 .binary-operator { margin-left: 3px; margin-right: 3px; }
-
 .neutral-element { font-family: "Courier New", sans-serif; }
-
 .exponent { vertical-align: super; font-size: .7em; }
-
 .flip { transform: scale(-1, -1); display: inline-block; }
-
 .bold { font-weight: bold; }
-
+.italic { font-style: italic; }
 .example { font-style: italic; margin-right: 2em; }
+

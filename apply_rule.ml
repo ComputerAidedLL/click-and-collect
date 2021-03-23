@@ -1,7 +1,10 @@
 exception Bad_request_exception of string
 
 let get_key d k =
-    let value = Yojson.Basic.Util.member k d in
+    let value =
+        try Yojson.Basic.Util.member k d
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("Body must be a json object"))
+    in
     if value = `Null
     then raise (Bad_request_exception ("required argument " ^ k ^" is missing"))
     else value

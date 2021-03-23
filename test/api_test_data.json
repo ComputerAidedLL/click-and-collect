@@ -47,6 +47,19 @@
   "call_api_apply_rule": [
     {
       "request": {
+        "rule":"one",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_sequent_list_as_json": []
+    },
+    {
+      "request": {
         "rule":"axiom",
         "sequent": {
           "hyp": [],
@@ -113,6 +126,79 @@
           {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
         ]
       }]
+    }
+  ],
+  "call_api_apply_rule_exception": [
+    {},
+    "hello",
+    {
+      "rule": "hello",
+      "sequent": {"hyp": [], "cons": [
+        {
+          "type": "par",
+          "value1": {"type": "litteral", "value": "a"},
+          "value2": {"type": "litteral", "value": "a"}
+        }
+      ]
+      },
+      "formulaPosition": 0
+    },
+    {
+      "rule": "par",
+      "sequent": {"hyp": [], "cons": [
+        {
+          "type": "par",
+          "value1": {"type": "hello", "value": "a"},
+          "value2": {"type": "litteral", "value": "a"}
+        }
+      ]
+      },
+      "formulaPosition": 0
+    },
+    {
+      "rule": "par",
+      "sequent": {"hyp": [{"type": "litteral", "value": "a"}], "cons": [
+        {
+          "type": "par",
+          "value1": {"type": "litteral", "value": "a"},
+          "value2": {"type": "litteral", "value": "a"}
+        }
+      ]
+      },
+      "formulaPosition": 0
+    },
+    {
+      "rule": "par",
+      "sequent": {"hyp": [], "cons": [
+        {
+          "type": "par",
+          "value1": {"type": "litteral", "value": "a"},
+          "value2": {"type": "litteral", "value": "a"}
+        }
+      ]
+      },
+      "formulaPosition": 1
+    },
+    {
+      "rule": "par",
+      "sequent": {"hyp": [], "cons": [
+        {
+          "type": "par",
+          "value1": {"type": "litteral", "value": "a"},
+          "value2": {"type": "litteral", "value": "a"}
+        }
+      ]
+      },
+      "formulaPosition": -1
+    },
+    {
+      "rule": "one",
+      "sequent": {"hyp": [], "cons": [
+        {"type": "neutral", "value":"one"},
+        {"type": "neutral", "value":"one"}
+      ]
+      },
+      "formulaPosition": 0
     }
   ]
 }

@@ -153,6 +153,11 @@ let apply_rule rule sequent formula_position =
         if can_apply then []
         else raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this sequent"))
     )
+    | "one" -> (
+        match cons_formulas with
+        | One :: [] -> []
+        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this sequent"))
+    )
     | "tensor" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with

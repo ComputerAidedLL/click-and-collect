@@ -87,18 +87,13 @@ let assert_apply_rule_exception body_as_string =
 
 let call_api_apply_rule_exception () =
     assert_apply_rule_exception "";
-    assert_apply_rule_exception "hello";
-    assert_apply_rule_exception "{}";
-    (* unknown rule *)
-    assert_apply_rule_exception "{\"rule\":\"hello\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
-    (* invalid sequent *)
-    assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"hello\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
-    (* sequent with hypotheses *)
-    assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [{\"type\": \"litteral\", \"value\":\"a\"}],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}";
-    (* formulaPosition out of range *)
-    assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":1}";
-    (* negative formulaPosition *)
-    assert_apply_rule_exception "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":-1}"
+    assert_apply_rule_exception "{";
+
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "call_api_apply_rule_exception" |> to_list in
+    let run_test test_sample =
+        assert_apply_rule_exception (Yojson.Basic.to_string test_sample) in
+    List.iter run_test test_samples
 
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;

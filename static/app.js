@@ -25,7 +25,7 @@ const NEUTRAL_ELEMENTS = {
 };
 
 const RULES = {
-    "axiom": '<span class="rule">ax</span>',
+    "axiom": '<span class="rule italic">ax</span>',
     "tensor": '<span class="rule">⊗</span>',
     "par": '<span class="rule flip">&</span>',
     "with": '<span class="rule">&</span>',
