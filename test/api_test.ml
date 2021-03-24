@@ -29,30 +29,26 @@ let call_api_parse_sequent_full_response () =
     Alcotest.(check string) "valid" "{\"is_valid\":true,\"sequent_as_json\":{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"}]}}" (call_api_get "parse_sequent?sequentAsString=a");
     Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules\"}" (call_api_get "parse_sequent?sequentAsString=aa")
 
-let assert_sequent_equal sequent_as_string expected_sequent_as_json =
-    let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
-    let data = Yojson.Basic.from_string body in
-    let is_valid = data |> member "is_valid" |> to_bool in
-    Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
-    let sequent_as_json = data |> member "sequent_as_json" in
-    Alcotest.(check string) ("check sequent returned for " ^ sequent_as_string) expected_sequent_as_json (Yojson.Basic.to_string sequent_as_json)
-
 let call_api_parse_sequent () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
     let test_samples = json_file |> member "call_api_parse_sequent" |> to_list in
     let run_test test_sample =
         let sequent_as_string = test_sample |> member "sequent_as_string" |> to_string in
         let expected_sequent_as_json = test_sample |> member "expected_sequent_as_json" in
-        assert_sequent_equal sequent_as_string (Yojson.Basic.to_string expected_sequent_as_json) in
+        let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
+        let data = Yojson.Basic.from_string body in
+        let is_valid = data |> member "is_valid" |> to_bool in
+        Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
+        let sequent_as_json = data |> member "sequent_as_json" in
+        Alcotest.(check string) ("check sequent returned for " ^ sequent_as_string) (Yojson.Basic.to_string expected_sequent_as_json) (Yojson.Basic.to_string sequent_as_json) in
     List.iter run_test test_samples
 
-let assert_syntax_exception sequent_as_string =
-    let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
-    let data = Yojson.Basic.from_string body in
-    let is_valid = data |> member "is_valid" |> to_bool in
-    Alcotest.(check bool) (sequent_as_string ^ " is invalid") false is_valid
-
 let call_api_parse_sequent_syntax_exception () =
+    let assert_syntax_exception sequent_as_string =
+        let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
+        let data = Yojson.Basic.from_string body in
+        let is_valid = data |> member "is_valid" |> to_bool in
+        Alcotest.(check bool) (sequent_as_string ^ " is invalid") false is_valid in
     assert_syntax_exception "aa";
     assert_syntax_exception "a|-a|-";
     assert_syntax_exception "|-a|-a";
@@ -66,11 +62,8 @@ let call_api_parse_sequent_syntax_exception () =
 let call_api_apply_rule_full_response () =
     let body_as_string = "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}" in
     let response_as_string = call_api_post "apply_rule" body_as_string 200 in
-    Alcotest.(check string) "valid" "[{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"litteral\",\"value\":\"a\"}]}]" response_as_string
-
-let assert_apply_rule_equal body_as_json expected_sequent_list_as_json =
-    let response_as_string = call_api_post "apply_rule" (Yojson.Basic.to_string body_as_json) 200 in
-    Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_sequent_list_as_json) response_as_string
+    let expected_response_as_string = "{\"success\":true,\"sequentList\":[{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"litteral\",\"value\":\"a\"}]}]}" in
+    Alcotest.(check string) "valid" expected_response_as_string response_as_string
 
 let call_api_apply_rule () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
@@ -78,21 +71,38 @@ let call_api_apply_rule () =
     let run_test test_sample =
         let request_as_json = test_sample |> member "request" in
         let expected_sequent_list_as_json = test_sample |> member "expected_sequent_list_as_json" in
-        assert_apply_rule_equal request_as_json expected_sequent_list_as_json in
+        let response_as_string = call_api_post "apply_rule" (Yojson.Basic.to_string request_as_json) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let success = response_as_json |> member "success" |> to_bool in
+        Alcotest.(check bool) "success" true success;
+        let sequent_list = response_as_json |> member "sequentList" in
+        Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_sequent_list_as_json) (Yojson.Basic.to_string sequent_list) in
     List.iter run_test test_samples
 
-let assert_apply_rule_exception body_as_string =
-    let body = call_api_post "apply_rule" body_as_string 400 in
-    Alcotest.(check bool) "response not null" true (0 < String.length body)
-
-let call_api_apply_rule_exception () =
-    assert_apply_rule_exception "";
-    assert_apply_rule_exception "{";
-
+let call_api_apply_rule_technical_exception () =
+    let assert_technical_exception body_as_string =
+        let body = call_api_post "apply_rule" body_as_string 400 in
+        Alcotest.(check bool) "response not null" true (0 < String.length body) in
+    assert_technical_exception "";
+    assert_technical_exception "{";
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
-    let test_samples = json_file |> member "call_api_apply_rule_exception" |> to_list in
+    let test_samples = json_file |> member "call_api_apply_rule_technical_exception" |> to_list in
     let run_test test_sample =
-        assert_apply_rule_exception (Yojson.Basic.to_string test_sample) in
+        assert_technical_exception (Yojson.Basic.to_string test_sample) in
+    List.iter run_test test_samples
+
+let call_api_apply_rule_logic_exception () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "call_api_apply_rule_logic_exception" |> to_list in
+    let run_test test_sample =
+        let request_as_json = test_sample |> member "request" in
+        let expected_error_message = test_sample |> member "expected_error_message" |> to_string in
+        let response_as_string = call_api_post "apply_rule" (Yojson.Basic.to_string request_as_json) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let success = response_as_json |> member "success" |> to_bool in
+        Alcotest.(check bool) "success" false success;
+        let error_message = response_as_json |> member "errorMessage" |> to_string in
+        Alcotest.(check string) "check errorMessage" expected_error_message error_message in
     List.iter run_test test_samples
 
 let test_parse_sequent = [
@@ -104,7 +114,8 @@ let test_parse_sequent = [
 let test_apply_rule = [
     "Test full response", `Quick, call_api_apply_rule_full_response;
     "Test sequent", `Quick, call_api_apply_rule;
-    "Test exception", `Quick, call_api_apply_rule_exception;
+    "Test technical exception", `Quick, call_api_apply_rule_technical_exception;
+    "Test logic exception", `Quick, call_api_apply_rule_logic_exception;
 ]
 
 (* Run it *)

@@ -71,3 +71,22 @@ sub {font-size:0.6em;}
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
 .example { font-style: italic; margin-right: 2em; }
+
+.pedagogic-error {
+    display: inline-block;
+    padding: 10px;
+    margin: 10px;
+    color: #ff9507;
+    background: #fff1df;
+    border: 1px solid #ff9507;
+}
+
+.message {
+    display: inline-block;
+}
+
+.close-button {
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 10px;
+}

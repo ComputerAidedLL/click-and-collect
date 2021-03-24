@@ -34,6 +34,7 @@ const RULES = {
     "one": '<span class="rule">1</span>',
     "bottom": '<span class="rule">⊥</span>',
     "top": '<span class="rule">⊤</span>',
+    // rule zero does not exist
     "promotion": '<span class="rule">!</span>',
     "dereliction": '<span class="rule">?d</span>',
     "contraction": '<span class="rule">?c</span>',
@@ -121,20 +122,46 @@ function submitSequent(element) {
             if (data.is_valid) {
                 initProof(data.sequent_as_json);
             } else {
-                alert(data.error_message);
+                displayPedagogicError(data.error_message);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(jqXHR);
+            console.log(jqXHR.responseText);
             console.log(textStatus);
             console.log(errorThrown);
-            alert(textStatus);
+            alert('Technical error, check browser console for more details.');
         }
      });
 }
 
 function cleanSequentInput() {
     $('#main-proof-container').html('');
+}
+
+// ***************
+// PEDAGOGIC ERROR
+// ***************
+function displayPedagogicError(errorMessage) {
+    let $mainContainer = $('#main-proof-container');
+    let $div = $mainContainer
+        .children('div.pedagogic-error');
+    if (!$div.length) {
+        $div = $('<div>', {'class': 'pedagogic-error'});
+        $div.append($('<div>', {'class': 'message'}));
+        let $close = $('<div>', {'class': 'close-button'});
+        $close.html('✖');
+        $close.on('click', function () {cleanPedagogicError();});
+        $div.append($close);
+        $mainContainer.append($div);
+    }
+    $div.children('div.message').text(errorMessage);
+}
+
+function cleanPedagogicError() {
+    $('#main-proof-container')
+        .children('div.pedagogic-error')
+        .remove();
 }
 
 // *************
@@ -317,6 +344,7 @@ function getRules(formulaAsJson) {
                 case "one":
                 case "top":
                 case "bottom":
+                case "zero": // click on zero will display a pedagogic error
                     return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.value}];
 
                 default:
@@ -372,10 +400,19 @@ function applyRule(rule, $td, formulaPosition) {
         success: function(data)
         {
             console.log(data);
-            addSequentListPremisses($td, data, rule);
+            if (data.success === true) {
+                cleanPedagogicError();
+                addSequentListPremisses($td, data.sequentList, rule);
+            } else {
+                displayPedagogicError(data.errorMessage);
+            }
         },
-        error: function(XMLHttpRequest) {
-            alert(XMLHttpRequest.responseText);
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(jqXHR.responseText);
+            console.log(textStatus);
+            console.log(errorThrown);
+            alert('Technical error, check browser console for more details.');
         }
     });
 }

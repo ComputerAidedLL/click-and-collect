@@ -264,7 +264,7 @@
       ]}]
     }
   ],
-  "call_api_apply_rule_exception": [
+  "call_api_apply_rule_technical_exception": [
     {},
     "hello",
     {
@@ -328,15 +328,6 @@
       "formulaPosition": -1
     },
     {
-      "rule": "one",
-      "sequent": {"hyp": [], "cons": [
-        {"type": "neutral", "value":"one"},
-        {"type": "neutral", "value":"one"}
-      ]
-      },
-      "formulaPosition": 0
-    },
-    {
       "rule":"bottom",
       "sequent": {
         "hyp": [],
@@ -372,6 +363,22 @@
         ]
       },
       "formulaPosition": 0
+    }
+  ],
+  "call_api_apply_rule_logic_exception": [
+    {
+      "request": {
+        "rule":"one",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"one"},
+            {"type":"neutral","value":"one"}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_error_message": "Can apply rule 'one' only on sequent with 'one' as single formula."
     },
     {
       "request": {
@@ -385,7 +392,7 @@
         },
         "formulaPosition":1
       },
-      "expected_sequent_list_as_json": []
+      "expected_error_message": "Can not apply rule 'axiom': the two formulas are not orthogonal."
     },
     {
       "request": {
@@ -400,7 +407,20 @@
         },
         "formulaPosition":1
       },
-      "expected_sequent_list_as_json": []
+      "expected_error_message": "Can apply rule 'axiom' only on sequent with two formulas."
+    },
+    {
+      "request": {
+        "rule":"zero",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"zero"}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_error_message": "There is no rule 'zero'!"
     }
   ]
 }

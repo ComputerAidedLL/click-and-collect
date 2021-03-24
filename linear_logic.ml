@@ -47,21 +47,21 @@ exception Bad_sequent_json_exception of string;;
 let required_field json key =
     let value =
         try Yojson.Basic.Util.member key json
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("A sequent and a formula (or sub-formula) must be a json object"))
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("a sequent and a formula (or sub-formula) must be a json object"))
     in
     if value = `Null
-    then raise (Bad_sequent_json_exception ("required field " ^ key ^" is missing"))
+    then raise (Bad_sequent_json_exception ("required field '" ^ key ^ "' is missing"))
     else value
 
 let get_json_string json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field " ^ key ^" must be a string"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field '" ^ key ^ "' must be a string"))
 
 let get_json_list json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_list value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field " ^ key ^ " must be a list"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field '" ^ key ^ "' must be a list"))
 
 let rec json_to_formula json =
   let formula_type = get_json_string json "type" in
@@ -131,10 +131,11 @@ let get_monolatery_sequent sequent =
 
 (* APPLY RULE *)
 
-exception Apply_rule_exception of string;;
+exception Apply_rule_technical_exception of string;;
+exception Apply_rule_logic_exception of string;;
 
 let rec head_formula_tail formula_position = function
-    | [] -> raise (Apply_rule_exception "formula_position is out of range")
+    | [] -> raise (Apply_rule_technical_exception "Argument formula_position is greater than the number of given formulas")
     | f :: formula_list -> if formula_position = 0
         then [], f, formula_list
         else let head, formula, tail = head_formula_tail (formula_position - 1) formula_list
@@ -142,60 +143,63 @@ let rec head_formula_tail formula_position = function
 
 let apply_rule rule sequent formula_position =
     let hyp_formulas, cons_formulas = sequent in
+
     (* Applying rule on sequent with non empty hypotheses is not implemented yet *)
-    if hyp_formulas != [] then raise (Apply_rule_exception ("Can apply rule only on monaltery sequent"))
+    if hyp_formulas != [] then raise (Apply_rule_technical_exception ("This API can apply rule only on monolatery sequent for the moment"))
+
     else match rule with
     "axiom" -> (
         match cons_formulas with
         | e1 :: e2 :: [] -> if orthogonal e1 = e2 then []
-            else raise (Apply_rule_exception ("Can not apply rule axiom : the two formulas are not orthogonal"))
-        | _ -> raise (Apply_rule_exception ("Can apply rule " ^ rule ^ " only on sequent with two formulas"))
+            else raise (Apply_rule_logic_exception ("Can not apply rule 'axiom': the two formulas are not orthogonal."))
+        | _ -> raise (Apply_rule_logic_exception ("Can apply rule 'axiom' only on sequent with two formulas."))
     )
     | "one" -> (
         match cons_formulas with
         | One :: [] -> []
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this sequent"))
+        | _ -> raise (Apply_rule_logic_exception ("Can apply rule 'one' only on sequent with 'one' as single formula."))
     )
     | "bottom" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         | Bottom -> [[], head @ tail]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "top" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         | Top -> []
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
+    | "zero" -> raise (Apply_rule_logic_exception ("There is no rule 'zero'!"))
     | "tensor" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Tensor (e1, e2) -> [[], (head @ [e1]); [], ([e2] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "par" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Par (e1, e2) -> [[], (head @ [e1; e2] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "with" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         With (e1, e2) -> [[], (head @ [e1] @ tail); [], (head @ [e2] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_left" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Plus (e1, e2) -> [[], (head @ [e1] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_right" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Plus (e1, e2) -> [[], (head @ [e2] @ tail)]
-        | _ -> raise (Apply_rule_exception ("Cannot apply rule " ^ rule ^ " on this formula"))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
-    | _ -> raise (Apply_rule_exception ("Unknown rule " ^ rule));;
+    | _ -> raise (Apply_rule_technical_exception ("Unknown rule '" ^ rule ^ "'"));;
