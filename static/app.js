@@ -115,9 +115,7 @@ function submitSequent(element) {
     $.ajax({
         type: 'GET',
         url: url,
-        data: {
-            'sequentAsString': sequentAsString
-        },
+        data: { sequentAsString },
         success: function(data)
         {
             if (data['is_valid']) {
@@ -250,36 +248,25 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
         case 'with':
         case 'plus':
         case 'lollipop':
-            let formula =
-                '<span class="left-formula">'
-                + createFormulaHTML(formulaAsJson['value1'], false)
-                + '</span>'
-                + addPrimaryOperator(BINARY_OPERATORS[formulaAsJson.type], isMainFormula)
-                + '<span class="right-formula">'
-                + createFormulaHTML(formulaAsJson['value2'], false)
-                + '</span>';
-            return addParentheses(formula, isMainFormula);
+            let operator = BINARY_OPERATORS[formulaAsJson.type];
+            if (isMainFormula) {
+                operator = `<span class="primaryOperator">${operator}</span>`;
+            }
+
+            let leftFormula = createFormulaHTML(formulaAsJson['value1'], false);
+            let rightFormula = createFormulaHTML(formulaAsJson['value2'], false);
+            let formula = `<span class="left-formula">${leftFormula}</span>${operator}<span class="right-formula">${rightFormula}</span>`;
+
+            if (!isMainFormula) {
+                return `(${formula})`;
+            }
+
+            return formula;
 
         default:
             console.error('No display rule for type ' + formulaAsJson.type);
             return '';
     }
-}
-
-function addPrimaryOperator(operator, isMainFormula) {
-    if (isMainFormula) {
-        return '<span class="primaryOperator">' + operator + '</span>';
-    }
-
-    return  operator;
-}
-
-function addParentheses(formula, isMainFormula) {
-    if (!isMainFormula) {
-        return '(' + formula + ')';
-    }
-
-    return  formula;
 }
 
 // ************
@@ -312,9 +299,9 @@ function addSequentListPremisses($td, sequentList, rule) {
         createSequent(sequentList[0]).insertBefore($table);
     } else {
         let $div = $('<div>');
-        for (let i = 0; i < sequentList.length; i++) {
+        for (let sequent of sequentList) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            $sibling.append(createSequent(sequentList[i]))
+            $sibling.append(createSequent(sequent))
             $div.append($sibling);
         }
         $div.insertBefore($table);
@@ -369,17 +356,13 @@ function buildApplyRuleCallBack(rule, $li) {
 }
 
 function applyRule(rule, $td, formulaPosition) {
-    let newSequent = getSequentWithPermutations($td);
+    let sequent = getSequentWithPermutations($td);
 
     $.ajax({
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify({
-            'rule': rule,
-            'sequent': newSequent,
-            'formulaPosition': formulaPosition
-        }),
+        data: JSON.stringify({ rule, sequent, formulaPosition }),
         success: function(data)
         {
             console.log(data);
@@ -453,11 +436,7 @@ function recGetProofAsJson($table) {
         }
     }
 
-    return {
-        'sequent': sequent,
-        'rule': rule,
-        'premisses': premisses
-    }
+    return { sequent, rule, premisses };
 }
 
 function recCheckIsComplete(proofAsJson) {
@@ -467,8 +446,8 @@ function recCheckIsComplete(proofAsJson) {
 
     let response = true;
 
-    for (let i = 0; i < proofAsJson.premisses.length; i++) {
-        response = response && recCheckIsComplete(proofAsJson.premisses[i]);
+    for (let premiss of proofAsJson.premisses) {
+        response = response && recCheckIsComplete(premiss);
     }
 
     return response;
