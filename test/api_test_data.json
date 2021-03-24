@@ -266,6 +266,7 @@
   ],
   "call_api_apply_rule_technical_exception": [
     {},
+    "",
     "hello",
     {
       "rule": "hello",

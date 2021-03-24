@@ -83,7 +83,6 @@ let call_api_apply_rule_technical_exception () =
     let assert_technical_exception body_as_string =
         let body = call_api_post "apply_rule" body_as_string 400 in
         Alcotest.(check bool) "response not null" true (0 < String.length body) in
-    assert_technical_exception "";
     assert_technical_exception "{";
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
     let test_samples = json_file |> member "call_api_apply_rule_technical_exception" |> to_list in
