@@ -1,61 +1,61 @@
 const UNARY_OPERATORS = {
-    "negation": '<span>¬</span>',
-    "ofcourse": '<span>!</span>',
-    "whynot": '<span>?</span>'
+    'negation': '<span>¬</span>',
+    'ofcourse': '<span>!</span>',
+    'whynot': '<span>?</span>'
 };
 
 const BINARY_OPERATORS = {
-    "implication": '<span class="binary-operator">→</span>',
-    "conjunction": '<span class="binary-operator">∧</span>',
-    "disjunction": '<span class="binary-operator">∨</span>',
-    "tensor": '<span class="binary-operator">⊗</span>',
-    "par": '<span class="binary-operator flip">&</span>',
-    "with": '<span class="binary-operator">&</span>',
-    "plus": '<span class="binary-operator">⊕</span>',
-    "lollipop": '<span class="binary-operator">⊸</span>'
+    'implication': '<span class="binary-operator">→</span>',
+    'conjunction': '<span class="binary-operator">∧</span>',
+    'disjunction': '<span class="binary-operator">∨</span>',
+    'tensor': '<span class="binary-operator">⊗</span>',
+    'par': '<span class="binary-operator flip">&</span>',
+    'with': '<span class="binary-operator">&</span>',
+    'plus': '<span class="binary-operator">⊕</span>',
+    'lollipop': '<span class="binary-operator">⊸</span>'
 };
 
 const NEUTRAL_ELEMENTS = {
-    "true": '<span class="neutral-element">true</span>',
-    "false": '<span class="neutral-element">false</span>',
-    "one": '<span class="neutral-element">1</span>',
-    "bottom": '<span class="neutral-element">⊥</span>',
-    "top": '<span class="neutral-element">⊤</span>',
-    "zero": '<span class="neutral-element">0</span>'
+    'true': '<span class="neutral-element">true</span>',
+    'false': '<span class="neutral-element">false</span>',
+    'one': '<span class="neutral-element">1</span>',
+    'bottom': '<span class="neutral-element">⊥</span>',
+    'top': '<span class="neutral-element">⊤</span>',
+    'zero': '<span class="neutral-element">0</span>'
 };
 
 const RULES = {
-    "axiom": '<span class="rule italic">ax</span>',
-    "tensor": '<span class="rule">⊗</span>',
-    "par": '<span class="rule flip">&</span>',
-    "with": '<span class="rule">&</span>',
-    "plus_left": '<span class="rule">⊕<span class="index">1</span></span>',
-    "plus_right": '<span class="rule">⊕<span class="index">2</span></span>',
-    "one": '<span class="rule">1</span>',
-    "bottom": '<span class="rule">⊥</span>',
-    "top": '<span class="rule">⊤</span>',
+    'axiom': '<span class="rule italic">ax</span>',
+    'tensor': '<span class="rule">⊗</span>',
+    'par': '<span class="rule flip">&</span>',
+    'with': '<span class="rule">&</span>',
+    'plus_left': '<span class="rule">⊕<span class="index">1</span></span>',
+    'plus_right': '<span class="rule">⊕<span class="index">2</span></span>',
+    'one': '<span class="rule">1</span>',
+    'bottom': '<span class="rule">⊥</span>',
+    'top': '<span class="rule">⊤</span>',
     // rule zero does not exist
-    "promotion": '<span class="rule">!</span>',
-    "dereliction": '<span class="rule">?d</span>',
-    "contraction": '<span class="rule">?c</span>',
-    "weakening": '<span class="rule">?w</span>'
+    'promotion': '<span class="rule">!</span>',
+    'dereliction': '<span class="rule">?d</span>',
+    'contraction': '<span class="rule">?c</span>',
+    'weakening': '<span class="rule">?w</span>'
 };
 
 $( function() {
     // SEQUENT FORM
-    $("#usrform").submit(function(e) {
+    $('#usrform').submit(function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
     });
 
     // SORTABLE FORMULA LIST
-    $( ".sortable" ).sortable()
+    $( '.sortable' ).sortable()
         .disableSelection();
 
     // *****
     // POPUP
     // *****
 
-    $("body").append("<div id=\"dialog-form-options\" title=\"Select option\">\n" +
+    $('body').append("<div id=\"dialog-form-options\" title=\"Select option\">\n" +
         "                <form>\n" +
         "                     <input type=\"radio\" id=\"double_a\" name=\"formula\" value=\"double_a\">\n" +
         "                     <label for=\"double_a\">A, A</label><br>\n" +
@@ -70,30 +70,30 @@ $( function() {
             "                     <input type=\"text\" />\n" +
             "                </form>\n" +
             "            </div>");
-    let dialogoptions = $("#dialog-form-options").dialog({
+    let dialogoptions = $('#dialog-form-options').dialog({
         autoOpen: false,
         modal: true,
         buttons: {
-            "OK": function () {
-                dialogoptions.dialog("close");
+            'OK': function () {
+                dialogoptions.dialog('close');
             },
             Cancel: function () {
-                dialogoptions.dialog("close");
+                dialogoptions.dialog('close');
             }
         },
         close: function () {
         }
     });
 
-    let dialogtext = $("#dialog-form-text").dialog({
+    let dialogtext = $('#dialog-form-text').dialog({
         autoOpen: false,
         modal: true,
         buttons: {
-            "OK": function () {
-                dialogtext.dialog("close");
+            'OK': function () {
+                dialogtext.dialog('close');
             },
             Cancel: function () {
-                dialogtext.dialog("close");
+                dialogtext.dialog('close');
             }
         },
         close: function () {
@@ -112,7 +112,7 @@ function submitSequent(element) {
     let url = '/parse_sequent';
 
     $.ajax({
-        type: "GET",
+        type: 'GET',
         url: url,
         data: {
             'sequentAsString': form.find('input[name=sequentAsString]').val()
@@ -173,16 +173,16 @@ function initProof(sequentAsJson) {
     console.log(sequentAsJson);
     let proofdiv = $('#main-proof-container');
 
-    let $div = $("<div>", {"class": "proofIsIncomplete"});
-    let $div2 = $("<div>", {"class": "proof"});
+    let $div = $('<div>', {'class': 'proofIsIncomplete'});
+    let $div2 = $('<div>', {'class': 'proof'});
     $div2.append(createSequent(sequentAsJson));
     $div.append($div2);
     proofdiv.append($div);
 }
 
 function createSequent(sequentAsJson) {
-    let $table = $("<table>");
-    let $td = $("<td>", {'class': 'sequent'})
+    let $table = $('<table>');
+    let $td = $('<td>', {'class': 'sequent'})
         .data('sequent', sequentAsJson);
     if ('hyp' in sequentAsJson) {
         createFormulas(sequentAsJson, 'hyp', $td);
@@ -194,20 +194,20 @@ function createSequent(sequentAsJson) {
         createFormulas(sequentAsJson, 'cons', $td);
     }
     $table.append($td);
-    let $tagBox = $("<td>", {"class": "tagBox"})
+    let $tagBox = $('<td>', {'class': 'tagBox'})
         .html('&nbsp;');
     $table.append($tagBox);
     return $table;
 }
 
 function createFormulas(sequentAsJson, field, $td) {
-    let $ul = $("<ul>", {"class": ["commaList " + field]}).sortable();
+    let $ul = $('<ul>', {'class': ['commaList ' + field]}).sortable();
     for (let i = 0; i < sequentAsJson[field].length; i++) {
         let formulaAsJson = sequentAsJson[field][i];
-        let $li = $("<li>").data('initialPosition', i);
+        let $li = $('<li>').data('initialPosition', i);
 
         // Build formula
-        let $span = $("<span>", {"class": "main-formula"})
+        let $span = $('<span>', {'class': 'main-formula'})
             .html(createFormulaHTML(formulaAsJson, true));
         $li.append($span);
 
@@ -226,29 +226,29 @@ function createFormulas(sequentAsJson, field, $td) {
 
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
-        case "litteral":
+        case 'litteral':
             return formulaAsJson.value;
 
-        case "neutral":
+        case 'neutral':
             return NEUTRAL_ELEMENTS[formulaAsJson.value];
 
-        case "negation":
-        case "ofcourse":
-        case "whynot":
+        case 'negation':
+        case 'ofcourse':
+        case 'whynot':
             return UNARY_OPERATORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
 
-        case "orthogonal":
+        case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
                 + '<span class="exponent">⊥</span>';
 
-        case "implication":
-        case "conjunction":
-        case "disjunction":
-        case "tensor":
-        case "par":
-        case "with":
-        case "plus":
-        case "lollipop":
+        case 'implication':
+        case 'conjunction':
+        case 'disjunction':
+        case 'tensor':
+        case 'par':
+        case 'with':
+        case 'plus':
+        case 'lollipop':
             let formula =
                 '<span class="left-formula">'
                 + createFormulaHTML(formulaAsJson.value1, false)
@@ -287,7 +287,7 @@ function addParentheses(formula, isMainFormula) {
 
 function addSequentListPremisses($td, sequentList, rule) {
     // Add line
-    $td.addClass("inference");
+    $td.addClass('inference');
 
     // Add rule symbol
     $td.data('rule', rule);
@@ -310,9 +310,9 @@ function addSequentListPremisses($td, sequentList, rule) {
     } else if (sequentList.length === 1) {
         createSequent(sequentList[0]).insertBefore($table);
     } else {
-        let $div = $("<div>");
+        let $div = $('<div>');
         for (let i = 0; i < sequentList.length; i++) {
-            let $sibling = $("<div>", {"class": "sibling"})
+            let $sibling = $('<div>', {'class': 'sibling'})
             $sibling.append(createSequent(sequentList[i]))
             $div.append($sibling);
         }
@@ -326,27 +326,27 @@ function addSequentListPremisses($td, sequentList, rule) {
 
 function getRules(formulaAsJson) {
     switch (formulaAsJson.type) {
-        case "litteral":
-        case "orthogonal":
+        case 'litteral':
+        case 'orthogonal':
             return [{'event': 'click', 'element': 'main-formula', 'rule': 'axiom'}];
 
-        case "tensor":
-        case "par":
-        case "with":
+        case 'tensor':
+        case 'par':
+        case 'with':
             return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.type}];
 
-        case "plus":
+        case 'plus':
             return [
                 {'event': 'click', 'element': 'left-formula', 'rule': 'plus_left'},
                 {'event': 'click', 'element': 'right-formula', 'rule': 'plus_right'}
             ];
 
-        case "neutral":
+        case 'neutral':
             switch (formulaAsJson.value) {
-                case "one":
-                case "top":
-                case "bottom":
-                case "zero": // click on zero will display a pedagogic error
+                case 'one':
+                case 'top':
+                case 'bottom':
+                case 'zero': // click on zero will display a pedagogic error
                     return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.value}];
 
                 default:
@@ -371,9 +371,9 @@ function applyRule(rule, $td, formulaPosition) {
     let newSequent = getSequentWithPermutations($td);
 
     $.ajax({
-        type: "POST",
+        type: 'POST',
         url: '/apply_rule',
-        contentType:"application/json; charset=utf-8",
+        contentType:'application/json; charset=utf-8',
         data: JSON.stringify({
             'rule': rule,
             'sequent': newSequent,
@@ -442,7 +442,7 @@ function recGetProofAsJson($table) {
     if (rule !== null) {
         let $prev = $table.prev();
         if ($prev.length) {
-            if ($prev.prop("tagName") === 'TABLE') {
+            if ($prev.prop('tagName') === 'TABLE') {
                 premisses = [recGetProofAsJson($prev)];
             } else {
                 $prev.children('div.sibling').each(function (i, sibling) {
@@ -485,11 +485,11 @@ function markAsIncomplete() {
 // *****
 
 function openpopupoptions() {
-    $("#dialog-form-options").dialog( "open" );
+    $('#dialog-form-options').dialog( 'open' );
 }
 
 function openpopuptext() {
-    $("#dialog-form-text").dialog( "open" );
+    $('#dialog-form-text').dialog( 'open' );
 }
 
 // ************************
