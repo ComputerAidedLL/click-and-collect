@@ -142,6 +142,7 @@ function cleanSequentInput() {
 // ***************
 // PEDAGOGIC ERROR
 // ***************
+
 function displayPedagogicError(errorMessage) {
     let $mainContainer = $('#main-proof-container');
     let $div = $mainContainer
@@ -177,44 +178,6 @@ function initProof(sequentAsJson) {
     $div2.append(createSequent(sequentAsJson));
     $div.append($div2);
     proofdiv.append($div);
-}
-
-function addSequentListPremisses($td, sequentList, rule) {
-    // Add line
-    $td.addClass("inference");
-
-    // Add rule symbol
-    $td.data('rule', rule);
-    $td.next('.tagBox').html(getRuleSymbol(rule));
-
-    // Remove old premisses if any
-    let $table = $td.closest('table');
-    $table.prev().each(function (i, e) {
-        e.remove();
-    });
-
-    // Mark proof as incomplete
-    markAsIncomplete();
-
-    // Add new sequents
-    if (sequentList.length === 0) {
-        checkProofIsComplete();
-    } else if (sequentList.length === 1) {
-        createSequent(sequentList[0]).insertBefore($table);
-    } else {
-        let $div = $("<div>");
-        for (let i = 0; i < sequentList.length; i++) {
-            let $sibling = $("<div>", {"class": "sibling"})
-            $sibling.append(createSequent(sequentList[i]))
-            $div.append($sibling);
-        }
-        $div.insertBefore($table);
-    }
-}
-
-function getRuleSymbol(rule) {
-    return $('<div>', {'class': 'tag'})
-        .html(RULES[rule]);
 }
 
 function createSequent(sequentAsJson) {
@@ -302,6 +265,14 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     }
 }
 
+function addPrimaryOperator(operator, isMainFormula) {
+    if (isMainFormula) {
+        return '<span class="primaryOperator">' + operator + '</span>';
+    }
+
+    return  operator;
+}
+
 function addParentheses(formula, isMainFormula) {
     if (!isMainFormula) {
         return '(' + formula + ')';
@@ -310,12 +281,43 @@ function addParentheses(formula, isMainFormula) {
     return  formula;
 }
 
-function addPrimaryOperator(operator, isMainFormula) {
-    if (isMainFormula) {
-        return '<span class="primaryOperator">' + operator + '</span>';
-    }
+// ************
+// PROOF UPDATE
+// ************
 
-    return  operator;
+function addSequentListPremisses($td, sequentList, rule) {
+    // Add line
+    $td.addClass("inference");
+
+    // Add rule symbol
+    $td.data('rule', rule);
+    $td.next('.tagBox')
+        .html($('<div>', {'class': 'tag'})
+            .html(RULES[rule]));
+
+    // Remove old premisses if any
+    let $table = $td.closest('table');
+    $table.prevAll().each(function (i, e) {
+        e.remove();
+    });
+
+    // Mark proof as incomplete
+    markAsIncomplete();
+
+    // Add new sequents
+    if (sequentList.length === 0) {
+        checkProofIsComplete();
+    } else if (sequentList.length === 1) {
+        createSequent(sequentList[0]).insertBefore($table);
+    } else {
+        let $div = $("<div>");
+        for (let i = 0; i < sequentList.length; i++) {
+            let $sibling = $("<div>", {"class": "sibling"})
+            $sibling.append(createSequent(sequentList[i]))
+            $div.append($sibling);
+        }
+        $div.insertBefore($table);
+    }
 }
 
 // **********
@@ -354,26 +356,6 @@ function getRules(formulaAsJson) {
         default:
             return [];
     }
-}
-
-function getSequentWithPermutations($td) {
-    let sequent = $td.data('sequent');
-
-    return {
-        'hyp': getFormulasWithPermutation($td.find('ul.hyp'), sequent['hyp']),
-        'cons': getFormulasWithPermutation($td.find('ul.cons'), sequent['cons'])
-    };
-}
-
-function getFormulasWithPermutation($ul, initialFormulas) {
-    let newFormulas = [];
-
-    $ul.find('li').each(function(i, obj) {
-        let initialPosition = $(obj).data('initialPosition');
-        newFormulas.push(initialFormulas[initialPosition]);
-    })
-
-    return newFormulas;
 }
 
 function buildApplyRuleCallBack(rule, $li) {
@@ -415,6 +397,26 @@ function applyRule(rule, $td, formulaPosition) {
             alert('Technical error, check browser console for more details.');
         }
     });
+}
+
+function getSequentWithPermutations($td) {
+    let sequent = $td.data('sequent');
+
+    return {
+        'hyp': getFormulasWithPermutation($td.find('ul.hyp'), sequent['hyp']),
+        'cons': getFormulasWithPermutation($td.find('ul.cons'), sequent['cons'])
+    };
+}
+
+function getFormulasWithPermutation($ul, initialFormulas) {
+    let newFormulas = [];
+
+    $ul.find('li').each(function(i, obj) {
+        let initialPosition = $(obj).data('initialPosition');
+        newFormulas.push(initialFormulas[initialPosition]);
+    })
+
+    return newFormulas;
 }
 
 // ************

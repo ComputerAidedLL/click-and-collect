@@ -16,6 +16,7 @@ input { margin: 1em 0; }
 .proof .tagBox .tag { position:relative; top:-0.6em;}
 .proof .inference { border-top: 1px solid #000; }
 .proof .main-formula:after { content: ' '; }
+.proof .turnstile { margin: 0 0.3em; }
 .proof .turnstile:hover { background: #FDD; cursor:pointer; }
 .proof .primaryExpr:hover { background: #DDF; cursor:pointer; }
 .proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
