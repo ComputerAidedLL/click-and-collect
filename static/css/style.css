@@ -75,10 +75,11 @@ sub {font-size:0.6em;}
 .pedagogic-error {
     display: inline-block;
     padding: 10px;
-    margin: 10px;
-    color: #ff9507;
-    background: #fff1df;
-    border: 1px solid #ff9507;
+    margin: 10px 0;
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: .25rem;
 }
 
 .message {
