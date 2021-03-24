@@ -24,13 +24,11 @@ input { margin: 1em 0; }
 .proof .commaList li:after { content: ','; margin-left: 0.2em;}
 .proof .commaList li:last-child:after { content: ''; }
 .proof .commaList span { float: left; }
-.proof .primaryExpr:hover { background: #DDF; cursor:pointer; }
-.proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
-.proof .expand { font-size: 0.6em; color: #999; }
-.proof .expand:hover { background: #005; color: #FFF; cursor:pointer; }
 
-.error, .errorStyle {margin-top:-0.5em; border:1px solid #900; padding:0.4em 2em; background: #F99; }
-.error input, .errorStyle input {border:0; background:transparent; text-decoration:underline; color:#900; cursor:pointer;}
+.proof .clickableExpr:hover { cursor:pointer; }
+.proof .highlightableExpr:hover { background: #DDF; }
+.proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
+.proof .clickableExpr:hover .tensor-right, .proof li.tensor:hover ~ li { border-bottom: 3px solid #DDF; margin-bottom: -3px; }
 
 .rules {margin:1em auto;}
 .centerTable {margin:1em auto;}

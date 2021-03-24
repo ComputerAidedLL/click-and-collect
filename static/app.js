@@ -246,7 +246,15 @@ function createFormulas(sequentAsJson, field, $sequentDiv) {
         for (let ruleEvent of possibleRules) {
             let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
             $spanForEvent.on(ruleEvent.event, buildApplyRuleCallBack(ruleEvent.rule, $li));
-            $spanForEvent.addClass('primaryExpr');
+            $spanForEvent.addClass('clickableExpr');
+            if (ruleEvent.element !== 'main-formula') {
+                $spanForEvent.addClass('highlightableExpr');
+            }
+            if (ruleEvent.rule === 'tensor') {
+                $li.addClass('tensor');
+                let $rightFormula = $li.find('span' + '.right-formula').first();
+                $rightFormula.addClass('tensor-right');
+            }
         }
 
         $ul.append($li);
@@ -260,7 +268,11 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             return formulaAsJson.value;
 
         case 'neutral':
-            return NEUTRAL_ELEMENTS[formulaAsJson.value];
+            let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
+            if (isMainFormula) {
+                return `<span class="primaryOperator">${neutralElement}</span>`;
+            }
+            return neutralElement;
 
         case 'negation':
         case 'ofcourse':
