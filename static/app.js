@@ -43,9 +43,16 @@ const RULES = {
 
 $( function() {
     // SEQUENT FORM
-    $('#sequent-form').on('submit', function(e) {
+    let $sequentForm = $('#sequent-form');
+    $sequentForm.on('submit', function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
     });
+
+    // PARSE URL
+    let searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('s')) {
+        $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
+    }
 
     // SORTABLE FORMULA LIST
     $( '.sortable' ).sortable()
@@ -110,11 +117,17 @@ function submitSequent(element) {
 
     let form = $(element).closest('form');
     let sequentAsString = form.find($('input[name=sequentAsString]')).val();
-    let url = '/parse_sequent';
+
+    // We update current URL by adding sequent in query parameters
+    let currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('s', sequentAsString.toString());
+    window.history.pushState("object or string", "Title", currentUrl.toString());
+
+    let apiUrl = '/parse_sequent';
 
     $.ajax({
         type: 'GET',
-        url: url,
+        url: apiUrl,
         data: { sequentAsString },
         success: function(data)
         {
