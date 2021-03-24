@@ -20,8 +20,8 @@ input { margin: 1em 0; }
 .proof .turnstile { margin: 0 0.3em; float: left; }
 .proof .turnstile:hover { background: #FDD; cursor:pointer; }
 .proof .commaList { float: left; list-style: none; margin: 0; padding: 0; }
-.proof .commaList li { float: left; margin: 0 0.1em;}
-.proof .commaList li:after { content: ','; }
+.proof .commaList li { float: left; margin-left: 0.2em;}
+.proof .commaList li:after { content: ','; margin-left: 0.2em;}
 .proof .commaList li:last-child:after { content: ''; }
 .proof .commaList span { float: left; }
 .proof .primaryExpr:hover { background: #DDF; cursor:pointer; }
