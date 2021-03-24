@@ -217,7 +217,6 @@ function createSequent(sequentAsJson) {
 function createFormulas(sequentAsJson, field, $sequentDiv) {
     let $ul = $('<ul>', {'class': ['commaList ' + field]})
         .sortable({
-            revert: true,
             helper : 'clone'
         });
     for (let i = 0; i < sequentAsJson[field].length; i++) {

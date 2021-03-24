@@ -17,12 +17,13 @@ input { margin: 1em 0; }
 .proof .tagBox .tag { position:relative; top:-0.6em;}
 .proof .inference { border-top: 1px solid #000; }
 .proof .main-formula:after { content: ' '; }
+.proof .turnstile { margin: 0 0.3em; float: left; }
+.proof .turnstile:hover { background: #FDD; cursor:pointer; }
 .proof .commaList { float: left; list-style: none; margin: 0; padding: 0; }
 .proof .commaList li { float: left; margin: 0 0.1em;}
 .proof .commaList li:after { content: ','; }
 .proof .commaList li:last-child:after { content: ''; }
-.proof .turnstile { margin: 0 0.3em; float: left; }
-.proof .turnstile:hover { background: #FDD; cursor:pointer; }
+.proof .commaList span { float: left; }
 .proof .primaryExpr:hover { background: #DDF; cursor:pointer; }
 .proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
 .proof .expand { font-size: 0.6em; color: #999; }
