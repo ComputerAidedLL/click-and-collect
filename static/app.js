@@ -174,33 +174,52 @@ function initProof(sequentAsJson) {
 
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
-    $div2.append(createSequent(sequentAsJson));
+    $div2.append(createSequentTable(sequentAsJson));
     $div.append($div2);
     proofdiv.append($div);
 }
 
-function createSequent(sequentAsJson) {
+function createSequentTable(sequentAsJson) {
     let $table = $('<table>');
-    let $td = $('<td>', {'class': 'sequent'})
-        .data('sequent', sequentAsJson);
-    if ('hyp' in sequentAsJson) {
-        createFormulas(sequentAsJson, 'hyp', $td);
-    }
-    let $thesisSpan = $('<span class="turnstile explained">⊢</span>');
-    $thesisSpan.on('click', function () {applyRule('axiom', $td, 0);});
-    $td.append($thesisSpan);
-    if ('cons' in sequentAsJson) {
-        createFormulas(sequentAsJson, 'cons', $td);
-    }
+
+    let $td = $('<td>');
+    $td.append(createSequent(sequentAsJson));
     $table.append($td);
+
     let $tagBox = $('<td>', {'class': 'tagBox'})
         .html('&nbsp;');
     $table.append($tagBox);
+
     return $table;
 }
 
-function createFormulas(sequentAsJson, field, $td) {
-    let $ul = $('<ul>', {'class': ['commaList ' + field]}).sortable();
+function createSequent(sequentAsJson) {
+    let $sequentDiv = $('<div>', {'class': 'sequent'})
+        .data('sequent', sequentAsJson);
+
+    if ('hyp' in sequentAsJson) {
+        createFormulas(sequentAsJson, 'hyp', $sequentDiv);
+    }
+
+    let $thesisSpan = $('<span class="turnstile explained">⊢</span>');
+    $thesisSpan.on('click', function () {
+        applyRule('axiom', $sequentDiv, 0);
+    });
+    $sequentDiv.append($thesisSpan);
+
+    if ('cons' in sequentAsJson) {
+        createFormulas(sequentAsJson, 'cons', $sequentDiv);
+    }
+
+    return $sequentDiv;
+}
+
+function createFormulas(sequentAsJson, field, $sequentDiv) {
+    let $ul = $('<ul>', {'class': ['commaList ' + field]})
+        .sortable({
+            revert: true,
+            helper : 'clone'
+        });
     for (let i = 0; i < sequentAsJson[field].length; i++) {
         let formulaAsJson = sequentAsJson[field][i];
         let $li = $('<li>').data('initialPosition', i);
@@ -220,7 +239,7 @@ function createFormulas(sequentAsJson, field, $td) {
 
         $ul.append($li);
     }
-    $td.append($ul);
+    $sequentDiv.append($ul);
 }
 
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
@@ -238,7 +257,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 
         case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
-                + '<span class="exponent">⊥</span>';
+                + '<sup>⊥</sup>';
 
         case 'implication':
         case 'conjunction':
@@ -273,12 +292,15 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 // PROOF UPDATE
 // ************
 
-function addSequentListPremisses($td, sequentList, rule) {
+function addSequentListPremisses($sequentDiv, sequentList, rule) {
+    // Save rule
+    $sequentDiv.data('rule', rule);
+
     // Add line
+    let $td = $sequentDiv.closest('td');
     $td.addClass('inference');
 
     // Add rule symbol
-    $td.data('rule', rule);
     $td.next('.tagBox')
         .html($('<div>', {'class': 'tag'})
             .html(RULES[rule]));
@@ -296,12 +318,12 @@ function addSequentListPremisses($td, sequentList, rule) {
     if (sequentList.length === 0) {
         checkProofIsComplete();
     } else if (sequentList.length === 1) {
-        createSequent(sequentList[0]).insertBefore($table);
+        createSequentTable(sequentList[0]).insertBefore($table);
     } else {
         let $div = $('<div>');
         for (let sequent of sequentList) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            $sibling.append(createSequent(sequent))
+            $sibling.append(createSequentTable(sequent))
             $div.append($sibling);
         }
         $div.insertBefore($table);
@@ -348,15 +370,15 @@ function getRules(formulaAsJson) {
 
 function buildApplyRuleCallBack(rule, $li) {
     return function() {
-        let $td = $li.closest('td');
+        let $sequentDiv = $li.closest('div.sequent');
         let formulaPosition = $li.parent().children().index($li);
 
-        applyRule(rule, $td, formulaPosition);
+        applyRule(rule, $sequentDiv, formulaPosition);
     }
 }
 
-function applyRule(rule, $td, formulaPosition) {
-    let sequent = getSequentWithPermutations($td);
+function applyRule(rule, $sequentDiv, formulaPosition) {
+    let sequent = getSequentWithPermutations($sequentDiv);
 
     $.ajax({
         type: 'POST',
@@ -368,7 +390,7 @@ function applyRule(rule, $td, formulaPosition) {
             console.log(data);
             if (data.success === true) {
                 cleanPedagogicError();
-                addSequentListPremisses($td, data['sequentList'], rule);
+                addSequentListPremisses($sequentDiv, data['sequentList'], rule);
             } else {
                 displayPedagogicError(data['errorMessage']);
             }
@@ -383,12 +405,12 @@ function applyRule(rule, $td, formulaPosition) {
     });
 }
 
-function getSequentWithPermutations($td) {
-    let sequent = $td.data('sequent');
+function getSequentWithPermutations($sequentDiv) {
+    let sequent = $sequentDiv.data('sequent');
 
     return {
-        'hyp': getFormulasWithPermutation($td.find('ul.hyp'), sequent['hyp']),
-        'cons': getFormulasWithPermutation($td.find('ul.cons'), sequent['cons'])
+        'hyp': getFormulasWithPermutation($sequentDiv.find('ul.hyp'), sequent['hyp']),
+        'cons': getFormulasWithPermutation($sequentDiv.find('ul.cons'), sequent['cons'])
     };
 }
 
@@ -419,9 +441,9 @@ function checkProofIsComplete() {
 }
 
 function recGetProofAsJson($table) {
-    let $td = $table.children('td.sequent');
-    let sequent = $td.data('sequent');
-    let rule = $td.data('rule') || null;
+    let $sequentDiv = $table.find('div.sequent');
+    let sequent = $sequentDiv.data('sequent');
+    let rule = $sequentDiv.data('rule') || null;
     let premisses = [];
     if (rule !== null) {
         let $prev = $table.prev();

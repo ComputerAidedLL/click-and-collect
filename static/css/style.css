@@ -11,29 +11,22 @@ input { margin: 1em 0; }
 .proof { display:inline-block; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em;margin-top:0.5em;margin-bottom:0.4em;}
 .proof table { width:100%; border-collapse:collapse; margin: auto; }
 .proof td { padding:0; border:0; margin:0; text-align:center; }
+.proof .sequent { display: inline-block; }
 .proof .sibling { display: inline-block; vertical-align:bottom; }
 .proof .tagBox { font-size: 0.8em; color: #444; vertical-align: top; width: 1.5em; padding-right:2em; }
 .proof .tagBox .tag { position:relative; top:-0.6em;}
 .proof .inference { border-top: 1px solid #000; }
 .proof .main-formula:after { content: ' '; }
-.proof .turnstile { margin: 0 0.3em; }
+.proof .commaList { float: left; list-style: none; margin: 0; padding: 0; }
+.proof .commaList li { float: left; margin: 0 0.1em;}
+.proof .commaList li:after { content: ','; }
+.proof .commaList li:last-child:after { content: ''; }
+.proof .turnstile { margin: 0 0.3em; float: left; }
 .proof .turnstile:hover { background: #FDD; cursor:pointer; }
 .proof .primaryExpr:hover { background: #DDF; cursor:pointer; }
 .proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
 .proof .expand { font-size: 0.6em; color: #999; }
 .proof .expand:hover { background: #005; color: #FFF; cursor:pointer; }
-
-/* hat tip http://petewilliams.info/blog/2010/04/display-html-olul-list-as-comma-separated-sentence/ */
-.commaList { display: inline; list-style: none; margin: 0; padding: 0; }
-.commaList li { display: inline; }
-.commaList li:after { content: ', '; }
-.commaList li:last-child:after { content: ''; }
-
-/* hat tip http://stackoverflow.com/questions/6040005/relatively-position-an-element-without-it-taking-up-space-in-document-flow */
-.relMark {position:relative; width:0; height:0; display:inline;}
-.offsetBox {position:absolute; z-index:1; top:0.2em; left:-1em; background-color:#FFF; border:1px solid #CCC;padding:2px; overflow:hidden; width:15em;}
-.offsetInner {font-size:0.7em; text-align:left; }
-.offsetBox input {border:1px solid #999; background:#FFF;}
 
 .error, .errorStyle {margin-top:-0.5em; border:1px solid #900; padding:0.4em 2em; background: #F99; }
 .error input, .errorStyle input {border:0; background:transparent; text-decoration:underline; color:#900; cursor:pointer;}
@@ -49,14 +42,13 @@ input { margin: 1em 0; }
 .explained {border-bottom:dotted 1px #444;}
 .proof .explained{border-bottom:0;}
 
-sub {font-size:0.6em;}
+sup, sub { font-size:0.6em; }
+sup { vertical-align: top; }
 
 .arrow { color: #b3b9cd; }
-
 .arrow:hover { color: #003eff; cursor:pointer; }
 
 .syntax td:nth-child(1) { text-align: right; padding-right: 10px;}
-
 .syntax td:nth-child(2) { text-align: left;}
 
 .cell {vertical-align: top;}
@@ -66,7 +58,6 @@ sub {font-size:0.6em;}
 .code { font-family: "Courier New", sans-serif; }
 .binary-operator { margin-left: 3px; margin-right: 3px; }
 .neutral-element { font-family: "Courier New", sans-serif; }
-.exponent { vertical-align: super; font-size: .7em; }
 .index { vertical-align: sub; font-size: .7em; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
