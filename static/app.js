@@ -43,7 +43,7 @@ const RULES = {
 
 $( function() {
     // SEQUENT FORM
-    $('#usrform').submit(function(e) {
+    $('#sequent-form').on('submit', function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
     });
 
@@ -109,20 +109,21 @@ function submitSequent(element) {
     cleanSequentInput();
 
     let form = $(element).closest('form');
+    let sequentAsString = form.find($('input[name=sequentAsString]')).val();
     let url = '/parse_sequent';
 
     $.ajax({
         type: 'GET',
         url: url,
         data: {
-            'sequentAsString': form.find('input[name=sequentAsString]').val()
+            'sequentAsString': sequentAsString
         },
         success: function(data)
         {
-            if (data.is_valid) {
-                initProof(data.sequent_as_json);
+            if (data['is_valid']) {
+                initProof(data['sequent_as_json']);
             } else {
-                displayPedagogicError(data.error_message);
+                displayPedagogicError(data['error_message']);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -251,11 +252,11 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
         case 'lollipop':
             let formula =
                 '<span class="left-formula">'
-                + createFormulaHTML(formulaAsJson.value1, false)
+                + createFormulaHTML(formulaAsJson['value1'], false)
                 + '</span>'
                 + addPrimaryOperator(BINARY_OPERATORS[formulaAsJson.type], isMainFormula)
                 + '<span class="right-formula">'
-                + createFormulaHTML(formulaAsJson.value2, false)
+                + createFormulaHTML(formulaAsJson['value2'], false)
                 + '</span>';
             return addParentheses(formula, isMainFormula);
 
@@ -384,9 +385,9 @@ function applyRule(rule, $td, formulaPosition) {
             console.log(data);
             if (data.success === true) {
                 cleanPedagogicError();
-                addSequentListPremisses($td, data.sequentList, rule);
+                addSequentListPremisses($td, data['sequentList'], rule);
             } else {
-                displayPedagogicError(data.errorMessage);
+                displayPedagogicError(data['errorMessage']);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
