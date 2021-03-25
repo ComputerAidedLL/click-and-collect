@@ -41,6 +41,10 @@ const RULES = {
     'weakening': '<span class="rule">?<span class="italic">w</span></span>'
 };
 
+const CLICK_DELAY = 200;
+window.clickCount = 0;
+window.clickTimer = null;
+
 $( function() {
     // SEQUENT FORM
     let $sequentForm = $('#sequent-form');
@@ -245,15 +249,42 @@ function createFormulas(sequentAsJson, field, $sequentDiv) {
         let possibleRules = getRules(formulaAsJson);
         for (let ruleEvent of possibleRules) {
             let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
-            $spanForEvent.on(ruleEvent.event, buildApplyRuleCallBack(ruleEvent.rule, $li));
+            if (ruleEvent.onclick.length === 1) {
+                // Single click
+                let rule = ruleEvent.onclick[0];
+                $spanForEvent.on('click', buildApplyRuleCallBack(rule, $li));
+
+                // Some hover config for tensor
+                if (rule === 'tensor') {
+                    $li.addClass('tensor');
+                    let $rightFormula = $li.find('span' + '.right-formula').first();
+                    $rightFormula.addClass('tensor-right');
+                }
+            } else {
+                // Single click AND Double click event
+                let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li);
+                let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li);
+
+                // https://stackoverflow.com/a/7845282
+                $spanForEvent.on('click', function () {
+                    clickCount++;
+                    if (clickCount === 1) {
+                        window.clickTimer = setTimeout(function () {
+                            singleClickCallBack();
+                            window.clickCount = 0;
+                        }, CLICK_DELAY);
+                    } else {
+                        clearTimeout(window.clickTimer);
+                        doubleClickCallBack();
+                        window.clickCount = 0;
+                    }
+                })
+            }
+
+            // Some hover config
             $spanForEvent.addClass('clickableExpr');
             if (ruleEvent.element !== 'main-formula') {
                 $spanForEvent.addClass('highlightableExpr');
-            }
-            if (ruleEvent.rule === 'tensor') {
-                $li.addClass('tensor');
-                let $rightFormula = $li.find('span' + '.right-formula').first();
-                $rightFormula.addClass('tensor-right');
             }
         }
 
@@ -374,17 +405,17 @@ function getRules(formulaAsJson) {
     switch (formulaAsJson.type) {
         case 'litteral':
         case 'orthogonal':
-            return [{'event': 'click', 'element': 'main-formula', 'rule': 'axiom'}];
+            return [{'element': 'main-formula', 'onclick': ['axiom']}];
 
         case 'tensor':
         case 'par':
         case 'with':
-            return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.type}];
+            return [{'element': 'main-formula', 'onclick': [formulaAsJson.type]}];
 
         case 'plus':
             return [
-                {'event': 'click', 'element': 'left-formula', 'rule': 'plus_left'},
-                {'event': 'click', 'element': 'right-formula', 'rule': 'plus_right'}
+                {'element': 'left-formula', 'onclick': ['plus_left']},
+                {'element': 'right-formula', 'onclick': ['plus_right']}
             ];
 
         case 'neutral':
@@ -393,20 +424,20 @@ function getRules(formulaAsJson) {
                 case 'top':
                 case 'bottom':
                 case 'zero': // click on zero will display a pedagogic error
-                    return [{'event': 'click', 'element': 'main-formula', 'rule': formulaAsJson.value}];
+                    return [{'element': 'main-formula', 'onclick': [formulaAsJson.value]}];
 
                 default:
                     return [];
             }
 
         case 'ofcourse':
-            return [{'event': 'click', 'element': 'main-formula', 'rule': 'promotion'}];
+            return [{'element': 'main-formula', 'onclick': ['promotion']}];
 
         case 'whynot':
             return [
-                {'event': 'click', 'element': 'primaryOperator', 'rule': 'weakening'},
-                {'event': 'click', 'element': 'sub-formula', 'rule': 'dereliction'},
-                {'event': 'dblclick', 'element': 'sub-formula', 'rule': 'contraction'}];
+                {'element': 'primaryOperator', 'onclick': ['weakening']},
+                {'element': 'sub-formula', 'onclick': ['dereliction', 'contraction']}
+            ];
 
         default:
             return [];
