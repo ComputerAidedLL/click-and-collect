@@ -15,5 +15,5 @@ let safe_parse sequent_as_string =
     with t -> try true, lk_parse sequent_as_string
     with t -> if Printexc.to_string t = "Stdlib.Parsing.Parse_error"
             || Printexc.to_string t = "Failure(\"lexing: empty token\")" then
-        false, `String "Syntax error: please read the syntax rules"
+        false, `String "Syntax error: please read the syntax rules."
         else false, `String ("Technical error: " ^ Printexc.to_string t);;

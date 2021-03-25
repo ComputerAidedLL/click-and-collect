@@ -56,6 +56,7 @@ $( function() {
     let searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has('s')) {
         $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
+        submitSequent($sequentForm);
     }
 
     // SORTABLE FORMULA LIST
@@ -320,7 +321,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 
         case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
-                + '<sup>⊥</sup>';
+                + '<span><sup>⊥</sup></span>';
 
         case 'implication':
         case 'conjunction':
