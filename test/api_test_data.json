@@ -44,7 +44,7 @@
       ]}
     },
     {
-      "sequent_as_string": "~a|-",
+      "sequent_as_string": "a^|-",
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
     },
     {
@@ -451,7 +451,7 @@
         },
         "formulaPosition":0
       },
-      "expected_error_message": "Can apply rule 'one' only on sequent with 'one' as single formula."
+      "expected_error_message": "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."
     },
     {
       "request": {
@@ -465,7 +465,7 @@
         },
         "formulaPosition":1
       },
-      "expected_error_message": "Can not apply rule 'axiom': the two formulas are not orthogonal."
+      "expected_error_message": "Can not apply 'axiom' rule: the two formulas are not orthogonal."
     },
     {
       "request": {
@@ -480,7 +480,7 @@
         },
         "formulaPosition":1
       },
-      "expected_error_message": "Can apply rule 'axiom' only on sequent with two formulas."
+      "expected_error_message": "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."
     },
     {
       "request": {
@@ -493,7 +493,7 @@
         },
         "formulaPosition":0
       },
-      "expected_error_message": "There is no rule 'zero'!"
+      "expected_error_message": "Can not apply 'zero' rule: there is no rule for introducing '0'."
     },
     {
       "request": {
@@ -507,7 +507,7 @@
         },
         "formulaPosition":1
       },
-      "expected_error_message": "Can apply rule 'promotion' only if all formulas of context are 'whynot' formulas."
+      "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
   ]
 }

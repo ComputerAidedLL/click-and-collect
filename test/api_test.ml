@@ -27,7 +27,7 @@ let call_api_post path body_as_string expected_code =
 (* The tests *)
 let call_api_parse_sequent_full_response () =
     Alcotest.(check string) "valid" "{\"is_valid\":true,\"sequent_as_json\":{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"}]}}" (call_api_get "parse_sequent?sequentAsString=a");
-    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules\"}" (call_api_get "parse_sequent?sequentAsString=aa")
+    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent?sequentAsString=aa")
 
 let call_api_parse_sequent () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
