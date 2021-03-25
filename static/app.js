@@ -265,7 +265,7 @@ function createFormulas(sequentAsJson, field, $sequentDiv) {
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case 'litteral':
-            return formulaAsJson.value;
+            return `<span>${formulaAsJson.value}</span>`;
 
         case 'neutral':
             let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
@@ -306,10 +306,14 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 
             let leftFormula = createFormulaHTML(formulaAsJson['value1'], false);
             let rightFormula = createFormulaHTML(formulaAsJson['value2'], false);
-            let formula = `<span class="left-formula">${leftFormula}</span>${operator}<span class="right-formula">${rightFormula}</span>`;
+            if (isMainFormula) {
+                leftFormula = `<span class="left-formula">${leftFormula}</span>`;
+                rightFormula = `<span class="right-formula">${rightFormula}</span>`;
+            }
+            let formula = leftFormula + operator + rightFormula;
 
             if (!isMainFormula) {
-                return `(${formula})`;
+                return `<span>(</span>${formula}<span>)</span>`;
             }
 
             return formula;
