@@ -395,7 +395,7 @@ function getRules(formulaAsJson) {
 
         case 'whynot':
             return [
-                {'element': 'primaryConnector', 'onclick': ['weakening']},
+                {'element': 'primaryConnector', 'onclick': ['weakening', 'contraction']},
                 {'element': 'sub-formula', 'onclick': ['dereliction', 'contraction']}
             ];
 

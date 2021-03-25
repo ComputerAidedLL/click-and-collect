@@ -60,6 +60,12 @@
           "value2": {"type":"litteral","value":"b"}
         }
       ]}
+    },
+    {
+      "sequent_as_string": "?A^",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
+        {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
+      ]}
     }
   ],
   "call_api_apply_rule": [

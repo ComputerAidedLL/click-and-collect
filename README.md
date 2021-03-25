@@ -33,9 +33,9 @@ make test.byte
 ```
 
 # Modify parser
-Do not modify `parser.mli` or `parser.ml` neither `lexer.mll`, but just `parser.mly` and `lexer.mll` and then run
+Do not modify `ll_parser.mli` or `ll_parser.ml` neither `ll_lexer.mll`, but just `ll_parser.mly` and `ll_lexer.mll` and then run
 ```
-ocamllex lexer.mll && ocamlyacc parser.mly
+ocamllex ll_lexer.mll && ocamlyacc ll_parser.mly
 ```
 
 # Test API

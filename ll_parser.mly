@@ -14,11 +14,12 @@ open Linear_logic
 %token LOLLIPOP
 %token OFCOURSE WHYNOT
 
-%left THESIS                     /* lowest precedence */
-%left COMMA                      /* low precedence */
-%left LOLLIPOP                   /* medium precedence */
-%left TENSOR PAR WITH PLUS       /* high precedence */
-%nonassoc ORTH OFCOURSE WHYNOT   /* highest precedence */
+%left THESIS                /* lowest precedence */
+%left COMMA                 /* low precedence */
+%left LOLLIPOP              /* medium precedence */
+%left TENSOR PAR WITH PLUS  /* high precedence */
+%nonassoc OFCOURSE WHYNOT   /* very high precedence */
+%nonassoc ORTH              /* highest precedence */
 
 %start main                      /* the entry point */
 %type <Linear_logic.formula list * Linear_logic.formula list> main
