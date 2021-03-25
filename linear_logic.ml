@@ -155,13 +155,13 @@ let apply_rule rule sequent formula_position =
     "axiom" -> (
         match cons_formulas with
         | e1 :: e2 :: [] -> if orthogonal e1 = e2 then []
-            else raise (Apply_rule_logic_exception ("Can not apply rule 'axiom': the two formulas are not orthogonal."))
-        | _ -> raise (Apply_rule_logic_exception ("Can apply rule 'axiom' only on sequent with two formulas."))
+            else raise (Apply_rule_logic_exception ("Can not apply 'axiom' rule: the two formulas are not orthogonal."))
+        | _ -> raise (Apply_rule_logic_exception ("Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
     )
     | "one" -> (
         match cons_formulas with
         | One :: [] -> []
-        | _ -> raise (Apply_rule_logic_exception ("Can apply rule 'one' only on sequent with 'one' as single formula."))
+        | _ -> raise (Apply_rule_logic_exception ("Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
     )
     | "bottom" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
@@ -175,7 +175,7 @@ let apply_rule rule sequent formula_position =
         | Top -> []
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
-    | "zero" -> raise (Apply_rule_logic_exception ("There is no rule 'zero'!"))
+    | "zero" -> raise (Apply_rule_logic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
     | "tensor" -> (
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
@@ -210,7 +210,7 @@ let apply_rule rule sequent formula_position =
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Ofcourse e -> if List.for_all is_whynot head && List.for_all is_whynot tail then [[], (head @ [e] @ tail)]
-            else raise (Apply_rule_logic_exception ("Can apply rule 'promotion' only if all formulas of context are 'whynot' formulas."))
+            else raise (Apply_rule_logic_exception ("Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."))
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "dereliction" -> (
