@@ -1,11 +1,7 @@
 .page { width:42em; margin: 0 auto; margin-top: 3em; margin-bottom: 3em; }
-
 h2 { font-family:sans-serif; font-size:1.3em; border-bottom:1px solid #BBB; }
 
 input { margin: 1em 0; }
-
-.zeropoint { z-index: 10; }
-.viewport { height:500px; width:800px; overflow:hidden; border:1px #CCC solid; text-align:center; }
 
 .proof { text-align:center; }
 .proof { display:inline-block; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em;margin-top:0.5em;margin-bottom:0.4em;}
@@ -23,58 +19,26 @@ input { margin: 1em 0; }
 .proof .commaList li:after { content: ','; margin-left: 0.2em;}
 .proof .commaList li:last-child:after { content: ''; }
 .proof .commaList span { float: left; }
-
+.proof .binary-connector { margin-left: 3px; margin-right: 3px; }
 .proof .clickableExpr:hover { cursor:pointer; }
 .proof .highlightableExpr:hover { background: #DDF; }
 .proof .main-formula:hover .primaryConnector { background: #005; color: #FFF; }
 .proof .clickableExpr:hover .tensor-right, .proof li.tensor:hover ~ li { box-shadow: 0 -3px 0 #DDF inset;}
 
-.centerTable {margin:1em auto;}
-
 .proofIsDone .proof {background:#CFC;}
-.green {background:#CFC;}
 .proofIsPending .proof {background:#FCFCBB;}
 .proofIsIncomplete .proof {}
 
-.explained {border-bottom:dotted 1px #444;}
-.proof .explained{border-bottom:0;}
+.pedagogic-error { display: inline-block; padding: 10px; margin: 10px 0; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
+.pedagogic-error .message { display: inline-block; }
+.pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 
 sup, sub { font-size:0.6em; }
-sup { vertical-align: top; }
-
-.arrow { color: #b3b9cd; }
-.arrow:hover { color: #003eff; cursor:pointer; }
-
-.syntax td:nth-child(1) { text-align: right; padding-right: 10px;}
-.syntax td:nth-child(2) { text-align: left;}
-
-.cell {vertical-align: top;}
-
-.no-margin { margin: 0; }
-
-.code { font-family: "Courier New", sans-serif; background-color: #EEE; padding: 0.2em; border-radius: 0.3em; }
-.binary-connector { margin-left: 3px; margin-right: 3px; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
+
+.syntax td:nth-child(1) { text-align: right; padding-right: 10px;}
+.syntax td:nth-child(2) { text-align: left;}
+.code { font-family: "Courier New", sans-serif; background-color: #EEE; padding: 0.2em; border-radius: 0.3em; }
 .example { font-style: italic; margin-right: 1em; }
-
-.pedagogic-error {
-    display: inline-block;
-    padding: 10px;
-    margin: 10px 0;
-    color: #856404;
-    background-color: #fff3cd;
-    border: 1px solid #ffeeba;
-    border-radius: .25rem;
-}
-
-.message {
-    display: inline-block;
-}
-
-.close-button {
-    display: inline-block;
-    cursor: pointer;
-    margin-left: 10px;
-}
