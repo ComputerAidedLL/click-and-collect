@@ -1,44 +1,44 @@
-const UNARY_OPERATORS = {
+const UNARY_CONNECTORS = {
     'negation': '<span>¬</span>',
     'ofcourse': '<span>!</span>',
     'whynot': '<span>?</span>'
 };
 
-const BINARY_OPERATORS = {
-    'implication': '<span class="binary-operator">→</span>',
-    'conjunction': '<span class="binary-operator">∧</span>',
-    'disjunction': '<span class="binary-operator">∨</span>',
-    'tensor': '<span class="binary-operator">⊗</span>',
-    'par': '<span class="binary-operator flip">&</span>',
-    'with': '<span class="binary-operator">&</span>',
-    'plus': '<span class="binary-operator">⊕</span>',
-    'lollipop': '<span class="binary-operator">⊸</span>'
+const BINARY_CONNECTORS = {
+    'implication': '<span class="binary-connector">→</span>',
+    'conjunction': '<span class="binary-connector">∧</span>',
+    'disjunction': '<span class="binary-connector">∨</span>',
+    'tensor': '<span class="binary-connector">⊗</span>',
+    'par': '<span class="binary-connector flip">&</span>',
+    'with': '<span class="binary-connector">&</span>',
+    'plus': '<span class="binary-connector">⊕</span>',
+    'lollipop': '<span class="binary-connector">⊸</span>'
 };
 
 const NEUTRAL_ELEMENTS = {
-    'true': '<span class="neutral-element">true</span>',
-    'false': '<span class="neutral-element">false</span>',
-    'one': '<span class="neutral-element">1</span>',
-    'bottom': '<span class="neutral-element">⊥</span>',
-    'top': '<span class="neutral-element">⊤</span>',
-    'zero': '<span class="neutral-element">0</span>'
+    'true': '<span>true</span>',
+    'false': '<span>false</span>',
+    'one': '<span>1</span>',
+    'bottom': '<span>⊥</span>',
+    'top': '<span>⊤</span>',
+    'zero': '<span>0</span>'
 };
 
 const RULES = {
-    'axiom': '<span class="rule italic">ax</span>',
-    'tensor': '<span class="rule">⊗</span>',
-    'par': '<span class="rule flip">&</span>',
-    'with': '<span class="rule">&</span>',
-    'plus_left': '<span class="rule">⊕<sub>1</sub></span>',
-    'plus_right': '<span class="rule">⊕<sub>2</sub></span>',
-    'one': '<span class="rule">1</span>',
-    'bottom': '<span class="rule">⊥</span>',
-    'top': '<span class="rule">⊤</span>',
+    'axiom': '<span class="italic">ax</span>',
+    'tensor': '<span>⊗</span>',
+    'par': '<span class="flip">&</span>',
+    'with': '<span>&</span>',
+    'plus_left': '<span>⊕<sub>1</sub></span>',
+    'plus_right': '<span>⊕<sub>2</sub></span>',
+    'one': '<span>1</span>',
+    'bottom': '<span>⊥</span>',
+    'top': '<span>⊤</span>',
     // rule zero does not exist
-    'promotion': '<span class="rule">!</span>',
-    'dereliction': '<span class="rule">?<span class="italic">d</span></span>',
-    'contraction': '<span class="rule">?<span class="italic">c</span></span>',
-    'weakening': '<span class="rule">?<span class="italic">w</span></span>'
+    'promotion': '<span>!</span>',
+    'dereliction': '<span>?<span class="italic">d</span></span>',
+    'contraction': '<span>?<span class="italic">c</span></span>',
+    'weakening': '<span>?<span class="italic">w</span></span>'
 };
 
 const CLICK_DELAY = 200;
@@ -302,22 +302,22 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
         case 'neutral':
             let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
             if (isMainFormula) {
-                return `<span class="primaryOperator">${neutralElement}</span>`;
+                return `<span class="primaryConnector">${neutralElement}</span>`;
             }
             return neutralElement;
 
         case 'negation':
-            return UNARY_OPERATORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
+            return UNARY_CONNECTORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
 
         case 'ofcourse':
         case 'whynot':
-            let unaryOperator = UNARY_OPERATORS[formulaAsJson.type];
+            let unaryConnector = UNARY_CONNECTORS[formulaAsJson.type];
             let subFormula = createFormulaHTML(formulaAsJson.value, false);
             if (isMainFormula) {
-                unaryOperator = `<span class="primaryOperator">${unaryOperator}</span>`;
+                unaryConnector = `<span class="primaryConnector">${unaryConnector}</span>`;
                 subFormula = `<span class="sub-formula">${subFormula}</span>`;
             }
-            return unaryOperator + subFormula;
+            return unaryConnector + subFormula;
 
         case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
@@ -331,9 +331,9 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
         case 'with':
         case 'plus':
         case 'lollipop':
-            let operator = BINARY_OPERATORS[formulaAsJson.type];
+            let connector = BINARY_CONNECTORS[formulaAsJson.type];
             if (isMainFormula) {
-                operator = `<span class="primaryOperator">${operator}</span>`;
+                connector = `<span class="primaryConnector">${connector}</span>`;
             }
 
             let leftFormula = createFormulaHTML(formulaAsJson['value1'], false);
@@ -342,7 +342,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
                 leftFormula = `<span class="left-formula">${leftFormula}</span>`;
                 rightFormula = `<span class="right-formula">${rightFormula}</span>`;
             }
-            let formula = leftFormula + operator + rightFormula;
+            let formula = leftFormula + connector + rightFormula;
 
             if (!isMainFormula) {
                 return `<span>(</span>${formula}<span>)</span>`;
@@ -436,7 +436,7 @@ function getRules(formulaAsJson) {
 
         case 'whynot':
             return [
-                {'element': 'primaryOperator', 'onclick': ['weakening']},
+                {'element': 'primaryConnector', 'onclick': ['weakening']},
                 {'element': 'sub-formula', 'onclick': ['dereliction', 'contraction']}
             ];
 

@@ -26,10 +26,9 @@ input { margin: 1em 0; }
 
 .proof .clickableExpr:hover { cursor:pointer; }
 .proof .highlightableExpr:hover { background: #DDF; }
-.proof .main-formula:hover .primaryOperator { background: #005; color: #FFF; }
+.proof .main-formula:hover .primaryConnector { background: #005; color: #FFF; }
 .proof .clickableExpr:hover .tensor-right, .proof li.tensor:hover ~ li { box-shadow: 0 -3px 0 #DDF inset;}
 
-.rules {margin:1em auto;}
 .centerTable {margin:1em auto;}
 
 .proofIsDone .proof {background:#CFC;}
@@ -54,7 +53,7 @@ sup { vertical-align: top; }
 .no-margin { margin: 0; }
 
 .code { font-family: "Courier New", sans-serif; }
-.binary-operator { margin-left: 3px; margin-right: 3px; }
+.binary-connector { margin-left: 3px; margin-right: 3px; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
