@@ -52,12 +52,12 @@ sup { vertical-align: top; }
 
 .no-margin { margin: 0; }
 
-.code { font-family: "Courier New", sans-serif; }
+.code { font-family: "Courier New", sans-serif; background-color: #EEE; padding: 0.2em; border-radius: 0.3em; }
 .binary-connector { margin-left: 3px; margin-right: 3px; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
-.example { font-style: italic; margin-right: 2em; }
+.example { font-style: italic; margin-right: 1em; }
 
 .pedagogic-error {
     display: inline-block;

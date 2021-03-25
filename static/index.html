@@ -32,37 +32,37 @@
             <h3>Syntax rules</h3>
 
             <h4>
-                Common syntax
+                Common sequent syntax
             </h4>
             <table class="syntax">
-                <tr><td><span class="code">|-</span> or <span>⊢</span></td><td>thesis sign</td></tr>
-                <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas</td></tr>
+                <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
+                <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas (except <span class="code">T</span> used for "top")</td></tr>
                 <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
                 <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
             </table>
             <p>
-                <span class="example">Example:</span> <span class="code">A |- B,C</span>
+                <span class="example">Example:</span><span class="code">A |- B,C</span>
             </p>
 
             <h4>
                 Linear logic syntax
             </h4>
             <table class="syntax">
-                <tr><td><span class="code">^</span></td><td>negation (e.g. <span class="code">A^</span>)</td></tr>
-                <tr><td><span class="code">*</span> or <span>⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
+                <tr><td><span class="code">^</span></td><td>dual (e.g. <span class="code">A^</span>)</td></tr>
+                <tr><td><span class="code">*</span> or <span class="code">⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
                 <tr><td><span class="code">|</span></td><td>par (multiplicative disjunction)</td></tr>
                 <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
-                <tr><td><span class="code">+</span> or <span>⊕</span></td><td>plus (additive disjunction)</td></tr>
+                <tr><td><span class="code">+</span> or <span class="code">⊕</span></td><td>plus (additive disjunction)</td></tr>
                 <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
-                <tr><td><span class="code">bot</span> or <span>⊥</span> or <span>_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
-                <tr><td><span class="code">top</span> or <span>⊤</span> or <span>T</span></td><td>top (additive conjunction unit)</td></tr>
+                <tr><td><span class="code">bot</span> or <span class="code">⊥</span> or <span class="code">_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
+                <tr><td><span class="code">top</span> or <span class="code">⊤</span> or <span class="code">T</span></td><td>top (additive conjunction unit)</td></tr>
                 <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
-                <tr><td><span class="code">-o</span> or <span>⊸</span></td><td>lollipop (linear implication)</td></tr>
+                <tr><td><span class="code">-o</span> or <span class="code">⊸</span></td><td>lollipop (linear implication)</td></tr>
                 <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
                 <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
             </table>
             <p>
-                <span class="example">Example:</span> <span class="code">|- A^,A|B,!C</span>
+                <span class="example">Example:</span><span class="code">!(A&B) |- !A*!B</span>
             </p>
         </div>
 
