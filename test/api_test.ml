@@ -20,7 +20,7 @@ let call_api_post path body_as_string expected_code =
       let body = Cohttp_lwt.Body.of_string body_as_string in
       Client.post ~body:body (Uri.of_string complete_uri) >>= fun (resp, body) ->
         let code = resp |> Response.status |> Code.code_of_status in
-        Alcotest.(check int) "status code" expected_code code;
+        Alcotest.(check int) ("status code for " ^ body_as_string) expected_code code;
         Cohttp_lwt.Body.to_string body in
     Lwt_main.run body
 

@@ -29,16 +29,16 @@ const RULES = {
     'tensor': '<span class="rule">⊗</span>',
     'par': '<span class="rule flip">&</span>',
     'with': '<span class="rule">&</span>',
-    'plus_left': '<span class="rule">⊕<span class="index">1</span></span>',
-    'plus_right': '<span class="rule">⊕<span class="index">2</span></span>',
+    'plus_left': '<span class="rule">⊕<sub>1</sub></span>',
+    'plus_right': '<span class="rule">⊕<sub>2</sub></span>',
     'one': '<span class="rule">1</span>',
     'bottom': '<span class="rule">⊥</span>',
     'top': '<span class="rule">⊤</span>',
     // rule zero does not exist
     'promotion': '<span class="rule">!</span>',
-    'dereliction': '<span class="rule">?d</span>',
-    'contraction': '<span class="rule">?c</span>',
-    'weakening': '<span class="rule">?w</span>'
+    'dereliction': '<span class="rule">?<span class="italic">d</span></span>',
+    'contraction': '<span class="rule">?<span class="italic">c</span></span>',
+    'weakening': '<span class="rule">?<span class="italic">w</span></span>'
 };
 
 $( function() {
@@ -275,9 +275,17 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             return neutralElement;
 
         case 'negation':
+            return UNARY_OPERATORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
+
         case 'ofcourse':
         case 'whynot':
-            return UNARY_OPERATORS[formulaAsJson.type] + createFormulaHTML(formulaAsJson.value, false);
+            let unaryOperator = UNARY_OPERATORS[formulaAsJson.type];
+            let subFormula = createFormulaHTML(formulaAsJson.value, false);
+            if (isMainFormula) {
+                unaryOperator = `<span class="primaryOperator">${unaryOperator}</span>`;
+                subFormula = `<span class="sub-formula">${subFormula}</span>`;
+            }
+            return unaryOperator + subFormula;
 
         case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
@@ -386,6 +394,15 @@ function getRules(formulaAsJson) {
                 default:
                     return [];
             }
+
+        case 'ofcourse':
+            return [{'event': 'click', 'element': 'main-formula', 'rule': 'promotion'}];
+
+        case 'whynot':
+            return [
+                {'event': 'click', 'element': 'primaryOperator', 'rule': 'weakening'},
+                {'event': 'click', 'element': 'sub-formula', 'rule': 'dereliction'},
+                {'event': 'dblclick', 'element': 'sub-formula', 'rule': 'contraction'}];
 
         default:
             return [];

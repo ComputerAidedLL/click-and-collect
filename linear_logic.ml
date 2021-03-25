@@ -15,6 +15,10 @@ type formula =
   | Ofcourse of formula
   | Whynot of formula;;
 
+let is_whynot = function
+    | Whynot e -> true
+    | _ -> false;;
+
 
 (* SEQUENT -> JSON *)
 
@@ -200,6 +204,31 @@ let apply_rule rule sequent formula_position =
         let head, formula, tail = head_formula_tail formula_position cons_formulas in
         match formula with
         Plus (e1, e2) -> [[], (head @ [e2] @ tail)]
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
+    )
+    | "promotion" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Ofcourse e -> if List.for_all is_whynot head && List.for_all is_whynot tail then [[], (head @ [e] @ tail)]
+            else raise (Apply_rule_logic_exception ("Can apply rule 'promotion' only if all formulas of context are 'whynot' formulas."))
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
+    )
+    | "dereliction" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Whynot e -> [[], (head @ [e] @ tail)]
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
+    )
+    | "weakening" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Whynot e -> [[], (head @ tail)]
+        | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
+    )
+    | "contraction" -> (
+        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        match formula with
+        Whynot e -> [[], (head @ [Whynot e; Whynot e] @ tail)]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | _ -> raise (Apply_rule_technical_exception ("Unknown rule '" ^ rule ^ "'"));;

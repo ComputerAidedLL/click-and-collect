@@ -262,6 +262,78 @@
         {"type": "neutral", "value":"one"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}]
+    },
+    {
+      "request": {
+        "rule":"promotion",
+        "sequent": {
+          "hyp": [],
+          "cons": [{"type":"ofcourse","value":{"type":"litteral","value":"a"}}]
+        },
+        "formulaPosition":0
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[
+        {"type":"litteral","value":"a"}
+      ]}]
+    },
+    {
+      "request": {
+        "rule":"promotion",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"whynot","value":{"type":"litteral","value":"b"}},
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[
+        {"type":"whynot","value":{"type":"litteral","value":"b"}},
+        {"type":"litteral","value":"a"}
+      ]}]
+    },
+    {
+      "request": {
+        "rule":"weakening",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[]}]
+    },
+    {
+      "request": {
+        "rule":"dereliction",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[{"type":"litteral","value":"a"}]}]
+    },
+    {
+      "request": {
+        "rule":"contraction",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":0
+      },
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[
+        {"type":"whynot","value":{"type":"litteral","value":"a"}},
+        {"type":"whynot","value":{"type":"litteral","value":"a"}}
+      ]}]
     }
   ],
   "call_api_apply_rule_technical_exception": [
@@ -422,6 +494,20 @@
         "formulaPosition":0
       },
       "expected_error_message": "There is no rule 'zero'!"
+    },
+    {
+      "request": {
+        "rule":"promotion",
+        "sequent": {
+          "hyp": [],
+          "cons": [
+            {"type":"neutral","value":"zero"},
+            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          ]
+        },
+        "formulaPosition":1
+      },
+      "expected_error_message": "Can apply rule 'promotion' only if all formulas of context are 'whynot' formulas."
     }
   ]
 }
