@@ -10,7 +10,7 @@ rule token = parse
     | ')'               { RPAREN }
     | '^'               { ORTH }
     | '*' | "⊗"         { TENSOR }
-    | '|'               { PAR }
+    | '|' | "⅋"         { PAR }
     | '&'               { WITH }
     | '+' | "⊕"         { PLUS }
     | '1'               { ONE }
