@@ -110,7 +110,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
 
     // Add rule symbol
     $td.next('.tagBox')
-        .html($('<div>', {'class': 'tag'})
+        .html($('<div>', {'class': `tag ${rule}`})
             .html(RULES[rule]));
 
     // Remove old premisses if any
@@ -118,6 +118,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
     $table.prevAll().each(function (i, e) {
         e.remove();
     });
+    $table.removeClass('under-double-sequent');
 
     // Mark proof as incomplete
     markAsIncomplete();
@@ -134,6 +135,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
             $sibling.append(createSequentTable(sequent))
             $div.append($sibling);
         }
+        $table.addClass('under-double-sequent');
         $div.insertBefore($table);
     }
 }
