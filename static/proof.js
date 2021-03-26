@@ -1,0 +1,222 @@
+// **************
+// DISPLAY CONFIG
+// **************
+
+const RULES = {
+    'axiom': '<span class="italic">ax</span>',
+    'tensor': '<span>⊗</span>',
+    'par': '<span class="flip">&</span>',
+    'with': '<span>&</span>',
+    'plus_left': '<span>⊕<sub>1</sub></span>',
+    'plus_right': '<span>⊕<sub>2</sub></span>',
+    'one': '<span>1</span>',
+    'bottom': '<span>⊥</span>',
+    'top': '<span>⊤</span>',
+    // rule zero does not exist
+    'promotion': '<span>!</span>',
+    'dereliction': '<span>?<span class="italic">d</span></span>',
+    'contraction': '<span>?<span class="italic">c</span></span>',
+    'weakening': '<span>?<span class="italic">w</span></span>'
+};
+
+// *************
+// PROOF DISPLAY
+// *************
+
+function initProof(sequentAsJson) {
+    console.log(sequentAsJson);
+    let proofdiv = $('#main-proof-container');
+
+    let $div = $('<div>', {'class': 'proofIsIncomplete'});
+    let $div2 = $('<div>', {'class': 'proof'});
+    $div2.append(createSequentTable(sequentAsJson));
+    $div.append($div2);
+    proofdiv.append($div);
+}
+
+function createSequentTable(sequentAsJson) {
+    let $table = $('<table>');
+
+    let $td = $('<td>');
+    $td.append(createSequent(sequentAsJson));
+    $table.append($td);
+
+    let $tagBox = $('<td>', {'class': 'tagBox'})
+        .html('&nbsp;');
+    $table.append($tagBox);
+
+    return $table;
+}
+
+// ************
+// PROOF UPDATE
+// ************
+
+function applyRule(rule, $sequentDiv, formulaPosition) {
+    let sequent = getSequentWithPermutations($sequentDiv);
+
+    $.ajax({
+        type: 'POST',
+        url: '/apply_rule',
+        contentType:'application/json; charset=utf-8',
+        data: JSON.stringify({ rule, sequent, formulaPosition }),
+        success: function(data)
+        {
+            console.log(data);
+            if (data.success === true) {
+                cleanPedagogicError();
+                addSequentListPremisses($sequentDiv, data['sequentList'], rule);
+            } else {
+                displayPedagogicError(data['errorMessage']);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(jqXHR.responseText);
+            console.log(textStatus);
+            console.log(errorThrown);
+            alert('Technical error, check browser console for more details.');
+        }
+    });
+}
+
+function getSequentWithPermutations($sequentDiv) {
+    let sequent = $sequentDiv.data('sequent');
+
+    return {
+        'hyp': getFormulasWithPermutation($sequentDiv.find('ul.hyp'), sequent['hyp']),
+        'cons': getFormulasWithPermutation($sequentDiv.find('ul.cons'), sequent['cons'])
+    };
+}
+
+function getFormulasWithPermutation($ul, initialFormulas) {
+    let newFormulas = [];
+
+    $ul.find('li').each(function(i, obj) {
+        let initialPosition = $(obj).data('initialPosition');
+        newFormulas.push(initialFormulas[initialPosition]);
+    })
+
+    return newFormulas;
+}
+
+function addSequentListPremisses($sequentDiv, sequentList, rule) {
+    // Save rule
+    $sequentDiv.data('rule', rule);
+
+    // Add line
+    let $td = $sequentDiv.closest('td');
+    $td.addClass('inference');
+
+    // Add rule symbol
+    $td.next('.tagBox')
+        .html($('<div>', {'class': 'tag'})
+            .html(RULES[rule]));
+
+    // Remove old premisses if any
+    let $table = $td.closest('table');
+    $table.prevAll().each(function (i, e) {
+        e.remove();
+    });
+
+    // Mark proof as incomplete
+    markAsIncomplete();
+
+    // Add new sequents
+    if (sequentList.length === 0) {
+        checkProofIsComplete();
+    } else if (sequentList.length === 1) {
+        createSequentTable(sequentList[0]).insertBefore($table);
+    } else {
+        let $div = $('<div>');
+        for (let sequent of sequentList) {
+            let $sibling = $('<div>', {'class': 'sibling'})
+            $sibling.append(createSequentTable(sequent))
+            $div.append($sibling);
+        }
+        $div.insertBefore($table);
+    }
+}
+
+// ***************
+// PEDAGOGIC ERROR
+// ***************
+
+function displayPedagogicError(errorMessage) {
+    let $mainContainer = $('#main-proof-container');
+    let $div = $mainContainer
+        .children('div.pedagogic-error');
+    if (!$div.length) {
+        $div = $('<div>', {'class': 'pedagogic-error'});
+        $div.append($('<div>', {'class': 'message'}));
+        let $close = $('<div>', {'class': 'close-button'});
+        $close.html('✖');
+        $close.on('click', function () {cleanPedagogicError();});
+        $div.append($close);
+        $mainContainer.append($div);
+    }
+    $div.children('div.message').text(errorMessage);
+}
+
+function cleanPedagogicError() {
+    $('#main-proof-container')
+        .children('div.pedagogic-error')
+        .remove();
+}
+
+// **********************
+// CHECK PROOF COMPLETION
+// **********************
+
+function checkProofIsComplete() {
+    let $mainDiv = $('#main-proof-container')
+        .children('div');
+    let $mainTable = $mainDiv.children('div.proof')
+        .children('table').last();
+    if (recCheckIsComplete(recGetProofAsJson($mainTable))) {
+        $mainDiv.removeClass('proofIsIncomplete');
+        $mainDiv.addClass('proofIsDone');
+    }
+}
+
+function recGetProofAsJson($table) {
+    let $sequentDiv = $table.find('div.sequent');
+    let sequent = $sequentDiv.data('sequent');
+    let rule = $sequentDiv.data('rule') || null;
+    let premisses = [];
+    if (rule !== null) {
+        let $prev = $table.prev();
+        if ($prev.length) {
+            if ($prev.prop('tagName') === 'TABLE') {
+                premisses = [recGetProofAsJson($prev)];
+            } else {
+                $prev.children('div.sibling').each(function (i, sibling) {
+                    premisses.push(recGetProofAsJson($(sibling).children('table')));
+                })
+            }
+        }
+    }
+
+    return { sequent, rule, premisses };
+}
+
+function recCheckIsComplete(proofAsJson) {
+    if (proofAsJson.rule === null) {
+        return false;
+    }
+
+    let response = true;
+
+    for (let premiss of proofAsJson.premisses) {
+        response = response && recCheckIsComplete(premiss);
+    }
+
+    return response;
+}
+
+function markAsIncomplete() {
+    let $mainDiv = $('#main-proof-container')
+        .children('div');
+    $mainDiv.removeClass('proofIsDone');
+    $mainDiv.addClass('proofIsIncomplete');
+}
