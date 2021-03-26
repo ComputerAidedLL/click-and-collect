@@ -118,7 +118,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
     $table.prevAll().each(function (i, e) {
         e.remove();
     });
-    $table.removeClass('under-double-sequent');
+    $table.removeClass('binary-rule');
 
     // Mark proof as incomplete
     markAsIncomplete();
@@ -135,7 +135,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
             $sibling.append(createSequentTable(sequent))
             $div.append($sibling);
         }
-        $table.addClass('under-double-sequent');
+        $table.addClass('binary-rule');
         $div.insertBefore($table);
     }
 }
