@@ -1,8 +1,6 @@
 .page { width:42em; margin: 0 auto; margin-top: 3em; margin-bottom: 3em; }
 h2 { font-family:sans-serif; font-size:1.3em; border-bottom:1px solid #BBB; }
 
-input { margin: 1em 0; }
-
 .proof { text-align:center; }
 .proof { display:inline-block; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em;margin-top:0.5em;margin-bottom:0.4em;}
 .proof table { margin: auto; }
@@ -41,7 +39,45 @@ sup, sub { font-size:0.6em; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
 
+
+div.main {
+    margin-bottom: 5em;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+}
+
+form{
+    margin-bottom: 2em;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+    overflow: auto;
+}
+form input{
+    float: left;
+    box-sizing: border-box;
+    border: none;
+    padding: 1.1em 1em 0.9em;
+}
+
+form input[type="text"]{
+    border-bottom-left-radius: 1em;
+    border-top-left-radius: 1em;
+}
+
+form input[type="submit"]{
+    border-bottom-right-radius: 1em;
+    border-top-right-radius: 1em;
+    background-color: #005;
+    color: white;
+    font-weight: bold;
+}
+
+input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif;  }
+.code {   border-radius: 0.3em; padding: 0.2em; }
+.example { font-style: italic; margin-right: 1em; }
+
+.section {margin-left: 3em}
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
 .syntax td:nth-child(2) { text-align: left;}
-.code { font-family: "Courier New", sans-serif; background-color: #EEE; padding: 0.2em; border-radius: 0.3em; }
-.example { font-style: italic; margin-right: 1em; }

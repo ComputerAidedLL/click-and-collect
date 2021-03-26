@@ -11,63 +11,65 @@
         <link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css">
         <link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css">
         <link href="css/style.css" rel="stylesheet" type="text/css">
-
         <title>Linear logic sequent calculus</title>
     </head>
     <body>
-
         <div class="page">
-            <form action="#" id="sequent-form">
-                <label>
-                    Please type a sequent:<br>
-                    <input type="text" name="sequentAsString" class="code"/>
-                </label>
-                <input type="submit" value="Prove" onclick="submitSequent(this)">
-            </form>
+            <div class="main">
+                <form action="#" id="sequent-form">
+                    <label>
+                        <input type="text" name="sequentAsString" placeholder="Sequent to prove"/>
+                    </label>
+                    <input type="submit" value="Prove" onclick="submitSequent(this)">
+                </form>
 
-            <div id="main-proof-container">
+                <div id="main-proof-container">
 
+                </div>
             </div>
-        </div>
 
-        <div class="page">
             <h3>Syntax rules</h3>
+            <div class="section">
+                <h4>
+                    Sequent syntax
+                </h4>
+                <table class="syntax">
+                    <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span>,</td><td></td></tr>
+                    <tr><td>Any words ending with numbers and/or <span class="code">'</span></td><td>formulas</td></tr>
+                    <tr><td>and any greek letter <span class="code">Γ</span>, <span class="code">Δ</span>, ... </td><td></td></tr>
+                    <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
+                    <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
+                    <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
+                </table>
+                <p>
+                    <span class="example">Example:</span><span class="code">A |- A0'',Γ</span>
+                </p>
 
-            <h4>
-                Sequent syntax
-            </h4>
-            <table class="syntax">
-                <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span>,</td><td></td></tr>
-                <tr><td>Any words ending with numbers and/or <span class="code">'</span></td><td>formulas</td></tr>
-                <tr><td>and any greek letter <span class="code">Γ</span>, <span class="code">Δ</span>, ... </td><td></td></tr>
-                <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
-                <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
-                <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
-            </table>
-            <p>
-                <span class="example">Example:</span><span class="code">A |- A0'',Γ</span>
-            </p>
-
-            <h4>
-                Linear logic formulas
-            </h4>
-            <table class="syntax">
-                <tr><td><span class="code">^</span></td><td>dual (e.g. <span class="code">A^</span>)</td></tr>
-                <tr><td><span class="code">*</span> or <span class="code">⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
-                <tr><td><span class="code">|</span> or <span class="code">⅋</span></td><td>par (multiplicative disjunction)</td></tr>
-                <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
-                <tr><td><span class="code">+</span> or <span class="code">⊕</span></td><td>plus (additive disjunction)</td></tr>
-                <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
-                <tr><td><span class="code">bot</span> or <span class="code">⊥</span> or <span class="code">_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
-                <tr><td><span class="code">top</span> or <span class="code">⊤</span> or <span class="code">T</span></td><td>top (additive conjunction unit)</td></tr>
-                <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
-                <tr><td><span class="code">-o</span> or <span class="code">⊸</span></td><td>lollipop (linear implication)</td></tr>
-                <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
-                <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
-            </table>
-            <p>
-                <span class="example">Example:</span><span class="code">!(A&B) |- !A*!B</span>
-            </p>
+                <h4>
+                    Linear logic formulas
+                </h4>
+                <table class="syntax">
+                    <tr><td><span class="code">^</span></td><td>dual (e.g. <span class="code">A^</span>)</td></tr>
+                    <tr><td><span class="code">*</span> or <span class="code">⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
+                    <tr><td><span class="code">|</span> or <span class="code">⅋</span></td><td>par (multiplicative disjunction)</td></tr>
+                    <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
+                    <tr><td><span class="code">+</span> or <span class="code">⊕</span></td><td>plus (additive disjunction)</td></tr>
+                    <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
+                    <tr><td><span class="code">bot</span> or <span class="code">⊥</span> or <span class="code">_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
+                    <tr><td><span class="code">top</span> or <span class="code">⊤</span> or <span class="code">T</span></td><td>top (additive conjunction unit)</td></tr>
+                    <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
+                    <tr><td><span class="code">-o</span> or <span class="code">⊸</span></td><td>lollipop (linear implication)</td></tr>
+                    <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
+                    <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
+                </table>
+                <p>
+                    <span class="example">Example:</span><span class="code">!(A&B) |- !A*!B</span>
+                </p>
+            </div>
+            <h3>Tutorial</h3>
+            <div class="section">
+                To do...
+            </div>
         </div>
     </body>
 </html>
