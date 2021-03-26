@@ -5,6 +5,29 @@
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
     },
     {
+      "sequent_as_string": "a'",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a'"}]}
+    },
+    {
+      "sequent_as_string": "a1",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a1"}]}
+    },
+    {
+      "sequent_as_string": "hEll0",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"hEll0"}]}
+    },
+    {
+      "sequent_as_string": "A,Γ",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
+        {"type":"litteral","value":"A"},
+        {"type":"litteral","value":"Γ"}
+      ]}
+    },
+    {
+      "sequent_as_string": "top",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"neutral","value":"top"}]}
+    },
+    {
       "sequent_as_string": "",
       "expected_sequent_as_json": {"hyp":[],"cons":[]}
     },

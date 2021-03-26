@@ -40,7 +40,7 @@ sup, sub { font-size:0.6em; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
 
-.syntax td:nth-child(1) { text-align: right; padding-right: 10px;}
+.syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
 .syntax td:nth-child(2) { text-align: left;}
 .code { font-family: "Courier New", sans-serif; background-color: #EEE; padding: 0.2em; border-radius: 0.3em; }
 .example { font-style: italic; margin-right: 1em; }
