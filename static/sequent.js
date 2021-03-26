@@ -3,9 +3,9 @@
 // **************
 
 const UNARY_CONNECTORS = {
-    'negation': '<span>¬</span>',
-    'ofcourse': '<span>!</span>',
-    'whynot': '<span>?</span>'
+    'negation': '¬',
+    'ofcourse': '!',
+    'whynot': '?'
 };
 
 const BINARY_CONNECTORS = {
@@ -20,12 +20,12 @@ const BINARY_CONNECTORS = {
 };
 
 const NEUTRAL_ELEMENTS = {
-    'true': '<span>true</span>',
-    'false': '<span>false</span>',
-    'one': '<span>1</span>',
-    'bottom': '<span>⊥</span>',
-    'top': '<span>⊤</span>',
-    'zero': '<span>0</span>'
+    'true': 'true',
+    'false': 'false',
+    'one': '1',
+    'bottom': '⊥',
+    'top': '⊤',
+    'zero': '0'
 };
 
 // ****************
@@ -56,7 +56,12 @@ function createSequent(sequentAsJson) {
 function createFormulaList(sequentAsJson, field, $sequentDiv) {
     let $ul = $('<ul>', {'class': ['commaList ' + field]})
         .sortable({
-            helper : 'clone'
+            helper : 'clone',
+            axis: 'x',
+            opacity: 0.2,
+            start: function(e, ui){
+                ui.placeholder.width(ui.item.width());
+            }
         });
 
     for (let i = 0; i < sequentAsJson[field].length; i++) {
@@ -80,7 +85,7 @@ function createFormulaList(sequentAsJson, field, $sequentDiv) {
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case 'litteral':
-            return `<span>${formulaAsJson.value}</span>`;
+            return `${formulaAsJson.value}`;
 
         case 'neutral':
             let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
@@ -104,7 +109,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 
         case 'orthogonal':
             return createFormulaHTML(formulaAsJson.value, false)
-                + '<span><sup>⊥</sup></span>';
+                + '<sup>⊥</sup>';
 
         case 'implication':
         case 'conjunction':
@@ -128,7 +133,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             let formula = leftFormula + connector + rightFormula;
 
             if (!isMainFormula) {
-                return `<span>(</span>${formula}<span>)</span>`;
+                return `(${formula})`;
             }
 
             return formula;
@@ -197,18 +202,16 @@ function addEventsAndStyle($li, formulaAsJson) {
             $spanForEvent.addClass('highlightableExpr');
         }
 
+        // Some hover config for tensor
+        if (ruleEvent.onclick[0] === 'tensor') {
+            $li.find('span' + '.left-formula').first().addClass('tensor-left');
+            $li.find('span' + '.right-formula').first().addClass('tensor-right');
+        }
+
         // Add click and double click events
         if (ruleEvent.onclick.length === 1) {
             // Single click
-            let rule = ruleEvent.onclick[0];
-            $spanForEvent.on('click', buildApplyRuleCallBack(rule, $li));
-
-            // Some hover config for tensor
-            if (rule === 'tensor') {
-                $li.addClass('tensor');
-                let $rightFormula = $li.find('span' + '.right-formula').first();
-                $rightFormula.addClass('tensor-right');
-            }
+            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li));
         } else {
             // Single click AND Double click event
             let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li);

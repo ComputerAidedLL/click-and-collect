@@ -14,18 +14,19 @@ input { margin: 1em 0; }
 .proof .tagBox .tag { position:relative; top:-0.6em; text-align: left; margin-left: 0.2em; font-size: 0.9em;}
 .proof .tagBox .contraction { top:-0.5em; }
 .proof .inference { border-top: 1px solid #000; }
-.proof .turnstile { margin: 0 0.3em; float: left; }
+.proof .turnstile { margin: 0 0.3em; }
 .proof .turnstile:hover { background: #FDD; cursor:pointer; }
-.proof .commaList { float: left; list-style: none; margin: 0; padding: 0; }
-.proof .commaList li { float: left; margin-left: 0.2em;}
+.proof .commaList { display: inline-block; list-style: none; margin: 0; padding: 0; }
+.proof .commaList li { display: inline-block; margin-left: 0.2em;}
 .proof .commaList li:after { content: ','; margin-left: 0.2em;}
 .proof .commaList li:last-child:after { content: ''; }
-.proof .commaList span { float: left; }
 .proof .binary-connector { margin-left: 3px; margin-right: 3px; }
 .proof .clickableExpr:hover { cursor:pointer; }
 .proof .highlightableExpr:hover { background: #DDF; }
 .proof .main-formula:hover .primaryConnector { background: #005; color: #FFF; }
-.proof .clickableExpr:hover .tensor-right, .proof li.tensor:hover ~ li { box-shadow: 0 -3px 0 #DDF inset;}
+.proof .clickableExpr:hover .tensor-left, .proof .clickableExpr:hover .tensor-right { position: relative;}
+.proof .clickableExpr:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005;}
+.proof .clickableExpr:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005;}
 
 .proofIsDone .proof {background:#CFC;}
 .proofIsPending .proof {background:#FCFCBB;}

@@ -4,19 +4,19 @@
 
 const RULES = {
     'axiom': '<span class="italic">ax</span>',
-    'tensor': '<span>⊗</span>',
+    'tensor': '⊗',
     'par': '<span class="flip">&</span>',
-    'with': '<span>&</span>',
-    'plus_left': '<span>⊕<sub>1</sub></span>',
-    'plus_right': '<span>⊕<sub>2</sub></span>',
-    'one': '<span>1</span>',
-    'bottom': '<span>⊥</span>',
-    'top': '<span>⊤</span>',
+    'with': '&',
+    'plus_left': '⊕<sub>1</sub>',
+    'plus_right': '⊕<sub>2</sub>',
+    'one': '1',
+    'bottom': '⊥',
+    'top': '⊤',
     // rule zero does not exist
-    'promotion': '<span>!</span>',
-    'dereliction': '<span>?<span class="italic">d</span></span>',
-    'contraction': '<span>?<span class="italic">c</span></span>',
-    'weakening': '<span>?<span class="italic">w</span></span>'
+    'promotion': '!',
+    'dereliction': '?<span class="italic">d</span>',
+    'contraction': '?<span class="italic">c</span>',
+    'weakening': '?<span class="italic">w</span>'
 };
 
 // *************
