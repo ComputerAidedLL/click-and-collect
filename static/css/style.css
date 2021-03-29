@@ -60,7 +60,7 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .proof .clickableExpr:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005;}
 .proof .clickableExpr:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005;}
 
-.pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
+.pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; text-indent: 0;}
 .pedagogic-error .message { display: inline-block; }
 .pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 
