@@ -36,9 +36,9 @@ function submitSequent(element) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProof(data['sequent_as_json']);
+                initProof(data['sequent_as_json'], $('#main-proof-container'));
             } else {
-                displayPedagogicError(data['error_message']);
+                displayPedagogicError(data['error_message'], $('#main-proof-container'));
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {

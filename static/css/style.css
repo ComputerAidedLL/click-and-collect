@@ -7,8 +7,9 @@ h3 {text-align: center; }
 .section { margin-bottom: 5em; margin-left: auto; margin-right: auto; display: table; }
 .subsection {padding-left: 3em}
 
-form{ margin: 3em auto 2em; overflow: auto; }
+form{ margin-top: 4em; }
 form input{ float: left; box-sizing: border-box; border: none; padding: 1.1em 1em 0.9em; }
+form input:focus { outline: none; box-shadow: none; }
 form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; }
 form input[type="submit"]{ border-bottom-right-radius: 1em; border-top-right-radius: 1em; background-color: #005; color: white; font-weight: bold;}
 input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
@@ -17,7 +18,7 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .proofIsPending .proof {background:#FCFCBB;}
 .proofIsIncomplete .proof {}
 .proof { text-align:center; }
-.proof { display:inline-block; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em;margin-top:0.5em;margin-bottom:0.4em;}
+.proof { display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: auto; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
 .proof td { padding:0; border:0; margin:0; text-align:center; }
@@ -41,7 +42,7 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .proof .clickableExpr:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005;}
 .proof .clickableExpr:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005;}
 
-.pedagogic-error { display: inline-block; padding: 10px; margin: 10px 0; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
+.pedagogic-error { padding: 10px; margin: 10px 0; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
 .pedagogic-error .message { display: inline-block; }
 .pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 

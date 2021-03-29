@@ -14,21 +14,22 @@
         <title>Linear logic sequent calculus</title>
     </head>
     <body>
-        <div class="page">
-            <div class="section">
-                <form action="#" id="sequent-form">
-                    <label>
-                        <input type="text" name="sequentAsString" placeholder="Sequent to prove"/>
-                    </label>
-                    <input type="submit" value="Prove" onclick="submitSequent(this)">
-                </form>
+        <div class="section">
+            <form action="#" id="sequent-form">
+                <label>
+                    <input type="text" name="sequentAsString" placeholder="Sequent to prove"/>
+                </label>
+                <input type="submit" value="Prove" onclick="submitSequent(this)">
+            </form>
+        </div>
 
-                <div id="main-proof-container">
+        <div class="section">
+            <div id="main-proof-container" class="proof-container">
 
-                </div>
             </div>
+        </div>
 
-            <div class="section">
+        <div class="section">
             <h3>Syntax rules</h3>
             <div class="subsection">
                 <h4>
@@ -65,8 +66,8 @@
                     <span class="example">Example:</span><span class="code">!(A&B) |- !A*!B</span>
                 </p>
             </div>
-            </div>
-            <div class="section">
+        </div>
+        <div class="section">
             <h3>Tutorial</h3>
             <div class="subsection">
                 <p>
@@ -97,7 +98,6 @@
                 <p>
                     <span class="tutorial">That's it!</span>
                 </p>
-            </div>
             </div>
         </div>
     </body>

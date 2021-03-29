@@ -23,15 +23,12 @@ const RULES = {
 // PROOF DISPLAY
 // *************
 
-function initProof(sequentAsJson) {
-    console.log(sequentAsJson);
-    let proofdiv = $('#main-proof-container');
-
+function initProof(sequentAsJson, $container) {
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
     $div2.append(createSequentTable(sequentAsJson));
     $div.append($div2);
-    proofdiv.append($div);
+    $container.append($div);
 }
 
 function createSequentTable(sequentAsJson) {
@@ -54,6 +51,7 @@ function createSequentTable(sequentAsJson) {
 
 function applyRule(rule, $sequentDiv, formulaPosition) {
     let sequent = getSequentWithPermutations($sequentDiv);
+    let $container = $sequentDiv.closest('.proof-container');
 
     $.ajax({
         type: 'POST',
@@ -64,10 +62,10 @@ function applyRule(rule, $sequentDiv, formulaPosition) {
         {
             console.log(data);
             if (data.success === true) {
-                cleanPedagogicError();
+                cleanPedagogicError($container);
                 addSequentListPremisses($sequentDiv, data['sequentList'], rule);
             } else {
-                displayPedagogicError(data['errorMessage']);
+                displayPedagogicError(data['errorMessage'], $container);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -121,11 +119,12 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
     $table.removeClass('binary-rule');
 
     // Mark proof as incomplete
-    markAsIncomplete();
+    let $container = $table.closest('.proof-container');
+    markAsIncomplete($container);
 
     // Add new sequents
     if (sequentList.length === 0) {
-        checkProofIsComplete();
+        checkProofIsComplete($container);
     } else if (sequentList.length === 1) {
         createSequentTable(sequentList[0]).insertBefore($table);
     } else {
@@ -144,24 +143,23 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
 // PEDAGOGIC ERROR
 // ***************
 
-function displayPedagogicError(errorMessage) {
-    let $mainContainer = $('#main-proof-container');
-    let $div = $mainContainer
+function displayPedagogicError(errorMessage, $container) {
+    let $div = $container
         .children('div.pedagogic-error');
     if (!$div.length) {
         $div = $('<div>', {'class': 'pedagogic-error'});
         $div.append($('<div>', {'class': 'message'}));
         let $close = $('<div>', {'class': 'close-button'});
         $close.html('✖');
-        $close.on('click', function () {cleanPedagogicError();});
+        $close.on('click', function () {cleanPedagogicError($container);});
         $div.append($close);
-        $mainContainer.append($div);
+        $container.append($div);
     }
     $div.children('div.message').text(errorMessage);
 }
 
-function cleanPedagogicError() {
-    $('#main-proof-container')
+function cleanPedagogicError($container) {
+    $container
         .children('div.pedagogic-error')
         .remove();
 }
@@ -170,8 +168,8 @@ function cleanPedagogicError() {
 // CHECK PROOF COMPLETION
 // **********************
 
-function checkProofIsComplete() {
-    let $mainDiv = $('#main-proof-container')
+function checkProofIsComplete($container) {
+    let $mainDiv = $container
         .children('div');
     let $mainTable = $mainDiv.children('div.proof')
         .children('table').last();
@@ -216,9 +214,8 @@ function recCheckIsComplete(proofAsJson) {
     return response;
 }
 
-function markAsIncomplete() {
-    let $mainDiv = $('#main-proof-container')
-        .children('div');
+function markAsIncomplete($container) {
+    let $mainDiv = $container.children('div');
     $mainDiv.removeClass('proofIsDone');
     $mainDiv.addClass('proofIsIncomplete');
 }
