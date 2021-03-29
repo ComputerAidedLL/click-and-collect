@@ -6,7 +6,7 @@ sup, sub { font-size:0.6em; }
 .italic { font-style: italic; }
 
 h3 {text-align: center; }
-.section { margin-bottom: 5em; margin-left: auto; margin-right: auto; display: table; }
+.section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; }
 .subsection {padding-left: 3em}
 
 form{ margin-top: 4em; }
