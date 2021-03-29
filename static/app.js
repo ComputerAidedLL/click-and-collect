@@ -10,6 +10,14 @@ $( function() {
         $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
         submitSequent($sequentForm);
     }
+
+    // Create tutorial proof
+    $('.tutorial .proof-container').each(function (i, container) {
+        let $container = $(container);
+        let sequentAsString = $container.html();
+        $container.html('');
+        parseSequentAsString(sequentAsString, $container);
+    })
 } );
 
 // ************
@@ -27,6 +35,10 @@ function submitSequent(element) {
     currentUrl.searchParams.set('s', sequentAsString.toString());
     window.history.pushState(sequentAsString, "Linear logic proof start", currentUrl.toString());
 
+    parseSequentAsString(sequentAsString, $('#main-proof-container'));
+}
+
+function parseSequentAsString(sequentAsString, $container) {
     let apiUrl = '/parse_sequent';
 
     $.ajax({
@@ -36,9 +48,9 @@ function submitSequent(element) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProof(data['sequent_as_json'], $('#main-proof-container'));
+                initProof(data['sequent_as_json'], $container);
             } else {
-                displayPedagogicError(data['error_message'], $('#main-proof-container'));
+                displayPedagogicError(data['error_message'], $container);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -48,9 +60,10 @@ function submitSequent(element) {
             console.log(errorThrown);
             alert('Technical error, check browser console for more details.');
         }
-     });
+    });
 }
 
 function cleanMainProof() {
     $('#main-proof-container').html('');
 }
+

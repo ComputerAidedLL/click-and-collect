@@ -1,3 +1,5 @@
+body {font-size: 1.3em; }
+
 sup, sub { font-size:0.6em; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
@@ -8,17 +10,29 @@ h3 {text-align: center; }
 .subsection {padding-left: 3em}
 
 form{ margin-top: 4em; }
-form input{ float: left; box-sizing: border-box; border: none; padding: 1.1em 1em 0.9em; }
+form input{ float: left; border: none; padding: 1.1em 1em 0.9em; font-size: 1em;  }
 form input:focus { outline: none; box-shadow: none; }
 form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; }
 form input[type="submit"]{ border-bottom-right-radius: 1em; border-top-right-radius: 1em; background-color: #005; color: white; font-weight: bold;}
 input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
 
+.code {   border-radius: 0.3em; padding: 0.2em; }
+.example { font-style: italic; margin-right: 1em; }
+
+.syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
+.syntax td:nth-child(2) { text-align: left;}
+
+.tutorial {text-indent: 5em; }
+.tutorial p {margin-top: 1.5em; margin-bottom: 0;}
+.tutorial ul {margin-top: 0; margin-left: 5em; }
+.tutorial li {text-indent: 0;}
+.tutorial .proof-container {margin-top: 0.7em; }
+
+/* PROOF */
 .proofIsDone .proof {background:#CFC;}
 .proofIsPending .proof {background:#FCFCBB;}
 .proofIsIncomplete .proof {}
-.proof { text-align:center; }
-.proof { display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: auto; }
+.proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: auto; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
 .proof td { padding:0; border:0; margin:0; text-align:center; }
@@ -42,12 +56,6 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .proof .clickableExpr:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005;}
 .proof .clickableExpr:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005;}
 
-.pedagogic-error { padding: 10px; margin: 10px 0; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
+.pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
 .pedagogic-error .message { display: inline-block; }
 .pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
-
-.code {   border-radius: 0.3em; padding: 0.2em; }
-.example { font-style: italic; margin-right: 1em; }
-
-.syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
-.syntax td:nth-child(2) { text-align: left;}

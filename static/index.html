@@ -17,7 +17,7 @@
         <div class="section">
             <form action="#" id="sequent-form">
                 <label>
-                    <input type="text" name="sequentAsString" placeholder="Sequent to prove"/>
+                    <input type="text" name="sequentAsString" placeholder="Type sequent to prove..."/>
                 </label>
                 <input type="submit" value="Prove" onclick="submitSequent(this)">
             </form>
@@ -67,36 +67,40 @@
                 </p>
             </div>
         </div>
-        <div class="section">
+        <div class="section tutorial">
             <h3>Tutorial</h3>
             <div class="subsection">
                 <p>
                     <span class="tutorial">Click on a formula or its orthogonal to apply axiom rule.</span>
-                    <span class="code">|-A,A^</span>
                 </p>
+                    <div class="proof-container">|-A,A^</div>
                 <p>
                     <span class="tutorial">Alternatively, you can click on thesis symbol.</span>
-                    <span class="code">|-1,1^</span>
                 </p>
+                    <div class="proof-container">|-1,1^</div>
                 <p>
                     <span class="tutorial">Click on a connector to apply rule.</span>
-                    <span class="code">|-A|A^</span>
                 </p>
+                    <div class="proof-container">|-A|A^</div>
                 <p>
                     <span class="tutorial">Move formula within the list before applying tensor rule.
                         Formulas before tensor will be the context on left hand-side, and formulas after tensor will be the context on right hand-side.</span>
-                    <span class="code">|-A,A^,A*A^</span>
                 </p>
+                    <div class="proof-container">|-A,A^,A*A^</div>
                 <p>
                     <span class="tutorial">As for plus rule, just click on the left or right formula.</span>
-                    <span class="code">|-A,B+A^</span>
                 </p>
+                    <div class="proof-container">|-A,B+A^</div>
                 <p>
-                    <span class="tutorial">For whynot, you have three possibilities. Single click on whynot connector applies weakening, single click on formula applies dereliction, and double click on either connector or formula applies contraction.</span>
-                    <span class="code">|-?A,?B,?(A^*A^)</span>
+                    <span class="tutorial">For whynot connector, you have three possibilities:</span>
                 </p>
+                    <ul><li>single click on whynot connector applies weakening</li>
+                        <li>single click on formula applies dereliction</li>
+                        <li>double click on either connector or formula applies contraction.</li>
+                    </ul>
+                    <div class="proof-container">|-?A,?B,?(A^*A^)</div>
                 <p>
-                    <span class="tutorial">That's it!</span>
+                    <span>That's it! You should now be able to have all proofs on this tutorial complete (with green background). Have fun!</span>
                 </p>
             </div>
         </div>
