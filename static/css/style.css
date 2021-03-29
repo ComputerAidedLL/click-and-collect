@@ -1,4 +1,4 @@
-body {font-size: 1.3em; }
+body {font-size: 1.2em; }
 
 sup, sub { font-size:0.6em; }
 .flip { transform: scale(-1, -1); display: inline-block; }
@@ -6,14 +6,13 @@ sup, sub { font-size:0.6em; }
 .italic { font-style: italic; }
 
 h3 {text-align: center; }
-.section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; }
-.subsection {padding-left: 3em}
+.section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
+.subsection { text-indent: 2em; }
 
-form{ margin-top: 4em; }
-form input{ float: left; border: none; padding: 1.1em 1em 0.9em; font-size: 1em;  }
+form{ margin-top: 4em; display: flex; flex-flow: wrap; justify-content: center;}
+form input{ border: none; padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em;}
 form input:focus { outline: none; box-shadow: none; }
-form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; width: 20em; }
-form input[type="submit"]{ border-bottom-right-radius: 1em; border-top-right-radius: 1em; background-color: #005; color: white; font-weight: bold;}
+form input[type="submit"]{ background-color: #005; color: white; font-weight: bold; }
 input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
 
 .code {   border-radius: 0.3em; padding: 0.2em; }
@@ -22,9 +21,8 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
 .syntax td:nth-child(2) { text-align: left;}
 
-.tutorial {text-indent: 5em; }
 .tutorial p {margin-top: 1.5em; margin-bottom: 0;}
-.tutorial ul {margin-top: 0; margin-left: 5em; }
+.tutorial ul {margin-top: 0; margin-left: 3em; }
 .tutorial li {text-indent: 0;}
 .tutorial .proof-container {margin-top: 0.7em; }
 
@@ -61,6 +59,6 @@ input[type=text], .code {background-color: #EEE; font-family: "Courier New", san
 .pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 
 /* RULES */
-.rules .row { display: table; margin: 1em auto auto; }
+.rules .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
 .rules .proofIsDone .proof {background: none; }
 .rules .proof-container {display: inline-block; vertical-align: bottom; }
