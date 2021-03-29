@@ -12,7 +12,7 @@ h3 {text-align: center; }
 form{ margin-top: 4em; }
 form input{ float: left; border: none; padding: 1.1em 1em 0.9em; font-size: 1em;  }
 form input:focus { outline: none; box-shadow: none; }
-form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; }
+form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; width: 20em; }
 form input[type="submit"]{ border-bottom-right-radius: 1em; border-top-right-radius: 1em; background-color: #005; color: white; font-weight: bold;}
 input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
 
