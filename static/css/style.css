@@ -19,10 +19,11 @@ form input:focus { outline: none; box-shadow: none; }
 form input[type="submit"]{ background-color: #005; color: white; font-weight: bold; }
 input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
 
-.code {   border-radius: 0.3em; padding: 0.2em; white-space: nowrap; }
+.code {   border-radius: 0.3em; padding: 0.1em; white-space: nowrap; box-decoration-break: clone; }
 .example { font-style: italic; margin-right: 1em; }
 
-.syntax td {padding: 0.3em; }
+.syntax {line-height: 1.4;}
+.syntax td {padding: 0.1em; }
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
 .syntax td:nth-child(2) { text-align: left;}
 
