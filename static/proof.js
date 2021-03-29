@@ -26,7 +26,8 @@ const RULES = {
 function initProof(sequentAsJson, $container) {
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
-    $div2.append(createSequentTable(sequentAsJson));
+    let $sequentTable = createSequentTable(sequentAsJson);
+    $div2.append($sequentTable);
     $div.append($div2);
     $container.append($div);
 }

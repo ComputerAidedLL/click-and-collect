@@ -18,6 +18,16 @@ $( function() {
         $container.html('');
         parseSequentAsString(sequentAsString, $container);
     })
+
+    // Create rules proof
+    $('.rules .proof-container').each(function (i, container) {
+        let $container = $(container);
+        let instructions = JSON.parse($container.html());
+        $container.html('');
+        initProof(instructions['sequent'], $container)
+        let $sequentDiv = $container.find('div' + '.sequent');
+        applyRule(instructions['rule'], $sequentDiv, instructions['formulaPosition']);
+    })
 } );
 
 // ************

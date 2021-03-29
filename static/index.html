@@ -73,35 +73,66 @@
                 <p>
                     <span class="tutorial">Click on a formula or its orthogonal to apply <span class="bold">axiom rule</span>.</span>
                 </p>
-                    <div class="proof-container">|-A,A^</div>
+                <div class="proof-container">|-A,A^</div>
                 <p>
                     <span class="tutorial">If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply axiom rule on a two-formulas sequent.</span>
                 </p>
-                    <div class="proof-container">|-1,1^</div>
+                <div class="proof-container">|-1,1^</div>
                 <p>
                     <span class="tutorial">Click on <span class="bold">connectors</span> to apply related rule.</span>
                 </p>
-                    <div class="proof-container">|-A|A^</div>
+                <div class="proof-container">|-A|A^</div>
                 <p>
                     <span class="tutorial"><span class="bold">Move formulas</span> within the list before applying <span class="bold">tensor rule</span>.
                         Formulas before tensor will be in the context on left hand-side, and formulas after tensor will be in the context on right hand-side.</span>
                 </p>
-                    <div class="proof-container">|-A,A^,A*A^</div>
+                <div class="proof-container">|-A,A^,A*A^</div>
                 <p>
                     <span class="tutorial">As for <span class="bold">plus rule</span>, just click on the left or right formula.</span>
                 </p>
-                    <div class="proof-container">|-A,B+A^</div>
+                <div class="proof-container">|-A,B+A^</div>
                 <p>
                     <span class="tutorial">For <span class="bold">whynot</span> connector, you have three possibilities:</span>
                 </p>
                 <ul><li>single click on whynot connector applies <span class="bold">weakening</span></li>
                     <li>single click on formula applies <span class="bold">dereliction</span></li>
                     <li>double click on either connector or formula applies <span class="bold">contraction</span>.</li>
-                    </ul>
-                    <div class="proof-container">|-?A,?B,?(A^*A^)</div>
+                </ul>
+                <div class="proof-container">|-?A,?B,?(A^*A^)</div>
                 <p>
                     <span><span class="bold">That's it!</span> You should now be able to have all proofs on this tutorial complete (with green background). Have fun!</span>
                 </p>
+            </div>
+        </div>
+
+        <div class="section rules">
+            <h3>Derivation rules</h3>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]}, "rule":"axiom", "formulaPosition":0}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"neutral","value":"one"}]}, "rule":"one", "formulaPosition":0}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"neutral","value":"bottom"}, {"type":"litteral","value":"Γ"}]}, "rule":"bottom", "formulaPosition":0}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"neutral","value":"top"}, {"type":"litteral","value":"Γ"}]}, "rule":"top", "formulaPosition":0}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]}, "rule":"tensor", "formulaPosition":1}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]}, "rule":"par", "formulaPosition":1}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"with","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]}, "rule":"with", "formulaPosition":1}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]}, "rule":"plus_left", "formulaPosition":1}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]}, "rule":"plus_right", "formulaPosition":1}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"ofcourse","value":{"type":"litteral","value":"A"}}, {"type":"whynot","value":{"type":"litteral","value":"Γ"}}]}, "rule":"promotion", "formulaPosition":0}</div>
+            </div>
+            <div class="row">
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}}, {"type":"litteral","value":"Γ"}]}, "rule":"weakening", "formulaPosition":0}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}}, {"type":"litteral","value":"Γ"}]}, "rule":"dereliction", "formulaPosition":0}</div>
+                <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}}, {"type":"litteral","value":"Γ"}]}, "rule":"contraction", "formulaPosition":0}</div>
             </div>
         </div>
     </body>
