@@ -1,6 +1,21 @@
-.page { width:42em; margin: 0 auto; margin-top: 3em; margin-bottom: 3em; }
-h2 { font-family:sans-serif; font-size:1.3em; border-bottom:1px solid #BBB; }
+sup, sub { font-size:0.6em; }
+.flip { transform: scale(-1, -1); display: inline-block; }
+.bold { font-weight: bold; }
+.italic { font-style: italic; }
 
+h3 {text-align: center; }
+.section { margin-bottom: 5em; margin-left: auto; margin-right: auto; display: table; }
+.subsection {padding-left: 3em}
+
+form{ margin: 3em auto 2em; overflow: auto; }
+form input{ float: left; box-sizing: border-box; border: none; padding: 1.1em 1em 0.9em; }
+form input[type="text"]{ border-bottom-left-radius: 1em; border-top-left-radius: 1em; }
+form input[type="submit"]{ border-bottom-right-radius: 1em; border-top-right-radius: 1em; background-color: #005; color: white; font-weight: bold;}
+input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif; }
+
+.proofIsDone .proof {background:#CFC;}
+.proofIsPending .proof {background:#FCFCBB;}
+.proofIsIncomplete .proof {}
 .proof { text-align:center; }
 .proof { display:inline-block; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em;margin-top:0.5em;margin-bottom:0.4em;}
 .proof table { margin: auto; }
@@ -26,58 +41,12 @@ h2 { font-family:sans-serif; font-size:1.3em; border-bottom:1px solid #BBB; }
 .proof .clickableExpr:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005;}
 .proof .clickableExpr:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005;}
 
-.proofIsDone .proof {background:#CFC;}
-.proofIsPending .proof {background:#FCFCBB;}
-.proofIsIncomplete .proof {}
-
 .pedagogic-error { display: inline-block; padding: 10px; margin: 10px 0; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; }
 .pedagogic-error .message { display: inline-block; }
 .pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 
-sup, sub { font-size:0.6em; }
-.flip { transform: scale(-1, -1); display: inline-block; }
-.bold { font-weight: bold; }
-.italic { font-style: italic; }
-
-
-div.main {
-    margin-bottom: 5em;
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-}
-
-form{
-    margin-bottom: 2em;
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-    overflow: auto;
-}
-form input{
-    float: left;
-    box-sizing: border-box;
-    border: none;
-    padding: 1.1em 1em 0.9em;
-}
-
-form input[type="text"]{
-    border-bottom-left-radius: 1em;
-    border-top-left-radius: 1em;
-}
-
-form input[type="submit"]{
-    border-bottom-right-radius: 1em;
-    border-top-right-radius: 1em;
-    background-color: #005;
-    color: white;
-    font-weight: bold;
-}
-
-input[type=text], .code {background-color: #EEE; font-family: "Courier New", sans-serif;  }
 .code {   border-radius: 0.3em; padding: 0.2em; }
 .example { font-style: italic; margin-right: 1em; }
 
-.section {margin-left: 3em}
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em;}
 .syntax td:nth-child(2) { text-align: left;}

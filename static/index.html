@@ -15,7 +15,7 @@
     </head>
     <body>
         <div class="page">
-            <div class="main">
+            <div class="section">
                 <form action="#" id="sequent-form">
                     <label>
                         <input type="text" name="sequentAsString" placeholder="Sequent to prove"/>
@@ -28,21 +28,20 @@
                 </div>
             </div>
 
-            <h3>Syntax rules</h3>
             <div class="section">
+            <h3>Syntax rules</h3>
+            <div class="subsection">
                 <h4>
                     Sequent syntax
                 </h4>
                 <table class="syntax">
-                    <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span>,</td><td></td></tr>
-                    <tr><td>Any words ending with numbers and/or <span class="code">'</span></td><td>formulas</td></tr>
-                    <tr><td>and any greek letter <span class="code">Γ</span>, <span class="code">Δ</span>, ... </td><td></td></tr>
+                    <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas</td></tr>
                     <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
                     <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
                     <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
                 </table>
                 <p>
-                    <span class="example">Example:</span><span class="code">A |- A0'',Γ</span>
+                    <span class="example">Example:</span><span class="code">A0,A1,A2,B |- A',A'',Γ</span>
                 </p>
 
                 <h4>
@@ -66,9 +65,39 @@
                     <span class="example">Example:</span><span class="code">!(A&B) |- !A*!B</span>
                 </p>
             </div>
-            <h3>Tutorial</h3>
+            </div>
             <div class="section">
-                To do...
+            <h3>Tutorial</h3>
+            <div class="subsection">
+                <p>
+                    <span class="tutorial">Click on a formula or its orthogonal to apply axiom rule.</span>
+                    <span class="code">|-A,A^</span>
+                </p>
+                <p>
+                    <span class="tutorial">Alternatively, you can click on thesis symbol.</span>
+                    <span class="code">|-1,1^</span>
+                </p>
+                <p>
+                    <span class="tutorial">Click on a connector to apply rule.</span>
+                    <span class="code">|-A|A^</span>
+                </p>
+                <p>
+                    <span class="tutorial">Move formula within the list before applying tensor rule.
+                        Formulas before tensor will be the context on left hand-side, and formulas after tensor will be the context on right hand-side.</span>
+                    <span class="code">|-A,A^,A*A^</span>
+                </p>
+                <p>
+                    <span class="tutorial">As for plus rule, just click on the left or right formula.</span>
+                    <span class="code">|-A,B+A^</span>
+                </p>
+                <p>
+                    <span class="tutorial">For whynot, you have three possibilities. Single click on whynot connector applies weakening, single click on formula applies dereliction, and double click on either connector or formula applies contraction.</span>
+                    <span class="code">|-?A,?B,?(A^*A^)</span>
+                </p>
+                <p>
+                    <span class="tutorial">That's it!</span>
+                </p>
+            </div>
             </div>
         </div>
     </body>
