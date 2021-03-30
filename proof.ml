@@ -56,6 +56,21 @@ and json_to_applied_rule json =
         Some {rule=rule; formula_position=formula_position; premisses=premisses};;
 
 (* OPERATIONS *)
+exception Invalid_proof_exception of string;;
+
+let rec is_valid proof =
+    match proof.applied_rule with
+        | None -> true
+        | Some applied_rule -> try
+                let expected_sequent_list = Linear_logic.apply_rule applied_rule.rule proof.sequent applied_rule.formula_position in
+                let get_sequent p = p.sequent in
+                let given_sequent_list = List.map get_sequent applied_rule.premisses in
+                if not (expected_sequent_list = given_sequent_list)
+                then raise (Invalid_proof_exception ("Premisses do not match expected sequent list after applying rule " ^ applied_rule.rule))
+                else List.for_all is_valid applied_rule.premisses
+            with Linear_logic.Apply_rule_technical_exception m -> raise (Invalid_proof_exception ("Apply_rule_technical_exception: " ^ m))
+            | Linear_logic.Apply_rule_logic_exception m -> raise (Invalid_proof_exception ("Apply_rule_logic_exception: " ^ m));;
+
 let rec is_complete proof =
     match proof.applied_rule with
         | None -> false

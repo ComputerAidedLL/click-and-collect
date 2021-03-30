@@ -538,5 +538,26 @@
       },
       "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
+  ],
+  "call_api_is_proof_complete": [
+    {
+      "sequentAsJson":{"hyp":[],"cons":[
+        {"type":"par",
+          "value1":{"type":"litteral","value":"A"},
+          "value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
+      ]},
+      "appliedRule":{
+        "rule":"par",
+        "formulaPosition":0,
+        "premisses":[
+          {
+            "sequentAsJson":{"hyp":[],"cons":[
+              {"type":"litteral","value":"A"},
+              {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
+            ]},"appliedRule":{"rule":"axiom","formulaPosition":0,"premisses":[]}
+          }
+        ]
+      }
+    }
   ]
 }
