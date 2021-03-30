@@ -21,16 +21,16 @@ open Linear_logic
 %nonassoc OFCOURSE WHYNOT   /* very high precedence */
 %nonassoc ORTH              /* highest precedence */
 
-%start main                      /* the entry point */
-%type <Linear_logic.formula list * Linear_logic.formula list> main
+%start main                 /* the entry point */
+%type <Linear_logic.sequent> main
 %%
 main:
-    EOL                                   { ([], []) }
-  | THESIS EOL                            { ([], []) }
-  | formulalist EOL                       { ([], $1) }
-  | formulalist THESIS EOL                { ($1, []) }
-  | THESIS formulalist EOL                { ([], $2) }
-  | formulalist THESIS formulalist EOL    { ($1, $3) }
+    EOL                                   { {hyp=[]; cons=[]} }
+  | THESIS EOL                            { {hyp=[]; cons=[]} }
+  | formulalist EOL                       { {hyp=[]; cons=$1} }
+  | formulalist THESIS EOL                { {hyp=$1; cons=[]} }
+  | THESIS formulalist EOL                { {hyp=[]; cons=$2} }
+  | formulalist THESIS formulalist EOL    { {hyp=$1; cons=$3} }
 ;
 
 formulalist:

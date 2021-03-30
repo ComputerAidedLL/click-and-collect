@@ -104,6 +104,12 @@ let call_api_apply_rule_logic_exception () =
         Alcotest.(check string) "check errorMessage" expected_error_message error_message in
     List.iter run_test test_samples
 
+let call_api_is_proof_complete_full_response () =
+    let body_as_string = "{\"sequentAsJson\":{\"hyp\": [],\"cons\": [{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"orthogonal\",\"value\":{\"type\":\"litteral\",\"value\":\"a\"}}]},\"appliedRule\":{\"rule\":\"axiom\",\"formulaPosition\":0,\"premisses\":[]}}" in
+    let response_as_string = call_api_post "is_proof_complete" body_as_string 200 in
+    let expected_response_as_string = "{\"is_complete\":true}" in
+    Alcotest.(check string) "valid" expected_response_as_string response_as_string
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -117,9 +123,14 @@ let test_apply_rule = [
     "Test logic exception", `Quick, call_api_apply_rule_logic_exception;
 ]
 
+let test_is_proof_complete = [
+    "Test full response", `Quick, call_api_is_proof_complete_full_response;
+]
+
 (* Run it *)
 let () =
     Alcotest.run "API on localhost:8080" [
         "test_parse_sequent", test_parse_sequent;
         "test_apply_rule", test_apply_rule;
+        "test_is_proof_complete", test_is_proof_complete;
     ]

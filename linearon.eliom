@@ -7,7 +7,25 @@ open Eliom_parameter
 
 open Parse_sequent
 open Apply_rule
+open Is_proof_complete
 open Yojson
+
+
+(*********)
+(* UTILS *)
+(*********)
+
+let send_json ~code json =
+  Eliom_registration.String.send ~code (json, "application/json")
+
+let read_raw_content ?(length = 4096) raw_content =
+  let content_stream = Ocsigen_stream.get raw_content in
+  Ocsigen_stream.string_of_stream length content_stream
+
+
+(************)
+(* MAIN APP *)
+(************)
 
 module Linearon_app =
   Eliom_registration.App (
@@ -15,6 +33,11 @@ module Linearon_app =
     let application_name = "linearon"
     let global_data_path = None
   end)
+
+
+(*****************)
+(* PARSE SEQUENT *)
+(*****************)
 
 (* Service declaration *)
 let parse_sequent_service =
@@ -39,6 +62,11 @@ let _ =
             ] in
         Lwt.return (Yojson.to_string response, "application/json"));;
 
+
+(**************)
+(* APPLY RULE *)
+(**************)
+
 (* Service declaration *)
 let apply_rule_service =
   Eliom_service.create
@@ -47,19 +75,12 @@ let apply_rule_service =
       ()
 
 (* Service definition *)
-let send_json ~code json =
-  Eliom_registration.String.send ~code (json, "application/json")
-
-let read_raw_content ?(length = 4096) raw_content =
-  let content_stream = Ocsigen_stream.get raw_content in
-  Ocsigen_stream.string_of_stream length content_stream
-
 let apply_rule_handler () (content_type, raw_content_opt) =
     match raw_content_opt with
     | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> read_raw_content raw_content >>= fun location_str ->
+    | Some raw_content -> read_raw_content raw_content >>= fun request_as_string ->
         try
-            let request_as_json = Yojson.Basic.from_string location_str in
+            let request_as_json = Yojson.Basic.from_string request_as_string in
             let technical_success, json_response = apply_rule request_as_json in
             if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
             else send_json ~code:400 (Yojson.Basic.to_string json_response)
@@ -67,4 +88,32 @@ let apply_rule_handler () (content_type, raw_content_opt) =
 
 let () =
   Eliom_registration.Any.register apply_rule_service apply_rule_handler;
+  ()
+
+
+(*********************)
+(* IS PROOF COMPLETE *)
+(*********************)
+
+(* Service declaration *)
+let is_proof_complete_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["is_proof_complete"])
+      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ()
+
+(* Service definition *)
+let is_proof_complete_handler () (content_type, raw_content_opt) =
+    match raw_content_opt with
+    | None -> send_json ~code:400 "Body content is missing"
+    | Some raw_content -> read_raw_content raw_content >>= fun request_as_string ->
+        try
+            let request_as_json = Yojson.Basic.from_string request_as_string in
+            let technical_success, json_response = is_proof_complete request_as_json in
+            if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+            else send_json ~code:400 (Yojson.Basic.to_string json_response)
+        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json"
+
+let () =
+  Eliom_registration.Any.register is_proof_complete_service is_proof_complete_handler;
   ()

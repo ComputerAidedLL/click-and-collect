@@ -15,10 +15,7 @@ type formula =
   | Ofcourse of formula
   | Whynot of formula;;
 
-let is_whynot = function
-    | Whynot e -> true
-    | _ -> false;;
-
+type sequent = {hyp: formula list; cons: formula list};;
 
 (* SEQUENT -> JSON *)
 
@@ -38,9 +35,9 @@ let rec formula_to_json =
   | Ofcourse e -> `Assoc ([("type", `String "ofcourse") ; ("value", formula_to_json e)])
   | Whynot e -> `Assoc ([("type", `String "whynot") ; ("value", formula_to_json e)]);;
 
-let sequent_to_json (ll1, ll2) = `Assoc [
-        ("hyp", `List (List.map formula_to_json ll1));
-        ("cons", `List (List.map formula_to_json ll2))
+let sequent_to_json sequent = `Assoc [
+        ("hyp", `List (List.map formula_to_json sequent.hyp));
+        ("cons", `List (List.map formula_to_json sequent.cons))
     ];;
 
 
@@ -91,7 +88,7 @@ let rec json_to_formula json =
 let json_to_sequent sequent_as_json =
     let hyp_formulas = List.map json_to_formula (get_json_list sequent_as_json "hyp") in
     let cons_formulas = List.map json_to_formula (get_json_list sequent_as_json "cons") in
-    hyp_formulas, cons_formulas
+    {hyp=hyp_formulas; cons=cons_formulas}
 
 
 (* OPERATIONS *)
@@ -129,8 +126,11 @@ let rec simplify =
     | Whynot e -> Whynot (simplify e);;
 
 let get_monolatery_sequent sequent =
-    let hyp_formulas, cons_formulas = sequent in
-    ([], List.map simplify cons_formulas @ List.map orthogonal (List.map simplify hyp_formulas));;
+    {hyp=[]; cons=List.map simplify sequent.cons @ List.map orthogonal (List.map simplify sequent.hyp)};;
+
+let is_whynot = function
+    | Whynot e -> true
+    | _ -> false;;
 
 
 (* APPLY RULE *)
@@ -146,89 +146,87 @@ let rec head_formula_tail formula_position = function
         in f::head, formula, tail;;
 
 let apply_rule rule sequent formula_position =
-    let hyp_formulas, cons_formulas = sequent in
-
     (* Applying rule on sequent with non empty hypotheses is not implemented yet *)
-    if hyp_formulas != [] then raise (Apply_rule_technical_exception ("This API can apply rule only on monolatery sequent for the moment"))
+    if sequent.hyp != [] then raise (Apply_rule_technical_exception ("This API can apply rule only on monolatery sequent for the moment"))
 
     else match rule with
     "axiom" -> (
-        match cons_formulas with
+        match sequent.cons with
         | e1 :: e2 :: [] -> if orthogonal e1 = e2 then []
             else raise (Apply_rule_logic_exception ("Can not apply 'axiom' rule: the two formulas are not orthogonal."))
         | _ -> raise (Apply_rule_logic_exception ("Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
     )
     | "one" -> (
-        match cons_formulas with
+        match sequent.cons with
         | One :: [] -> []
         | _ -> raise (Apply_rule_logic_exception ("Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
     )
     | "bottom" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        | Bottom -> [[], head @ tail]
+        | Bottom -> [{hyp=[]; cons=(head @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "top" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
         | Top -> []
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "zero" -> raise (Apply_rule_logic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
     | "tensor" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Tensor (e1, e2) -> [[], (head @ [e1]); [], ([e2] @ tail)]
+        Tensor (e1, e2) -> [{hyp=[]; cons=(head @ [e1])}; {hyp=[]; cons=([e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "par" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Par (e1, e2) -> [[], (head @ [e1; e2] @ tail)]
+        Par (e1, e2) -> [{hyp=[]; cons=(head @ [e1; e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "with" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        With (e1, e2) -> [[], (head @ [e1] @ tail); [], (head @ [e2] @ tail)]
+        With (e1, e2) -> [{hyp=[]; cons=(head @ [e1] @ tail)}; {hyp=[]; cons=(head @ [e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_left" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Plus (e1, e2) -> [[], (head @ [e1] @ tail)]
+        Plus (e1, e2) -> [{hyp=[]; cons=(head @ [e1] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_right" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Plus (e1, e2) -> [[], (head @ [e2] @ tail)]
+        Plus (e1, e2) -> [{hyp=[]; cons=(head @ [e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "promotion" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Ofcourse e -> if List.for_all is_whynot head && List.for_all is_whynot tail then [[], (head @ [e] @ tail)]
+        Ofcourse e -> if List.for_all is_whynot head && List.for_all is_whynot tail then [{hyp=[]; cons=(head @ [e] @ tail)}]
             else raise (Apply_rule_logic_exception ("Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."))
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "dereliction" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Whynot e -> [[], (head @ [e] @ tail)]
+        Whynot e -> [{hyp=[]; cons=(head @ [e] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "weakening" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Whynot e -> [[], (head @ tail)]
+        Whynot e -> [{hyp=[]; cons=(head @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "contraction" -> (
-        let head, formula, tail = head_formula_tail formula_position cons_formulas in
+        let head, formula, tail = head_formula_tail formula_position sequent.cons in
         match formula with
-        Whynot e -> [[], (head @ [Whynot e; Whynot e] @ tail)]
+        Whynot e -> [{hyp=[]; cons=(head @ [Whynot e; Whynot e] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | _ -> raise (Apply_rule_technical_exception ("Unknown rule '" ^ rule ^ "'"));;

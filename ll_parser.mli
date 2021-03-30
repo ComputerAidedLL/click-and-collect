@@ -19,4 +19,4 @@ type token =
   | WHYNOT
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Linear_logic.formula list * Linear_logic.formula list
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Linear_logic.sequent

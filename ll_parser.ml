@@ -162,44 +162,44 @@ let yyact = [|
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 28 "ll_parser.mly"
-                                          ( ([], []) )
+                                          ( {hyp=[]; cons=[]} )
 # 167 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 29 "ll_parser.mly"
-                                          ( ([], []) )
+                                          ( {hyp=[]; cons=[]} )
 # 173 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 30 "ll_parser.mly"
-                                          ( ([], _1) )
+                                          ( {hyp=[]; cons=_1} )
 # 180 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formulalist) in
     Obj.repr(
 # 31 "ll_parser.mly"
-                                          ( (_1, []) )
+                                          ( {hyp=_1; cons=[]} )
 # 187 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 32 "ll_parser.mly"
-                                          ( ([], _2) )
+                                          ( {hyp=[]; cons=_2} )
 # 194 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 3 : 'formulalist) in
     let _3 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 33 "ll_parser.mly"
-                                          ( (_1, _3) )
+                                          ( {hyp=_1; cons=_3} )
 # 202 "ll_parser.ml"
-               : Linear_logic.formula list * Linear_logic.formula list))
+               : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
@@ -335,4 +335,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let main (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : Linear_logic.formula list * Linear_logic.formula list)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : Linear_logic.sequent)
