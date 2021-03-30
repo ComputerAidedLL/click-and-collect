@@ -60,7 +60,7 @@ let call_api_parse_sequent_syntax_exception () =
     assert_syntax_exception "!a,b\\/c"
 
 let call_api_apply_rule_full_response () =
-    let body_as_string = "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPosition\":0}" in
+    let body_as_string = "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPositions\":[0]}" in
     let response_as_string = call_api_post "apply_rule" body_as_string 200 in
     let expected_response_as_string = "{\"success\":true,\"sequentList\":[{\"hyp\":[],\"cons\":[{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"litteral\",\"value\":\"a\"}]}]}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
@@ -105,7 +105,7 @@ let call_api_apply_rule_logic_exception () =
     List.iter run_test test_samples
 
 let call_api_is_proof_complete_full_response () =
-    let body_as_string = "{\"sequentAsJson\":{\"hyp\": [],\"cons\": [{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"orthogonal\",\"value\":{\"type\":\"litteral\",\"value\":\"a\"}}]},\"appliedRule\":{\"rule\":\"axiom\",\"formulaPosition\":0,\"premisses\":[]}}" in
+    let body_as_string = "{\"sequentAsJson\":{\"hyp\": [],\"cons\": [{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"orthogonal\",\"value\":{\"type\":\"litteral\",\"value\":\"a\"}}]},\"appliedRule\":{\"rule\":\"axiom\",\"formulaPositions\":[0],\"premisses\":[]}}" in
     let response_as_string = call_api_post "is_proof_complete" body_as_string 200 in
     let expected_response_as_string = "{\"is_complete\":true}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string

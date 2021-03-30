@@ -5,7 +5,7 @@ type proof = {
 }
 and applied_rule = {
     rule:string;
-    formula_position: int;
+    formula_positions: int list;
     premisses: proof list
 };;
 
@@ -30,10 +30,10 @@ let get_json_string json key =
     try Yojson.Basic.Util.to_string value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_proof_json_exception ("field '" ^ key ^ "' must be a string"))
 
-let get_json_int json key =
+let get_json_int_list json key =
     let value = required_field json key in
-    try Yojson.Basic.Util.to_int value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_proof_json_exception ("field '" ^ key ^ "' must be an int"))
+    try List.map Yojson.Basic.Util.to_int (Yojson.Basic.Util.to_list value)
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_proof_json_exception ("field '" ^ key ^ "' must be a list of int"))
 
 let get_json_list json key =
     let value = required_field json key in
@@ -50,10 +50,10 @@ and json_to_applied_rule json =
     match json with
     | `Null -> None
     | _ -> let rule = get_json_string json "rule" in
-        let formula_position = get_json_int json "formulaPosition" in
+        let formula_positions = get_json_int_list json "formulaPositions" in
         let premisses_as_json = get_json_list json "premisses" in
         let premisses = List.map json_to_proof premisses_as_json in
-        Some {rule=rule; formula_position=formula_position; premisses=premisses};;
+        Some {rule=rule; formula_positions=formula_positions; premisses=premisses};;
 
 (* OPERATIONS *)
 exception Invalid_proof_exception of string;;
@@ -62,7 +62,7 @@ let rec is_valid proof =
     match proof.applied_rule with
         | None -> true
         | Some applied_rule -> try
-                let expected_sequent_list = Linear_logic.apply_rule applied_rule.rule proof.sequent applied_rule.formula_position in
+                let expected_sequent_list = Linear_logic.apply_rule applied_rule.rule proof.sequent applied_rule.formula_positions in
                 let get_sequent p = p.sequent in
                 let given_sequent_list = List.map get_sequent applied_rule.premisses in
                 if not (expected_sequent_list = given_sequent_list)

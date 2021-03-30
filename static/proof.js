@@ -50,21 +50,25 @@ function createSequentTable(sequentAsJson) {
 // PROOF UPDATE
 // ************
 
-function applyRule(rule, $sequentDiv, formulaPosition) {
-    let sequent = getSequentWithPermutations($sequentDiv);
+function applyRule(rule, $sequentDiv, formulaPositions) {
     let $container = $sequentDiv.closest('.proof-container');
+
+    // Sequent json that was stored in div may have been permuted before rule applying
+    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
     $.ajax({
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify({ rule, sequent, formulaPosition }),
+        data: JSON.stringify({ rule, sequent, formulaPositions }),
         success: function(data)
         {
             console.log(data);
             if (data.success === true) {
                 cleanPedagogicError($container);
-                addSequentListPremisses($sequentDiv, rule, formulaPosition, data['sequentList']);
+                addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formulaPositions, data['sequentList']);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -79,30 +83,47 @@ function applyRule(rule, $sequentDiv, formulaPosition) {
     });
 }
 
-function getSequentWithPermutations($sequentDiv) {
-    let sequent = $sequentDiv.data('sequent');
-
+function getSequentPermutation($sequentDiv) {
     return {
-        'hyp': getFormulasWithPermutation($sequentDiv.find('ul.hyp'), sequent['hyp']),
-        'cons': getFormulasWithPermutation($sequentDiv.find('ul.cons'), sequent['cons'])
+        'hyp': getFormulasPermutation($sequentDiv.find('ul.hyp')),
+        'cons': getFormulasPermutation($sequentDiv.find('ul.cons'))
     };
 }
 
-function getFormulasWithPermutation($ul, initialFormulas) {
-    let newFormulas = [];
+function getFormulasPermutation($ul) {
+    let permutation = [];
 
     $ul.find('li').each(function(i, obj) {
         let initialPosition = $(obj).data('initialPosition');
-        newFormulas.push(initialFormulas[initialPosition]);
+        permutation.push(initialPosition);
     })
+
+    return permutation;
+}
+
+function permuteSequent(sequentWithoutPermutation, sequentPermutation) {
+    return {
+        'hyp': permuteFormulas(sequentWithoutPermutation['hyp'], sequentPermutation['hyp']),
+        'cons': permuteFormulas(sequentWithoutPermutation['cons'], sequentPermutation['cons'])
+    };
+}
+
+function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
+    let newFormulas = [];
+
+    for (let initialPosition of formulasPermutation) {
+        newFormulas.push(formulasWithoutPermutation[initialPosition]);
+    }
 
     return newFormulas;
 }
 
-function addSequentListPremisses($sequentDiv, rule, formulaPosition, sequentList) {
-    // Save rule & formulaPosition
-    $sequentDiv.data('rule', rule)
-        .data('formulaPosition', formulaPosition);
+function addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formulaPositions, sequentList) {
+    // Save data
+    $sequentDiv
+        .data('permutationBeforeRule', permutationBeforeRule)
+        .data('rule', rule)
+        .data('formulaPositions', formulaPositions);
 
     // Add line
     let $td = $sequentDiv.closest('td');
@@ -198,11 +219,11 @@ function markAsCompleteIfProofIsComplete($container) {
 
 function recGetProofAsJson($table) {
     let $sequentDiv = $table.find('div.sequent');
-    let sequentAsJson = $sequentDiv.data('sequent');
+    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
     let rule = $sequentDiv.data('rule') || null;
     let appliedRule = null;
     if (rule !== null) {
-        let formulaPosition = $sequentDiv.data('formulaPosition');
+        let formulaPositions = $sequentDiv.data('formulaPositions');
         let $prev = $table.prev();
         let premisses = [];
         if ($prev.length) {
@@ -214,10 +235,30 @@ function recGetProofAsJson($table) {
                 })
             }
         }
-        appliedRule = { rule, formulaPosition, premisses };
+        appliedRule = { rule, formulaPositions, premisses };
+
+        let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
+        if (!isIdentity(permutationBeforeRule)) {
+            let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+            appliedRule = {
+                rule: "exchange",
+                permutation: permutationBeforeRule,
+                premisses: [{sequentAsJson: sequentWithPermutation, appliedRule}]
+            }
+        }
     }
 
-    return { sequentAsJson, appliedRule };
+    return { sequentAsJson: sequentWithoutPermutation, appliedRule };
+}
+
+function isIdentity(permutation) {
+    for (let i = 0; i < permutation.length; i++) {
+        if (i !== permutation[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function checkProofIsComplete(proofAsJson, callbackIfComplete) {

@@ -34,7 +34,7 @@ const NEUTRAL_ELEMENTS = {
 
 function createSequent(sequentAsJson) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
-        .data('sequent', sequentAsJson);
+        .data('sequentWithoutPermutation', sequentAsJson);
 
     if ('hyp' in sequentAsJson) {
         createFormulaList(sequentAsJson, 'hyp', $sequentDiv);
@@ -42,7 +42,7 @@ function createSequent(sequentAsJson) {
 
     let $thesisSpan = $('<span class="turnstile explained">⊢</span>');
     $thesisSpan.on('click', function () {
-        applyRule('axiom', $sequentDiv, 0);
+        applyRule('axiom', $sequentDiv, []);
     });
     $sequentDiv.append($thesisSpan);
 
@@ -225,9 +225,9 @@ function addEventsAndStyle($li, formulaAsJson) {
 function buildApplyRuleCallBack(rule, $li) {
     return function() {
         let $sequentDiv = $li.closest('div.sequent');
-        let formulaPosition = $li.parent().children().index($li);
+        let formulaPositions = [$li.parent().children().index($li)];
 
-        applyRule(rule, $sequentDiv, formulaPosition);
+        applyRule(rule, $sequentDiv, formulaPositions);
     }
 }
 

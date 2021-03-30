@@ -138,14 +138,19 @@ let is_whynot = function
 exception Apply_rule_technical_exception of string;;
 exception Apply_rule_logic_exception of string;;
 
-let rec head_formula_tail formula_position = function
-    | [] -> raise (Apply_rule_technical_exception "Argument formula_position is greater than the number of given formulas")
+let rec head_formula_tail_with_int formula_position = function
+    | [] -> raise (Apply_rule_technical_exception "Argument formula_positions[0] is greater than the number of given formulas")
     | f :: formula_list -> if formula_position = 0
         then [], f, formula_list
-        else let head, formula, tail = head_formula_tail (formula_position - 1) formula_list
+        else let head, formula, tail = head_formula_tail_with_int (formula_position - 1) formula_list
         in f::head, formula, tail;;
 
-let apply_rule rule sequent formula_position =
+let head_formula_tail = function
+    | [] -> raise (Apply_rule_technical_exception "Argument formula_positions contains too few integer")
+    | formula_position :: [] -> head_formula_tail_with_int formula_position
+    | _ -> raise (Apply_rule_technical_exception "Argument formula_positions contains too many integers");;
+
+let apply_rule rule sequent formula_positions =
     (* Applying rule on sequent with non empty hypotheses is not implemented yet *)
     if sequent.hyp != [] then raise (Apply_rule_technical_exception ("This API can apply rule only on monolatery sequent for the moment"))
 
@@ -162,69 +167,69 @@ let apply_rule rule sequent formula_position =
         | _ -> raise (Apply_rule_logic_exception ("Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
     )
     | "bottom" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         | Bottom -> [{hyp=[]; cons=(head @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "top" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         | Top -> []
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "zero" -> raise (Apply_rule_logic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
     | "tensor" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Tensor (e1, e2) -> [{hyp=[]; cons=(head @ [e1])}; {hyp=[]; cons=([e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "par" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Par (e1, e2) -> [{hyp=[]; cons=(head @ [e1; e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "with" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         With (e1, e2) -> [{hyp=[]; cons=(head @ [e1] @ tail)}; {hyp=[]; cons=(head @ [e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_left" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Plus (e1, e2) -> [{hyp=[]; cons=(head @ [e1] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "plus_right" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Plus (e1, e2) -> [{hyp=[]; cons=(head @ [e2] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "promotion" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Ofcourse e -> if List.for_all is_whynot head && List.for_all is_whynot tail then [{hyp=[]; cons=(head @ [e] @ tail)}]
             else raise (Apply_rule_logic_exception ("Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."))
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "dereliction" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Whynot e -> [{hyp=[]; cons=(head @ [e] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "weakening" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Whynot e -> [{hyp=[]; cons=(head @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
     )
     | "contraction" -> (
-        let head, formula, tail = head_formula_tail formula_position sequent.cons in
+        let head, formula, tail = head_formula_tail formula_positions sequent.cons in
         match formula with
         Whynot e -> [{hyp=[]; cons=(head @ [Whynot e; Whynot e] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))

@@ -26,7 +26,7 @@ $( function() {
         $container.html('');
         initProof(instructions['sequent'], $container)
         let $sequentDiv = $container.find('div' + '.sequent');
-        applyRule(instructions['rule'], $sequentDiv, instructions['formulaPosition']);
+        applyRule(instructions['rule'], $sequentDiv, instructions['formulaPositions']);
     })
 } );
 

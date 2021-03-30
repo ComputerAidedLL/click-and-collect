@@ -14,10 +14,10 @@ let get_string d k =
     try Yojson.Basic.Util.to_string value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a string"))
 
-let get_int d k =
+let get_int_list d k =
     let value = get_key d k in
-    try Yojson.Basic.Util.to_int value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be an int"))
+    try List.map Yojson.Basic.Util.to_int (Yojson.Basic.Util.to_list value)
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a list of int"))
 
 let get_list d k =
     let value = get_key d k in
@@ -27,9 +27,9 @@ let get_list d k =
 let apply_rule_with_exceptions request_as_json =
     let rule = get_string request_as_json "rule" in
     let sequent_as_json = get_key request_as_json "sequent" in
-    let formula_position = get_int request_as_json "formulaPosition" in
+    let formula_positions = get_int_list request_as_json "formulaPositions" in
     let sequent = Linear_logic.json_to_sequent sequent_as_json in
-    Linear_logic.apply_rule rule sequent formula_position
+    Linear_logic.apply_rule rule sequent formula_positions
 
 let apply_rule request_as_json =
     try let sequent_list = apply_rule_with_exceptions request_as_json in

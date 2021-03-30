@@ -101,7 +101,7 @@
             {"type":"neutral","value":"one"}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_sequent_list_as_json": []
     },
@@ -116,7 +116,7 @@
             {"type":"litteral","value":"a"}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{"hyp": [], "cons": [
         {"type":"neutral","value":"one"},
@@ -135,7 +135,7 @@
             {"type":"neutral","value":"top"}
           ]
         },
-        "formulaPosition":2
+        "formulaPositions":[2]
       },
       "expected_sequent_list_as_json": []
     },
@@ -149,7 +149,7 @@
             {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": []
     },
@@ -163,7 +163,7 @@
             {"type":"neutral","value":"bottom"}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": []
     },
@@ -181,7 +181,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
@@ -210,7 +210,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
@@ -236,7 +236,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -262,7 +262,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -284,7 +284,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -299,7 +299,7 @@
           "hyp": [],
           "cons": [{"type":"ofcourse","value":{"type":"litteral","value":"a"}}]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"}
@@ -315,7 +315,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"whynot","value":{"type":"litteral","value":"b"}},
@@ -331,7 +331,7 @@
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[]}]
     },
@@ -344,7 +344,7 @@
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[{"type":"litteral","value":"a"}]}]
     },
@@ -357,7 +357,7 @@
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"whynot","value":{"type":"litteral","value":"a"}},
@@ -379,7 +379,7 @@
         }
       ]
       },
-      "formulaPosition": 0
+      "formulaPositions":[0]
     },
     {
       "rule": "par",
@@ -391,7 +391,7 @@
         }
       ]
       },
-      "formulaPosition": 0
+      "formulaPositions":[0]
     },
     {
       "rule": "par",
@@ -403,7 +403,7 @@
         }
       ]
       },
-      "formulaPosition": 0
+      "formulaPositions":[0]
     },
     {
       "rule": "par",
@@ -415,7 +415,7 @@
         }
       ]
       },
-      "formulaPosition": 1
+      "formulaPositions":[1]
     },
     {
       "rule": "par",
@@ -427,7 +427,7 @@
         }
       ]
       },
-      "formulaPosition": -1
+      "formulaPositions":[-1]
     },
     {
       "rule":"bottom",
@@ -439,7 +439,7 @@
           {"type":"litteral","value":"a"}
         ]
       },
-      "formulaPosition":0
+      "formulaPositions":[0]
     },
     {
       "rule":"top",
@@ -450,7 +450,7 @@
           {"type":"neutral","value":"one"}
         ]
       },
-      "formulaPosition":1
+      "formulaPositions":[1]
     },
     {
       "rule": "plus",
@@ -464,7 +464,7 @@
           }
         ]
       },
-      "formulaPosition": 0
+      "formulaPositions":[0]
     }
   ],
   "call_api_apply_rule_logic_exception": [
@@ -478,7 +478,7 @@
             {"type":"neutral","value":"one"}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_error_message": "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."
     },
@@ -492,7 +492,7 @@
             {"type":"neutral","value":"zero"}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_error_message": "Can not apply 'axiom' rule: the two formulas are not orthogonal."
     },
@@ -507,7 +507,7 @@
             {"type":"neutral","value":"top"}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_error_message": "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."
     },
@@ -520,7 +520,7 @@
             {"type":"neutral","value":"zero"}
           ]
         },
-        "formulaPosition":0
+        "formulaPositions":[0]
       },
       "expected_error_message": "Can not apply 'zero' rule: there is no rule for introducing '0'."
     },
@@ -534,7 +534,7 @@
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         },
-        "formulaPosition":1
+        "formulaPositions":[1]
       },
       "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
@@ -548,13 +548,13 @@
       ]},
       "appliedRule":{
         "rule":"par",
-        "formulaPosition":0,
+        "formulaPositions":[0],
         "premisses":[
           {
             "sequentAsJson":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
-            ]},"appliedRule":{"rule":"axiom","formulaPosition":0,"premisses":[]}
+            ]},"appliedRule":{"rule":"axiom","formulaPositions":[0],"premisses":[]}
           }
         ]
       }
