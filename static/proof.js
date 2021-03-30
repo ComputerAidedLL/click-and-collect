@@ -64,7 +64,7 @@ function applyRule(rule, $sequentDiv, formulaPosition) {
             console.log(data);
             if (data.success === true) {
                 cleanPedagogicError($container);
-                addSequentListPremisses($sequentDiv, data['sequentList'], rule);
+                addSequentListPremisses($sequentDiv, rule, formulaPosition, data['sequentList']);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -99,9 +99,10 @@ function getFormulasWithPermutation($ul, initialFormulas) {
     return newFormulas;
 }
 
-function addSequentListPremisses($sequentDiv, sequentList, rule) {
-    // Save rule
-    $sequentDiv.data('rule', rule);
+function addSequentListPremisses($sequentDiv, rule, formulaPosition, sequentList) {
+    // Save rule & formulaPosition
+    $sequentDiv.data('rule', rule)
+        .data('formulaPosition', formulaPosition);
 
     // Add line
     let $td = $sequentDiv.closest('td');
@@ -125,7 +126,7 @@ function addSequentListPremisses($sequentDiv, sequentList, rule) {
 
     // Add new sequents
     if (sequentList.length === 0) {
-        checkProofIsComplete($container);
+        markAsCompleteIfProofIsComplete($container);
     } else if (sequentList.length === 1) {
         createSequentTable(sequentList[0]).insertBefore($table);
     } else {
@@ -169,24 +170,41 @@ function cleanPedagogicError($container) {
 // CHECK PROOF COMPLETION
 // **********************
 
-function checkProofIsComplete($container) {
-    let $mainDiv = $container
-        .children('div');
-    let $mainTable = $mainDiv.children('div.proof')
-        .children('table').last();
-    if (recCheckIsComplete(recGetProofAsJson($mainTable))) {
-        $mainDiv.removeClass('proofIsIncomplete');
-        $mainDiv.addClass('proofIsDone');
-    }
+function markAsComplete($container) {
+    let $mainDiv = $container.children('div');
+    $mainDiv.removeClass('proofIsIncomplete');
+    $mainDiv.addClass('proofIsDone');
+}
+
+function markAsIncomplete($container) {
+    let $mainDiv = $container.children('div');
+    $mainDiv.removeClass('proofIsDone');
+    $mainDiv.addClass('proofIsIncomplete');
+}
+
+function markAsCompleteIfProofIsComplete($container) {
+    let $mainTable = $container
+        .children('div')
+        .children('div.proof')
+        .children('table')
+        .last();
+
+    // We get proof stored in HTML
+    let proofAsJson = recGetProofAsJson($mainTable);
+
+    // We check if proof is complete
+    checkProofIsComplete(proofAsJson, function() {markAsComplete($container);});
 }
 
 function recGetProofAsJson($table) {
     let $sequentDiv = $table.find('div.sequent');
-    let sequent = $sequentDiv.data('sequent');
+    let sequentAsJson = $sequentDiv.data('sequent');
     let rule = $sequentDiv.data('rule') || null;
-    let premisses = [];
+    let appliedRule = null;
     if (rule !== null) {
+        let formulaPosition = $sequentDiv.data('formulaPosition');
         let $prev = $table.prev();
+        let premisses = [];
         if ($prev.length) {
             if ($prev.prop('tagName') === 'TABLE') {
                 premisses = [recGetProofAsJson($prev)];
@@ -196,27 +214,54 @@ function recGetProofAsJson($table) {
                 })
             }
         }
+        appliedRule = { rule, formulaPosition, premisses };
     }
 
-    return { sequent, rule, premisses };
+    return { sequentAsJson, appliedRule };
+}
+
+function checkProofIsComplete(proofAsJson, callbackIfComplete) {
+    // checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete);
+
+    if (recCheckIsComplete(proofAsJson)) {
+        callbackIfComplete();
+    }
 }
 
 function recCheckIsComplete(proofAsJson) {
-    if (proofAsJson.rule === null) {
+    if (proofAsJson.appliedRule === null) {
         return false;
     }
 
     let response = true;
 
-    for (let premiss of proofAsJson.premisses) {
+    for (let premiss of proofAsJson.appliedRule.premisses) {
         response = response && recCheckIsComplete(premiss);
     }
 
     return response;
 }
 
-function markAsIncomplete($container) {
-    let $mainDiv = $container.children('div');
-    $mainDiv.removeClass('proofIsDone');
-    $mainDiv.addClass('proofIsIncomplete');
+function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
+    console.log(proofAsJson);
+    $.ajax({
+        type: 'POST',
+        url: '/is_proof_complete',
+        contentType:'application/json; charset=utf-8',
+        data: JSON.stringify(proofAsJson),
+        success: function(data)
+        {
+            console.log(data);
+            if (data['is_complete'] === true) {
+                callbackIfComplete();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(jqXHR.responseText);
+            console.log(textStatus);
+            console.log(errorThrown);
+            alert('Technical error, check browser console for more details.');
+        }
+    });
 }
