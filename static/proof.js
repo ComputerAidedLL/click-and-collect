@@ -231,7 +231,7 @@ function recGetProofAsJson($table) {
                 premisses = [recGetProofAsJson($prev)];
             } else {
                 $prev.children('div.sibling').each(function (i, sibling) {
-                    premisses.push(recGetProofAsJson($(sibling).children('table')));
+                    premisses.push(recGetProofAsJson($(sibling).children('table').last()));
                 })
             }
         }
