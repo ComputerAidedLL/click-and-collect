@@ -238,17 +238,21 @@ function recGetProofAsJson($table) {
         appliedRule = { rule, formulaPositions, premisses };
 
         let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
-        if (!isIdentity(permutationBeforeRule)) {
+        if (!isIdentitySequentPermutation(permutationBeforeRule)) {
             let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
             appliedRule = {
-                rule: "exchange",
-                permutation: permutationBeforeRule,
+                rule: 'exchange',
+                formulaPositions: permutationBeforeRule['cons'],
                 premisses: [{sequentAsJson: sequentWithPermutation, appliedRule}]
             }
         }
     }
 
     return { sequentAsJson: sequentWithoutPermutation, appliedRule };
+}
+
+function isIdentitySequentPermutation(sequentPermutation) {
+    return isIdentity(sequentPermutation['hyp']) && isIdentity(sequentPermutation['cons']);
 }
 
 function isIdentity(permutation) {
@@ -262,11 +266,11 @@ function isIdentity(permutation) {
 }
 
 function checkProofIsComplete(proofAsJson, callbackIfComplete) {
-    // checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete);
+    checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete);
 
-    if (recCheckIsComplete(proofAsJson)) {
-        callbackIfComplete();
-    }
+    // if (recCheckIsComplete(proofAsJson)) {
+    //     callbackIfComplete();
+    // }
 }
 
 function recCheckIsComplete(proofAsJson) {

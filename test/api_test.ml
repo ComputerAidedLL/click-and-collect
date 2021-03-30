@@ -120,6 +120,14 @@ let call_api_is_proof_complete () =
         Alcotest.(check bool) "is_complete" true success in
     List.iter run_test test_samples
 
+let call_api_is_proof_complete_exception () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "call_api_is_proof_complete_exception" |> to_list in
+    let run_test test_sample =
+        let response = call_api_post "is_proof_complete" (Yojson.Basic.to_string test_sample) 400 in
+        Alcotest.(check bool) "not empty response" true (response <> "") in
+    List.iter run_test test_samples
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -136,6 +144,7 @@ let test_apply_rule = [
 let test_is_proof_complete = [
     "Test full response", `Quick, call_api_is_proof_complete_full_response;
     "Test proof", `Quick, call_api_is_proof_complete;
+    "Test proof exception", `Quick, call_api_is_proof_complete_exception;
 ]
 
 (* Run it *)

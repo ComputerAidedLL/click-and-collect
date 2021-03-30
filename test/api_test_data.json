@@ -558,6 +558,59 @@
           }
         ]
       }
+    },
+    {
+      "sequentAsJson":{"hyp":[],"cons":[
+        {"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
+        {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
+      "appliedRule":{
+        "rule":"par",
+        "formulaPositions":[0],
+        "premisses":[
+          {
+            "sequentAsJson":{"hyp":[],"cons":[
+              {"type":"litteral","value":"A"},
+              {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+              {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
+            "appliedRule":{
+              "rule":"exchange",
+              "formulaPositions":[1,2,0],
+              "premisses":[
+                {
+                  "sequentAsJson":{"hyp":[],"cons":[
+                    {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+                    {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
+                    {"type":"litteral","value":"A"}]},
+                  "appliedRule":{
+                    "rule":"tensor",
+                    "formulaPositions":[1],
+                    "premisses":[
+                      {
+                        "sequentAsJson":{"hyp":[],"cons":[
+                          {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+                          {"type":"litteral","value":"A"}]},
+                        "appliedRule":{
+                          "rule":"axiom","formulaPositions":[1],"premisses":[]}},
+                      {
+                        "sequentAsJson":{"hyp":[],"cons":[
+                          {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+                          {"type":"litteral","value":"A"}]},
+                        "appliedRule":{
+                          "rule":"axiom",
+                          "formulaPositions":[1],
+                          "premisses":[]}}]}}]}}]}
+    }
+  ],
+  "call_api_is_proof_complete_exception": [
+    {
+      "sequentAsJson":{"hyp":[],"cons":[
+        {"type":"litteral","value":"A"},
+        {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+        {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
+      "appliedRule":{
+        "rule":"exchange",
+        "formulaPositions":[1,1,0],
+        "premisses":[]}
     }
   ]
 }

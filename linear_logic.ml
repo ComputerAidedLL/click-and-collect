@@ -150,6 +150,15 @@ let head_formula_tail = function
     | formula_position :: [] -> head_formula_tail_with_int formula_position
     | _ -> raise (Apply_rule_technical_exception "Argument formula_positions contains too many integers");;
 
+let rec permute l = function
+    | [] -> []
+    | n :: tail -> (List.nth l n) :: (permute l tail);;
+
+let is_valid_permutation l =
+    let sorted_l = List.sort Int.compare l in
+    let identity = List.init (List.length l) (fun n -> n) in
+    sorted_l = identity;;
+
 let apply_rule rule sequent formula_positions =
     (* Applying rule on sequent with non empty hypotheses is not implemented yet *)
     if sequent.hyp != [] then raise (Apply_rule_technical_exception ("This API can apply rule only on monolatery sequent for the moment"))
@@ -233,5 +242,12 @@ let apply_rule rule sequent formula_positions =
         match formula with
         Whynot e -> [{hyp=[]; cons=(head @ [Whynot e; Whynot e] @ tail)}]
         | _ -> raise (Apply_rule_technical_exception ("Cannot apply rule '" ^ rule ^ "' on this formula"))
+    )
+    | "exchange" -> (
+        if List.length sequent.cons <> List.length formula_positions
+        then raise (Apply_rule_technical_exception ("When applying exchange rule, formula_positions and sequent must have same size"))
+        else if not (is_valid_permutation formula_positions)
+        then raise (Apply_rule_technical_exception ("When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
+        else [{hyp=[]; cons=permute sequent.cons formula_positions}]
     )
     | _ -> raise (Apply_rule_technical_exception ("Unknown rule '" ^ rule ^ "'"));;
