@@ -30,7 +30,7 @@ let read_raw_content ?(length = 4096) raw_content =
 module Linearon_app =
   Eliom_registration.App (
   struct
-    let application_name = "click-and-collect"
+    let application_name = "click_and_collect"
     let global_data_path = None
   end)
 

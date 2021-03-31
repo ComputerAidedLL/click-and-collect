@@ -134,7 +134,7 @@ function addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formu
         .html($('<div>', {'class': `tag ${rule}`})
             .html(RULES[rule]));
 
-    // Remove old premisses if any
+    // Remove old premises if any
     let $table = $td.closest('table');
     $table.prevAll().each(function (i, e) {
         e.remove();
@@ -225,17 +225,17 @@ function recGetProofAsJson($table) {
     if (rule !== null) {
         let formulaPositions = $sequentDiv.data('formulaPositions');
         let $prev = $table.prev();
-        let premisses = [];
+        let premises = [];
         if ($prev.length) {
             if ($prev.prop('tagName') === 'TABLE') {
-                premisses = [recGetProofAsJson($prev)];
+                premises = [recGetProofAsJson($prev)];
             } else {
                 $prev.children('div.sibling').each(function (i, sibling) {
-                    premisses.push(recGetProofAsJson($(sibling).children('table').last()));
+                    premises.push(recGetProofAsJson($(sibling).children('table').last()));
                 })
             }
         }
-        appliedRule = { rule, formulaPositions, premisses };
+        appliedRule = { rule, formulaPositions, premises };
 
         let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
         if (!isIdentitySequentPermutation(permutationBeforeRule)) {
@@ -243,7 +243,7 @@ function recGetProofAsJson($table) {
             appliedRule = {
                 rule: 'exchange',
                 formulaPositions: permutationBeforeRule['cons'],
-                premisses: [{sequentAsJson: sequentWithPermutation, appliedRule}]
+                premises: [{sequentAsJson: sequentWithPermutation, appliedRule}]
             }
         }
     }
@@ -280,7 +280,7 @@ function recCheckIsComplete(proofAsJson) {
 
     let response = true;
 
-    for (let premiss of proofAsJson.appliedRule.premisses) {
+    for (let premiss of proofAsJson.appliedRule.premises) {
         response = response && recCheckIsComplete(premiss);
     }
 

@@ -553,12 +553,12 @@
       "appliedRule":{
         "rule":"par",
         "formulaPositions":[0],
-        "premisses":[
+        "premises":[
           {
             "sequentAsJson":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
-            ]},"appliedRule":{"rule":"axiom","formulaPositions":[0],"premisses":[]}
+            ]},"appliedRule":{"rule":"axiom","formulaPositions":[0],"premises":[]}
           }
         ]
       }
@@ -570,7 +570,7 @@
       "appliedRule":{
         "rule":"par",
         "formulaPositions":[0],
-        "premisses":[
+        "premises":[
           {
             "sequentAsJson":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
@@ -579,7 +579,7 @@
             "appliedRule":{
               "rule":"exchange",
               "formulaPositions":[1,2,0],
-              "premisses":[
+              "premises":[
                 {
                   "sequentAsJson":{"hyp":[],"cons":[
                     {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
@@ -588,13 +588,13 @@
                   "appliedRule":{
                     "rule":"tensor",
                     "formulaPositions":[1],
-                    "premisses":[
+                    "premises":[
                       {
                         "sequentAsJson":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
-                          "rule":"axiom","formulaPositions":[1],"premisses":[]}},
+                          "rule":"axiom","formulaPositions":[1],"premises":[]}},
                       {
                         "sequentAsJson":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
@@ -602,7 +602,7 @@
                         "appliedRule":{
                           "rule":"axiom",
                           "formulaPositions":[1],
-                          "premisses":[]}}]}}]}}]}
+                          "premises":[]}}]}}]}}]}
     }
   ],
   "call_api_is_proof_complete_exception": [
@@ -614,7 +614,7 @@
       "appliedRule":{
         "rule":"exchange",
         "formulaPositions":[1,1,0],
-        "premisses":[]}
+        "premises":[]}
     }
   ]
 }

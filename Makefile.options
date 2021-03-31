@@ -3,7 +3,7 @@
 #           SETTINGS FOR THE ELIOM PROJECT click-and-collect
 #----------------------------------------------------------------------
 
-PROJECT_NAME := click-and-collect
+PROJECT_NAME := click_and_collect
 
 # Source files for the server
 SERVER_FILES := $(filter-out test.ml, $(wildcard *.eliomi *.eliom *.ml *.mli))
