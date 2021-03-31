@@ -57,7 +57,8 @@ let call_api_parse_sequent_syntax_exception () =
     assert_syntax_exception "|-a,";
     assert_syntax_exception ",,";
     assert_syntax_exception "a^,~a";
-    assert_syntax_exception "!a,b\\/c"
+    assert_syntax_exception "!a,b\\/c";
+    assert_syntax_exception "2"
 
 let call_api_apply_rule_full_response () =
     let body_as_string = "{\"rule\":\"par\", \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litteral\", \"value\":\"a\"},\"value2\":{\"type\": \"litteral\", \"value\":\"a\"}}]}, \"formulaPositions\":[0]}" in

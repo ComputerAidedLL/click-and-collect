@@ -9,6 +9,10 @@
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a'"}]}
     },
     {
+      "sequent_as_string": "Δ′",
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"Δ′"}]}
+    },
+    {
       "sequent_as_string": "a1",
       "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a1"}]}
     },
