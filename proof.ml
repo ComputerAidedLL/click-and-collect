@@ -51,8 +51,8 @@ and json_to_applied_rule json =
     | `Null -> None
     | _ -> let rule = get_json_string json "rule" in
         let formula_positions = get_json_int_list json "formulaPositions" in
-        let premisses_as_json = get_json_list json "premises" in
-        let premises = List.map json_to_proof premisses_as_json in
+        let premises_as_json = get_json_list json "premises" in
+        let premises = List.map json_to_proof premises_as_json in
         Some {rule=rule; formula_positions=formula_positions; premises=premises};;
 
 (* OPERATIONS *)

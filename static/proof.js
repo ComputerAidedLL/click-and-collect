@@ -23,13 +23,29 @@ const RULES = {
 // PROOF DISPLAY
 // *************
 
-function initProof(sequentAsJson, $container) {
+function initProof(proofAsJson, $container) {
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
-    let $sequentTable = createSequentTable(sequentAsJson);
-    $div2.append($sequentTable);
+    createSubProof(proofAsJson, $div2);
     $div.append($div2);
     $container.append($div);
+}
+
+function initProofWithSequent(sequentAsJson, $container) {
+    initProof({sequentAsJson, appliedRule: null}, $container);
+}
+
+function createSubProof(proofAsJson, $subProofDivContainer) {
+    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson);
+    $subProofDivContainer.prepend($sequentTable);
+    let $sequentDiv = $sequentTable.find('div' + '.sequent');
+    if (proofAsJson.appliedRule) {
+        addPremises($sequentDiv,
+            null,
+            proofAsJson.appliedRule.rule,
+            proofAsJson.appliedRule.formulaPositions,
+            proofAsJson.appliedRule.premises);
+    }
 }
 
 function createSequentTable(sequentAsJson) {
@@ -68,7 +84,10 @@ function applyRule(rule, $sequentDiv, formulaPositions) {
             console.log(data);
             if (data.success === true) {
                 cleanPedagogicError($container);
-                addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formulaPositions, data['sequentList']);
+                let premises = data['sequentList'].map(function (sequentAsJson) {
+                    return { sequentAsJson, appliedRule: null };
+                });
+                addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, true);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -118,7 +137,7 @@ function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
     return newFormulas;
 }
 
-function addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formulaPositions, sequentList) {
+function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, checkCompletion=false) {
     // Save data
     $sequentDiv
         .data('permutationBeforeRule', permutationBeforeRule)
@@ -145,16 +164,18 @@ function addSequentListPremisses($sequentDiv, permutationBeforeRule, rule, formu
     let $container = $table.closest('.proof-container');
     markAsIncomplete($container);
 
-    // Add new sequents
-    if (sequentList.length === 0) {
-        markAsCompleteIfProofIsComplete($container);
-    } else if (sequentList.length === 1) {
-        createSequentTable(sequentList[0]).insertBefore($table);
+    // Add premises
+    if (premises.length === 0) {
+        if (checkCompletion) {
+            markAsCompleteIfProofIsComplete($container);
+        }
+    } else if (premises.length === 1) {
+        createSubProof(premises[0], $table.parent());
     } else {
         let $div = $('<div>');
-        for (let sequent of sequentList) {
+        for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            $sibling.append(createSequentTable(sequent))
+            createSubProof(premise, $sibling)
             $div.append($sibling);
         }
         $table.addClass('binary-rule');
@@ -252,6 +273,10 @@ function recGetProofAsJson($table) {
 }
 
 function isIdentitySequentPermutation(sequentPermutation) {
+    if (sequentPermutation === null) {
+        return true;
+    }
+
     return isIdentity(sequentPermutation['hyp']) && isIdentity(sequentPermutation['cons']);
 }
 

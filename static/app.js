@@ -16,17 +16,15 @@ $( function() {
         let $container = $(container);
         let sequentAsJson = JSON.parse($container.html());
         $container.html('');
-        initProof(sequentAsJson, $container);
+        initProofWithSequent(sequentAsJson, $container);
     })
 
     // Create rules proof
     $('.rules .proof-container').each(function (i, container) {
         let $container = $(container);
-        let instructions = JSON.parse($container.html());
+        let proofAsJson = JSON.parse($container.html());
         $container.html('');
-        initProof(instructions['sequent'], $container)
-        let $sequentDiv = $container.find('div' + '.sequent');
-        applyRule(instructions['rule'], $sequentDiv, instructions['formulaPositions']);
+        initProof(proofAsJson, $container);
     })
 } );
 
@@ -58,7 +56,7 @@ function parseSequentAsString(sequentAsString, $container) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProof(data['sequent_as_json'], $container);
+                initProofWithSequent(data['sequent_as_json'], $container);
             } else {
                 displayPedagogicError(data['error_message'], $container);
             }

@@ -65,5 +65,4 @@ input[type=text], .code { background-color: #EEE; font-family: "Courier New", sa
 
 /* RULES */
 .rules .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
-.rules .proofIsDone .proof { background: none; }
 .rules .proof-container { display: inline-block; vertical-align: bottom; }
