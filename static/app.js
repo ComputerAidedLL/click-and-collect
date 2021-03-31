@@ -14,9 +14,9 @@ $( function() {
     // Create tutorial proof
     $('.tutorial .proof-container').each(function (i, container) {
         let $container = $(container);
-        let sequentAsString = $container.html();
+        let sequentAsJson = JSON.parse($container.html());
         $container.html('');
-        parseSequentAsString(sequentAsString, $container);
+        initProof(sequentAsJson, $container);
     })
 
     // Create rules proof

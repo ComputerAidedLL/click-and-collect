@@ -19,8 +19,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-6M0JK9PWN1"></script>
-        <script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-6M0JK9PWN1" type="text/javascript"></script>
+        <script type="text/javascript">
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
@@ -92,24 +92,24 @@
                 <p>
                     <span class="tutorial">Click on a formula or its orthogonal to apply the <span class="bold">axiom rule</span>.</span>
                 </p>
-                <div class="proof-container">|-A,A^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]}</div>
                 <p>
                     <span class="tutorial">If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply the axiom rule on a two-formulas sequent.</span>
                 </p>
-                <div class="proof-container">|-1,1^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"neutral","value":"one"},{"type":"neutral","value":"bottom"}]}</div>
                 <p>
                     <span class="tutorial">Click on <span class="bold">connectives</span> to apply the associated rules.</span>
                 </p>
-                <div class="proof-container">|-A|A^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
                 <p>
                     <span class="tutorial"><span class="bold">Move formulas</span> within the list before applying <span class="bold">tensor rule</span>.
                         Formulas on the left of the tensor formula will move to the left premise, and formulas on the right of the tensor formula will move to the right premise.</span>
                 </p>
-                <div class="proof-container">|-A,A^,A*A^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
                 <p>
                     <span class="tutorial">As for <span class="bold">plus rules</span>, just click on the left or right sub-formula.</span>
                 </p>
-                <div class="proof-container">|-A,B+A^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"plus","value1":{"type":"litteral","value":"B"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
                 <p>
                     <span class="tutorial">For the <span class="bold">whynot</span> connective, you have three possibilities:</span>
                 </p>
@@ -117,7 +117,7 @@
                     <li>single click on the sub-formula applies <span class="bold">dereliction</span></li>
                     <li>double click applies <span class="bold">contraction</span>.</li>
                 </ul>
-                <div class="proof-container">|-?A,?B,A^*A^</div>
+                <div class="proof-container">{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"B"}},{"type":"tensor","value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
                 <p>
                     <span><span class="bold">That's it!</span> You should now be able to have all proofs on this tutorial complete (with green background). Have fun!</span>
                 </p>
