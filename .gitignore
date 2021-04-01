@@ -23,3 +23,9 @@ test/execute
 *.vos
 .*.aux
 .lia.cache
+nanoyalla/*Makefile*
+
+# LaTeX
+*.aux
+*.log
+*.pdf
