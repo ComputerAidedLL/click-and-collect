@@ -16,7 +16,7 @@ open Linear_logic
 
 %left THESIS                /* lowest precedence */
 %left COMMA                 /* low precedence */
-%left LOLLIPOP              /* medium precedence */
+%right LOLLIPOP             /* medium precedence */
 %left TENSOR PAR WITH PLUS  /* high precedence */
 %nonassoc OFCOURSE WHYNOT   /* very high precedence */
 %nonassoc ORTH              /* highest precedence */

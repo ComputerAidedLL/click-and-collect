@@ -93,6 +93,15 @@
       "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
       ]}
+    },
+    {
+      "sequent_as_string": "A-oB-oC",
+      "expected_sequent_as_json": {"hyp":[],"cons":[
+        {
+          "type":"par",
+          "value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},
+          "value2":{"type":"par","value1":{"type":"orthogonal","value":{"type":"litteral","value":"B"}},"value2":{"type":"litteral","value":"C"}}
+        }]}
     }
   ],
   "call_api_apply_rule": [

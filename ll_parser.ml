@@ -84,7 +84,7 @@ let yyrindex = "\000\000\
 let yygindex = "\000\000\
 \000\000\005\000\251\255"
 
-let yytablesize = 174
+let yytablesize = 179
 let yytable = "\018\000\
 \004\000\005\000\001\000\016\000\030\000\019\000\020\000\017\000\
 \021\000\007\000\008\000\009\000\010\000\022\000\011\000\012\000\
@@ -104,10 +104,11 @@ let yytable = "\018\000\
 \019\000\019\000\000\000\018\000\019\000\019\000\000\000\019\000\
 \019\000\019\000\019\000\004\000\005\000\020\000\020\000\019\000\
 \000\000\020\000\020\000\000\000\007\000\008\000\009\000\010\000\
-\023\000\011\000\012\000\000\000\020\000\024\000\025\000\026\000\
+\023\000\011\000\012\000\000\000\000\000\024\000\025\000\026\000\
 \027\000\028\000\000\000\000\000\000\000\031\000\029\000\024\000\
 \025\000\026\000\027\000\028\000\000\000\000\000\000\000\000\000\
-\029\000\024\000\025\000\026\000\027\000\028\000"
+\029\000\024\000\025\000\026\000\027\000\028\000\000\000\000\000\
+\000\000\000\000\029\000"
 
 let yycheck = "\005\000\
 \003\001\004\001\001\000\006\001\006\001\011\000\012\000\003\000\
@@ -128,10 +129,11 @@ let yycheck = "\005\000\
 \001\001\002\001\255\255\016\001\005\001\006\001\255\255\008\001\
 \009\001\010\001\011\001\003\001\004\001\001\001\002\001\016\001\
 \255\255\005\001\006\001\255\255\012\001\013\001\014\001\015\001\
-\002\001\017\001\018\001\255\255\016\001\007\001\008\001\009\001\
+\002\001\017\001\018\001\255\255\255\255\007\001\008\001\009\001\
 \010\001\011\001\255\255\255\255\255\255\005\001\016\001\007\001\
 \008\001\009\001\010\001\011\001\255\255\255\255\255\255\255\255\
-\016\001\007\001\008\001\009\001\010\001\011\001"
+\016\001\007\001\008\001\009\001\010\001\011\001\255\255\255\255\
+\255\255\255\255\016\001"
 
 let yynames_const = "\
   THESIS\000\
@@ -163,34 +165,34 @@ let yyact = [|
     Obj.repr(
 # 28 "ll_parser.mly"
                                           ( {hyp=[]; cons=[]} )
-# 167 "ll_parser.ml"
+# 169 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 29 "ll_parser.mly"
                                           ( {hyp=[]; cons=[]} )
-# 173 "ll_parser.ml"
+# 175 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 30 "ll_parser.mly"
                                           ( {hyp=[]; cons=_1} )
-# 180 "ll_parser.ml"
+# 182 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formulalist) in
     Obj.repr(
 # 31 "ll_parser.mly"
                                           ( {hyp=_1; cons=[]} )
-# 187 "ll_parser.ml"
+# 189 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 32 "ll_parser.mly"
                                           ( {hyp=[]; cons=_2} )
-# 194 "ll_parser.ml"
+# 196 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 3 : 'formulalist) in
@@ -198,14 +200,14 @@ let yyact = [|
     Obj.repr(
 # 33 "ll_parser.mly"
                                           ( {hyp=_1; cons=_3} )
-# 202 "ll_parser.ml"
+# 204 "ll_parser.ml"
                : Linear_logic.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 37 "ll_parser.mly"
                                 ( [_1] )
-# 209 "ll_parser.ml"
+# 211 "ll_parser.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -213,52 +215,52 @@ let yyact = [|
     Obj.repr(
 # 38 "ll_parser.mly"
                                 ( _1 :: _3 )
-# 217 "ll_parser.ml"
+# 219 "ll_parser.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 42 "ll_parser.mly"
                                 ( One )
-# 223 "ll_parser.ml"
+# 225 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 43 "ll_parser.mly"
                                 ( Bottom )
-# 229 "ll_parser.ml"
+# 231 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 44 "ll_parser.mly"
                                 ( Top )
-# 235 "ll_parser.ml"
+# 237 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 45 "ll_parser.mly"
                                 ( Zero )
-# 241 "ll_parser.ml"
+# 243 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 46 "ll_parser.mly"
                                 ( Litt _1 )
-# 248 "ll_parser.ml"
+# 250 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formula) in
     Obj.repr(
 # 47 "ll_parser.mly"
                                 ( _2 )
-# 255 "ll_parser.ml"
+# 257 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formula) in
     Obj.repr(
 # 48 "ll_parser.mly"
                                 ( Orth (_1) )
-# 262 "ll_parser.ml"
+# 264 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -266,7 +268,7 @@ let yyact = [|
     Obj.repr(
 # 49 "ll_parser.mly"
                                 ( Tensor (_1, _3) )
-# 270 "ll_parser.ml"
+# 272 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -274,7 +276,7 @@ let yyact = [|
     Obj.repr(
 # 50 "ll_parser.mly"
                                 ( Par (_1, _3) )
-# 278 "ll_parser.ml"
+# 280 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -282,7 +284,7 @@ let yyact = [|
     Obj.repr(
 # 51 "ll_parser.mly"
                                 ( With (_1, _3) )
-# 286 "ll_parser.ml"
+# 288 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -290,7 +292,7 @@ let yyact = [|
     Obj.repr(
 # 52 "ll_parser.mly"
                                 ( Plus (_1, _3) )
-# 294 "ll_parser.ml"
+# 296 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formula) in
@@ -298,21 +300,21 @@ let yyact = [|
     Obj.repr(
 # 53 "ll_parser.mly"
                                 ( Lollipop (_1, _3) )
-# 302 "ll_parser.ml"
+# 304 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 54 "ll_parser.mly"
                                 ( Ofcourse (_2) )
-# 309 "ll_parser.ml"
+# 311 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
 # 55 "ll_parser.mly"
                                 ( Whynot (_2) )
-# 316 "ll_parser.ml"
+# 318 "ll_parser.ml"
                : 'formula))
 (* Entry main *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))
