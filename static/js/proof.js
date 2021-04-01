@@ -144,27 +144,22 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
         .data('rule', rule)
         .data('formulaPositions', formulaPositions);
 
-    // Add line
+    // Undo previously applied rule if any
     let $td = $sequentDiv.closest('td');
+    undoRule($td);
+
+    // Add line
     $td.addClass('inference');
 
     // Add rule symbol
     $td.next('.tagBox')
         .html($('<div>', {'class': `tag ${rule}`})
-            .html(RULES[rule]));
-
-    // Remove old premises if any
-    let $table = $td.closest('table');
-    $table.prevAll().each(function (i, e) {
-        e.remove();
-    });
-    $table.removeClass('binary-rule');
-
-    // Mark proof as incomplete
-    let $container = $table.closest('.proof-container');
-    markAsIncomplete($container);
+            .html(RULES[rule])
+            .on('click', function() {undoRule($td);}));
 
     // Add premises
+    let $table = $td.closest('table');
+    let $container = $table.closest('.proof-container');
     if (premises.length === 0) {
         if (checkCompletion) {
             markAsCompleteIfProofIsComplete($container);
@@ -181,6 +176,25 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
         $table.addClass('binary-rule');
         $div.insertBefore($table);
     }
+}
+
+function undoRule($td) {
+    // Remove line
+    $td.removeClass('inference');
+
+    // Remove rule symbol
+    $td.next('.tagBox').html('');
+
+    // Remove premises
+    let $table = $td.closest('table');
+    $table.prevAll().each(function (i, e) {
+        e.remove();
+    });
+    $table.removeClass('binary-rule');
+
+    // Mark proof as incomplete
+    let $container = $table.closest('.proof-container');
+    markAsIncomplete($container);
 }
 
 // ***************

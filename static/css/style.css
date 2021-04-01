@@ -26,6 +26,10 @@ input[type=text], .code { background-color: #EEE; font-family: "Courier New", sa
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em; }
 .syntax td:nth-child(2) { text-align: left; }
 
+.memo ul { margin-top: 0; }
+.memo li { text-indent: 0; margin-top: 0.3em; list-style: circle; }
+.memo ul ul li { list-style: disc; margin-top: 0.1em; }
+
 .tutorial p { margin-top: 1.5em; margin-bottom: 0; }
 .tutorial ul { margin-top: 0; margin-left: 3em; }
 .tutorial li { text-indent: 0; }
@@ -52,7 +56,7 @@ input[type=text], .code { background-color: #EEE; font-family: "Courier New", sa
 .proof .commaList li:after { content: ','; margin-left: 0.2em; }
 .proof .commaList li:last-child:after { content: ''; }
 .proof .binary-connector { margin-left: 3px; margin-right: 3px; }
-.proof .clickableExpr:hover { cursor:pointer; }
+.proof .clickableExpr:hover, .proof .tagBox .tag { cursor:pointer; }
 .proof .highlightableExpr:hover { background: #DDF; }
 .proof .main-formula:hover .primaryConnector { background: #005; color: #FFF; }
 .proof .clickableExpr:hover .tensor-left, .proof .clickableExpr:hover .tensor-right { position: relative; }

@@ -40,7 +40,7 @@ function createSequent(sequentAsJson) {
         createFormulaList(sequentAsJson, 'hyp', $sequentDiv);
     }
 
-    let $thesisSpan = $('<span class="turnstile explained">⊢</span>');
+    let $thesisSpan = $('<span class="turnstile">⊢</span>');
     $thesisSpan.on('click', function () {
         applyRule('axiom', $sequentDiv, []);
     });
