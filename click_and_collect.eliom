@@ -18,9 +18,10 @@ open Yojson
 let send_json ~code json =
   Eliom_registration.String.send ~code (json, "application/json")
 
-let read_raw_content ?(length = 4096) raw_content =
+let read_raw_content raw_content =
   let content_stream = Ocsigen_stream.get raw_content in
-  Ocsigen_stream.string_of_stream length content_stream
+  (* Servers POST body size limit is usually 2MB *)
+  Ocsigen_stream.string_of_stream 65536 content_stream
 
 
 (************)
@@ -78,13 +79,17 @@ let apply_rule_service =
 let apply_rule_handler () (content_type, raw_content_opt) =
     match raw_content_opt with
     | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> read_raw_content raw_content >>= fun request_as_string ->
+    | Some raw_content -> Lwt.catch (fun () ->
+        read_raw_content raw_content >>= fun request_as_string ->
         try
             let request_as_json = Yojson.Basic.from_string request_as_string in
             let technical_success, json_response = apply_rule request_as_json in
             if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
             else send_json ~code:400 (Yojson.Basic.to_string json_response)
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json"
+        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
+        (function
+        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
+        | _ as e -> raise e)
 
 let () =
   Eliom_registration.Any.register apply_rule_service apply_rule_handler;
@@ -106,13 +111,17 @@ let is_proof_complete_service =
 let is_proof_complete_handler () (content_type, raw_content_opt) =
     match raw_content_opt with
     | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> read_raw_content raw_content >>= fun request_as_string ->
+    | Some raw_content -> Lwt.catch (fun () ->
+        read_raw_content raw_content >>= fun request_as_string ->
         try
             let request_as_json = Yojson.Basic.from_string request_as_string in
             let technical_success, json_response = is_proof_complete request_as_json in
             if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
             else send_json ~code:400 (Yojson.Basic.to_string json_response)
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json"
+        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
+        (function
+        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
+        | _ as e -> raise e)
 
 let () =
   Eliom_registration.Any.register is_proof_complete_service is_proof_complete_handler;
