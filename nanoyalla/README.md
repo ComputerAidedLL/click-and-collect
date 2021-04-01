@@ -1,0 +1,4 @@
+Compile using:
+
+    $ ./configure
+    $ make
