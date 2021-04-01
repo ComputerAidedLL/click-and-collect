@@ -23,20 +23,20 @@ const RULES = {
 // PROOF DISPLAY
 // *************
 
-function initProof(proofAsJson, $container) {
+function initProof(proofAsJson, $container, withInteraction) {
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
-    createSubProof(proofAsJson, $div2);
+    createSubProof(proofAsJson, $div2, withInteraction);
     $div.append($div2);
     $container.append($div);
 }
 
-function initProofWithSequent(sequentAsJson, $container) {
-    initProof({sequentAsJson, appliedRule: null}, $container);
+function initProofWithSequent(sequentAsJson, $container, withInteraction) {
+    initProof({sequentAsJson, appliedRule: null}, $container, withInteraction);
 }
 
-function createSubProof(proofAsJson, $subProofDivContainer) {
-    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson);
+function createSubProof(proofAsJson, $subProofDivContainer, withInteraction) {
+    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson, withInteraction);
     $subProofDivContainer.prepend($sequentTable);
     let $sequentDiv = $sequentTable.find('div' + '.sequent');
     if (proofAsJson.appliedRule) {
@@ -44,15 +44,16 @@ function createSubProof(proofAsJson, $subProofDivContainer) {
             null,
             proofAsJson.appliedRule.rule,
             proofAsJson.appliedRule.formulaPositions,
-            proofAsJson.appliedRule.premises);
+            proofAsJson.appliedRule.premises,
+            withInteraction);
     }
 }
 
-function createSequentTable(sequentAsJson) {
+function createSequentTable(sequentAsJson, withInteraction) {
     let $table = $('<table>');
 
     let $td = $('<td>');
-    $td.append(createSequent(sequentAsJson));
+    $td.append(createSequent(sequentAsJson, withInteraction));
     $table.append($td);
 
     let $tagBox = $('<td>', {'class': 'tagBox'})
@@ -137,7 +138,7 @@ function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
     return newFormulas;
 }
 
-function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, checkCompletion=false) {
+function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, withInteraction) {
     // Save data
     $sequentDiv
         .data('permutationBeforeRule', permutationBeforeRule)
@@ -152,25 +153,27 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     $td.addClass('inference');
 
     // Add rule symbol
-    $td.next('.tagBox')
-        .html($('<div>', {'class': `tag ${rule}`})
-            .html(RULES[rule])
-            .on('click', function() {undoRule($td);}));
+    let $ruleSymbol = $('<div>', {'class': `tag ${rule}`}).html(RULES[rule]);
+    if (withInteraction) {
+        $ruleSymbol.addClass('clickable');
+        $ruleSymbol.on('click', function() { undoRule($td); })
+    }
+    $td.next('.tagBox').html($ruleSymbol);
 
     // Add premises
     let $table = $td.closest('table');
     let $container = $table.closest('.proof-container');
     if (premises.length === 0) {
-        if (checkCompletion) {
+        if (withInteraction) {
             markAsCompleteIfProofIsComplete($container);
         }
     } else if (premises.length === 1) {
-        createSubProof(premises[0], $table.parent());
+        createSubProof(premises[0], $table.parent(), withInteraction);
     } else {
         let $div = $('<div>');
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            createSubProof(premise, $sibling)
+            createSubProof(premise, $sibling, withInteraction)
             $div.append($sibling);
         }
         $table.addClass('binary-rule');

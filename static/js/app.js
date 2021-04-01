@@ -16,7 +16,7 @@ $( function() {
         let $container = $(container);
         let sequentAsJson = JSON.parse($container.html());
         $container.html('');
-        initProofWithSequent(sequentAsJson, $container);
+        initProofWithSequent(sequentAsJson, $container, true);
     })
 
     // Create rules proof
@@ -24,7 +24,7 @@ $( function() {
         let $container = $(container);
         let proofAsJson = JSON.parse($container.html());
         $container.html('');
-        initProof(proofAsJson, $container);
+        initProof(proofAsJson, $container, false);
     })
 } );
 
@@ -56,7 +56,7 @@ function parseSequentAsString(sequentAsString, $container) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProofWithSequent(data['sequent_as_json'], $container);
+                initProofWithSequent(data['sequent_as_json'], $container, true);
             } else {
                 displayPedagogicError(data['error_message'], $container);
             }

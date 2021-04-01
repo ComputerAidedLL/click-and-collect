@@ -32,30 +32,35 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY FUNCTION
 // ****************
 
-function createSequent(sequentAsJson) {
+function createSequent(sequentAsJson, withInteraction) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
         .data('sequentWithoutPermutation', sequentAsJson);
 
     if ('hyp' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'hyp', $sequentDiv);
+        createFormulaList(sequentAsJson, 'hyp', $sequentDiv, withInteraction);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
-    $thesisSpan.on('click', function () {
-        applyRule('axiom', $sequentDiv, []);
-    });
+    if (withInteraction) {
+        $thesisSpan.addClass('clickable');
+        $thesisSpan.on('click', function () {
+            applyRule('axiom', $sequentDiv, []);
+        });
+    }
     $sequentDiv.append($thesisSpan);
 
     if ('cons' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'cons', $sequentDiv);
+        createFormulaList(sequentAsJson, 'cons', $sequentDiv, withInteraction);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequentAsJson, field, $sequentDiv) {
-    let $ul = $('<ul>', {'class': ['commaList ' + field]})
-        .sortable({
+function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, withInteraction) {
+    let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
+
+    if (withInteraction) {
+        $ul.sortable({
             helper : 'clone',
             axis: 'x',
             opacity: 0.2,
@@ -63,9 +68,10 @@ function createFormulaList(sequentAsJson, field, $sequentDiv) {
                 ui.placeholder.width(ui.item.width());
             }
         });
+    }
 
-    for (let i = 0; i < sequentAsJson[field].length; i++) {
-        let formulaAsJson = sequentAsJson[field][i];
+    for (let i = 0; i < sequentAsJson[sequentPart].length; i++) {
+        let formulaAsJson = sequentAsJson[sequentPart][i];
         let $li = $('<li>').data('initialPosition', i);
 
         // Build formula
@@ -73,8 +79,10 @@ function createFormulaList(sequentAsJson, field, $sequentDiv) {
             .html(createFormulaHTML(formulaAsJson, true));
         $li.append($span);
 
-        // Add events (click, double-click), and classes for hover
-        addEventsAndStyle($li, formulaAsJson);
+        if (withInteraction) {
+            // Add events (click, double-click), and classes for hover
+            addEventsAndStyle($li, formulaAsJson);
+        }
 
         $ul.append($li);
     }
@@ -192,12 +200,14 @@ function getRules(formulaAsJson) {
 }
 
 function addEventsAndStyle($li, formulaAsJson) {
+    $li.find('span.' + 'main-formula').first().addClass('hoverable');
+
     let rules = getRules(formulaAsJson);
     for (let ruleEvent of rules) {
         let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
 
         // Some hover config
-        $spanForEvent.addClass('clickableExpr');
+        $spanForEvent.addClass('clickable');
         if (ruleEvent.element !== 'main-formula') {
             $spanForEvent.addClass('highlightableExpr');
         }
