@@ -15,3 +15,11 @@ local/
 
 # Executable
 test/execute
+
+# Coq
+*.glob
+*.vo
+*.vok
+*.vos
+.*.aux
+.lia.cache
