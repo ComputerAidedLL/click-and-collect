@@ -22,9 +22,54 @@ match m with
 | S m => transpS n (transp (S n) m (transpS n l))
 end.
 
-(* Apply list of transpositions *)
-Definition transpL {A} s (l : list A) :=
-  fold_left (fun l m => transp 0 m l) s l.
+(* Apply list of transpositions described as a [list (option nat)]:
+   [Some k0;...; Some kn] means (n, n + S kn) o ... o (0, S k0)
+   and None is "no permutation at this position" *)
+Fixpoint transpL {A} s (l : list A) :=
+  match s with
+  | Some k :: s => match (transp 0 k l) with
+                   | x :: r => x :: transpL s r
+                   | nil => l
+                   end
+  | None :: s => match l with
+                 | x :: r => x :: transpL s r
+                 | nil => l
+                 end
+  | nil => l
+  end.
+
+(* Transparent version of [map_length] *)
+Lemma map_length_transp {A B} (f : A -> B) l : length (map f l) = length l.
+Proof. induction l; cbn; auto. Defined.
+
+(* Map a permutation of n elements
+   described as a [list nat] of distinct elements between 0 and n-1
+   into a list of transpositions as used by [transpL] *)
+Definition permL_of_perm : list nat -> list (option nat).
+Proof.
+intros p.
+remember (length p) as n.
+revert p Heqn; induction n as [|n IHn]; intros p Heqn.
+- exact nil.
+- destruct p as [|x p]; inversion Heqn as [Hn].
+  destruct x as [|x].
+  + rewrite <- (map_length_transp pred) in Hn.
+    exact (None :: IHn _ Hn).
+  + rewrite <- (map_length_transp (fun k => if k =? 0 then x else pred k) p) in Hn.
+    exact (Some x :: IHn _ Hn).
+Defined.
+
+(*
+Section Test.
+Variable E : Set.
+Variable ee0 ee1 ee2 ee3 ee4 ee5 ee6 : E.
+Eval cbv in permL_of_perm [3;4;2;1;0].
+Eval cbv in transpL (permL_of_perm [3;4;2;1;0]) [ee0;ee1;ee2;ee3;ee4].
+Eval cbv in transpL (permL_of_perm [5;0;2;3;4;1]) [ee0;ee1;ee2;ee3;ee4;ee5].
+Eval cbv in transpL (permL_of_perm [0;1;2;3;4;5;6]) [ee0;ee1;ee2;ee3;ee4;ee5;ee6].
+Eval cbv in transpL (permL_of_perm [6;5;4;3;2;1;0]) [ee0;ee1;ee2;ee3;ee4;ee5;ee6].
+End Test.
+*)
 
 Lemma transpS_lt {A} n (l : list A) : S n < length l ->
  {'(l1,l2,a,b) | (l = l1 ++ a :: b :: l2 /\ length l1 = n) & transpS n l = l1 ++ b :: a :: l2}.
@@ -63,6 +108,20 @@ destruct (transpS_lt (length l1) (l1 ++ a :: b :: l2)) as [[[[l1' l2'] c] d] [H 
   now inversion H; subst.
 Defined.
 
+Lemma transp_cons {A} a b x (l : list A) :
+  transp (S a) b (x :: l) = x :: transp a b l.
+Proof.
+revert a l; induction b; intros a l; auto.
+now cbn; rewrite (IHb (S a)).
+Defined.
+
+Lemma transp_app_tl {A} l0 a b (l : list A) :
+  transp (length l0 + a) b (l0 ++ l) = l0 ++ transp a b l.
+Proof.
+revert a l; induction l0 as [|x l0 IHl0]; cbn; intros a l; auto.
+now rewrite transp_cons, <- IHl0.
+Defined.
+
 Lemma transp_compute {A} l1 (a : A) l2 b l3 :
   transp (length l1) (length l2) (l1 ++ a :: l2 ++ b :: l3) = l1 ++ b :: l2 ++ a :: l3.
 Proof.
@@ -91,14 +150,31 @@ intros pi.
 destruct (Compare_dec.le_lt_dec (length l) (S n)).
 - now rewrite transpS_overflow.
 - apply transpS_lt in l0 as [[[[l1 l2] b] c] [-> _] ->].
-  now apply (ex_t_r l1 l2 b c).
+  now apply ex_t_r.
 Defined.
+
+Lemma ex_transpS_rev n l : ll (transpS n l) -> ll l.
+Proof.
+intros pi.
+destruct (Compare_dec.le_lt_dec (length l) (S n)).
+- now rewrite transpS_overflow in pi.
+- apply transpS_lt in l0 as [[[[l1 l2] b] c] [Heq1 _] Heq2]; subst.
+  rewrite Heq2 in pi.
+  now apply ex_t_r.
+Qed.
 
 Lemma ex_transp n m l : ll l -> ll (transp n m l).
 Proof.
 revert n l; induction m; intros n l pi.
 - now apply ex_transpS.
 - now apply ex_transpS, IHm, ex_transpS.
+Defined.
+
+Lemma ex_transp_rev n m l : ll (transp n m l) -> ll l.
+Proof.
+revert n l; induction m; intros n l pi.
+- now apply (ex_transpS_rev n).
+- now apply (ex_transpS_rev n), (IHm (S n)), (ex_transpS_rev n).
 Defined.
 
 Lemma ex_transp_middle1 l1 l2 l3 A :
@@ -129,9 +205,49 @@ Defined.
 
 Lemma ex_transpL s l : ll l -> ll (transpL s l).
 Proof.
-revert l; induction s; cbn; intros l pi; auto.
-now apply IHs, ex_transp.
+enough (forall l0, ll (l0 ++ l) -> ll (l0 ++ transpL s l)) as Hs
+  by now intros pi; apply (Hs []).
+revert l; induction s as [|[|] s IHs]; cbn; intros l l0 pi; auto.
+- remember (transp 0 n l) as lt.
+  destruct lt; auto.
+  replace (l0 ++ f :: transpL s lt) with ((l0 ++ f :: nil) ++ transpL s lt)
+    by now rewrite <- app_assoc.
+  apply IHs.
+  rewrite <- app_assoc; cbn.
+  rewrite Heqlt, <- transp_app_tl.
+  now apply ex_transp.
+- destruct l; auto.
+  replace (l0 ++ f :: transpL s l) with ((l0 ++ f :: nil) ++ transpL s l)
+    by now rewrite <- app_assoc.
+  apply IHs.
+  now rewrite <- app_assoc.
 Defined.
+
+Lemma ex_transpL_rev s l : ll (transpL s l) -> ll l.
+Proof.
+enough (forall l0, ll (l0 ++ transpL s l) -> ll (l0 ++ l)) as Hs
+  by now intros pi; apply (Hs []).
+revert l; induction s as [|[|] s IHs]; cbn; intros l l0 pi; auto.
+- remember (transp 0 n l) as lt.
+  destruct lt; auto.
+  replace (l0 ++ f :: transpL s lt) with ((l0 ++ f :: nil) ++ transpL s lt) in pi
+    by now rewrite <- app_assoc.
+  apply IHs in pi.
+  rewrite <- app_assoc in pi; cbn in pi.
+  rewrite Heqlt, <- transp_app_tl in pi.
+  now apply ex_transp_rev in pi.
+- destruct l; auto.
+  replace (l0 ++ f :: transpL s l) with ((l0 ++ f :: nil) ++ transpL s l) in pi
+    by now rewrite <- app_assoc.
+  apply IHs in pi.
+  now rewrite <- app_assoc in pi.
+Defined.
+
+Lemma ex_perm p l : ll l -> ll (transpL (permL_of_perm p) l).
+Proof. now apply ex_transpL. Defined.
+
+Lemma ex_perm_rev p l : ll (transpL (permL_of_perm p) l) -> ll l.
+Proof. now apply ex_transpL_rev. Defined.
 
 
 (** * Axiom Expansion *)
