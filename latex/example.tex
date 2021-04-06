@@ -1,0 +1,48 @@
+\documentclass{article}
+
+\usepackage{cmll}
+\usepackage{ebproof}
+
+\newcommand*{\orth}{^\perp}
+\newcommand*{\tensor}{\otimes}
+\newcommand*{\one}{1}
+\newcommand*{\plus}{\oplus}
+
+\newcommand*{\exr}[1]{\infer{1}[\ensuremath{\mathit{ex}}]{#1}}
+\newcommand*{\axiomr}[1]{\infer{0}[\ensuremath{\mathit{ax}}]{#1}}
+\newcommand*{\cutr}[1]{\infer{2}[\ensuremath{\mathit{cut}}]{#1}}
+\newcommand*{\oner}[1]{\infer{0}[\ensuremath{\one}]{#1}}
+\newcommand*{\botr}[1]{\infer{1}[\ensuremath{\bot}]{#1}}
+\newcommand*{\topr}[1]{\infer{0}[\ensuremath{\top}]{#1}}
+\newcommand*{\tensorr}[1]{\infer{2}[\ensuremath{\tensor}]{#1}}
+\newcommand*{\parrr}[1]{\infer{1}[\ensuremath{\parr}]{#1}}
+\newcommand*{\withr}[1]{\infer{2}[\ensuremath{\with}]{#1}}
+\newcommand*{\plusrl}[1]{\infer{1}[\ensuremath{\plus_1}]{#1}}
+\newcommand*{\plusrr}[1]{\infer{1}[\ensuremath{\plus_2}]{#1}}
+\newcommand*{\ocr}[1]{\infer{1}[\ensuremath{\oc}]{#1}}
+\newcommand*{\wkr}[1]{\infer{1}[\ensuremath{?\mathit{w}}]{#1}}
+\newcommand*{\cor}[1]{\infer{1}[\ensuremath{?\mathit{c}}]{#1}}
+\newcommand*{\der}[1]{\infer{1}[\ensuremath{?\mathit{d}}]{#1}}
+
+\begin{document}
+
+\begin{prooftree*}
+  \topr{\vdash\top, \bot\plus\bot}
+  \oner{\vdash\one}
+  \oner{\vdash\one}
+  \withr{\vdash\one\with\one}
+  \botr{\vdash\one\with\one, \bot}
+  \plusrr{\vdash\one\with\one, \bot\plus\bot}
+  \cutr{\vdash \top, \bot\plus\bot}
+  \exr{\vdash \bot\plus\bot, \top}
+  \axiomr{\vdash A, A\orth}
+  \tensorr{\vdash \bot\plus\bot, \top\tensor A, A\orth}
+  \exr{\vdash \bot\plus\bot, A\orth, \top\tensor A}
+  \parrr{\vdash (\bot\plus\bot)\parr A\orth, \top\tensor A}
+  \der{\vdash \wn{((\bot\plus\bot)\parr A\orth)}, \top\tensor A}
+  \ocr{\vdash \wn{((\bot\plus\bot)\parr A\orth)}, \oc{(\top\tensor A)}}
+  \wkr{\vdash \wn{((\bot\plus\bot)\parr A\orth)}, \wn{((\bot\plus\bot)\parr A\orth)}, \oc{(\top\tensor A)}}
+  \cor{\vdash \wn{((\bot\plus\bot)\parr A\orth)}, \oc{(\top\tensor A)}}
+\end{prooftree*}
+
+\end{document}
