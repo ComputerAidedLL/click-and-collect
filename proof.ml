@@ -4,7 +4,7 @@ type proof = {
     applied_rule: applied_rule option
 }
 and applied_rule = {
-    rule:string;
+    rule:Rule.rule;
     formula_positions: int list;
     premises: proof list
 };;
@@ -49,7 +49,7 @@ let rec json_to_proof json =
 and json_to_applied_rule json =
     match json with
     | `Null -> None
-    | _ -> let rule = get_json_string json "rule" in
+    | _ -> let rule = Rule.string_to_rule (get_json_string json "rule") in
         let formula_positions = get_json_int_list json "formulaPositions" in
         let premises_as_json = get_json_list json "premises" in
         let premises = List.map json_to_proof premises_as_json in
@@ -62,14 +62,14 @@ let rec is_valid proof =
     match proof.applied_rule with
         | None -> true
         | Some applied_rule -> try
-                let expected_sequent_list = Linear_logic.apply_rule applied_rule.rule proof.sequent applied_rule.formula_positions in
+                let expected_sequent_list = Rule.apply_rule applied_rule.rule proof.sequent applied_rule.formula_positions in
                 let get_sequent p = p.sequent in
                 let given_sequent_list = List.map get_sequent applied_rule.premises in
                 if expected_sequent_list <> given_sequent_list
-                then raise (Invalid_proof_exception ("premises do not match expected sequent list after applying rule " ^ applied_rule.rule))
+                then raise (Invalid_proof_exception ("premises do not match expected sequent list after applying rule " ^ (Rule.rule_to_string applied_rule.rule)))
                 else List.for_all is_valid applied_rule.premises
-            with Linear_logic.Apply_rule_technical_exception m -> raise (Invalid_proof_exception ("Apply_rule_technical_exception: " ^ m))
-            | Linear_logic.Apply_rule_logic_exception m -> raise (Invalid_proof_exception ("Apply_rule_logic_exception: " ^ m));;
+            with Rule.Apply_rule_technical_exception m -> raise (Invalid_proof_exception ("Apply_rule_technical_exception: " ^ m))
+            | Rule.Apply_rule_logic_exception m -> raise (Invalid_proof_exception ("Apply_rule_logic_exception: " ^ m));;
 
 let rec is_complete proof =
     match proof.applied_rule with

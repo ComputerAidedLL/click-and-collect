@@ -25,11 +25,12 @@ let get_list d k =
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a list"))
 
 let apply_rule_with_exceptions request_as_json =
-    let rule = get_string request_as_json "rule" in
+    let rule_as_string = get_string request_as_json "rule" in
+    let rule = Rule.string_to_rule rule_as_string in
     let sequent_as_json = get_key request_as_json "sequent" in
     let formula_positions = get_int_list request_as_json "formulaPositions" in
     let sequent = Linear_logic.json_to_sequent sequent_as_json in
-    Linear_logic.apply_rule rule sequent formula_positions
+    Rule.apply_rule rule sequent formula_positions
 
 let apply_rule request_as_json =
     try let sequent_list = apply_rule_with_exceptions request_as_json in
@@ -39,7 +40,8 @@ let apply_rule request_as_json =
         ]
     with
         | Bad_request_exception m -> false, `String ("Bad request: " ^ m)
+        | Rule.Bad_rule_string_exception m -> false, `String ("Bad rule json: " ^ m)
         | Linear_logic.Bad_sequent_json_exception m -> false, `String ("Bad sequent json: " ^ m)
-        | Linear_logic.Apply_rule_technical_exception m -> false, `String m
-        | Linear_logic.Apply_rule_logic_exception m ->
+        | Rule.Apply_rule_technical_exception m -> false, `String m
+        | Rule.Apply_rule_logic_exception m ->
             true, `Assoc [("success", `Bool false); ("errorMessage", `String m)]
