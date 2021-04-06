@@ -6,8 +6,8 @@ sup, sub { font-size:0.6em; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
 
-h1 { margin: 1em auto 0 auto; text-align: center; }
-h2 { margin: 0 auto; text-align : center; font-weight: 100; color: gray; }
+h1 { margin: 0 auto; text-align: center; font-weight: 100; color: gray; font-size: 1.5em; }
+h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
 h3 { text-align: center; }
 .section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
 .subsection { text-indent: 2em; }
