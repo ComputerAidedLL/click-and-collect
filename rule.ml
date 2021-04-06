@@ -17,6 +17,9 @@ type rule =
     | Contraction
     | Exchange;;
 
+
+(* STRING <-> RULE *)
+
 exception Bad_rule_string_exception of string;;
 
 let string_to_rule rule_as_string = match rule_as_string with
@@ -54,6 +57,8 @@ let rule_to_string = function
     | Contraction -> "contraction"
     | Exchange -> "exchange";;
 
+
+(* APPLY RULE *)
 
 exception Apply_rule_technical_exception of string;;
 exception Apply_rule_logic_exception of string;;
@@ -170,3 +175,21 @@ let apply_rule rule sequent formula_positions =
         then raise (Apply_rule_technical_exception ("When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
         else [{hyp=[]; cons=permute sequent.cons formula_positions}]
     );;
+
+
+(* RULE -> COQ *)
+let coq_apply coq_rule =
+    Printf.sprintf "apply %s.\n" coq_rule
+
+let coq_change new_sequent =
+    Printf.sprintf "change (%s).\n" (Linear_logic.sequent_to_coq new_sequent)
+
+let rule_to_coq rule sequent formula_positions =
+    match rule with
+    Axiom -> (match sequent.cons with
+        | Orth e1 :: e2 :: [] -> coq_apply "ax_exp"
+        | e1 :: Orth e2 :: [] -> coq_apply "ax_exp2"
+        | e1 :: e2 :: [] -> let new_sequent = {hyp=sequent.hyp; cons=[Orth e2; e2]} in
+            coq_change new_sequent  ^ coq_apply "ax_exp"
+        | _ -> "error")
+    | _ -> "not implemented";;
