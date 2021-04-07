@@ -21,7 +21,7 @@ type token =
 open Parsing;;
 let _ = parse_error;;
 # 2 "ll_parser.mly"
-open Linear_logic
+open Sequent
 # 26 "ll_parser.ml"
 let yytransl_const = [|
   257 (* THESIS *);
@@ -166,34 +166,34 @@ let yyact = [|
 # 28 "ll_parser.mly"
                                           ( {hyp=[]; cons=[]} )
 # 169 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 29 "ll_parser.mly"
                                           ( {hyp=[]; cons=[]} )
 # 175 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 30 "ll_parser.mly"
                                           ( {hyp=[]; cons=_1} )
 # 182 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'formulalist) in
     Obj.repr(
 # 31 "ll_parser.mly"
                                           ( {hyp=_1; cons=[]} )
 # 189 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
 # 32 "ll_parser.mly"
                                           ( {hyp=[]; cons=_2} )
 # 196 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 3 : 'formulalist) in
     let _3 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
@@ -201,7 +201,7 @@ let yyact = [|
 # 33 "ll_parser.mly"
                                           ( {hyp=_1; cons=_3} )
 # 204 "ll_parser.ml"
-               : Linear_logic.sequent))
+               : Sequent.sequent))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'formula) in
     Obj.repr(
@@ -337,4 +337,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let main (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : Linear_logic.sequent)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : Sequent.sequent)

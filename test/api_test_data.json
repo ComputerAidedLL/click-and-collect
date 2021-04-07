@@ -107,20 +107,25 @@
   "call_api_apply_rule": [
     {
       "request": {
-        "rule":"one",
+        "ruleRequest": {
+          "rule":"one",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"one"}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_sequent_list_as_json": []
     },
     {
       "request": {
-        "rule":"bottom",
+        "ruleRequest": {
+          "rule":"bottom",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -128,8 +133,7 @@
             {"type":"neutral","value":"bottom"},
             {"type":"litteral","value":"a"}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp": [], "cons": [
         {"type":"neutral","value":"one"},
@@ -139,7 +143,10 @@
     },
     {
       "request": {
-        "rule":"top",
+        "ruleRequest": {
+          "rule":"top",
+          "formulaPositions":[2]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -147,42 +154,48 @@
             {"type":"neutral","value":"bottom"},
             {"type":"neutral","value":"top"}
           ]
-        },
-        "formulaPositions":[2]
+        }
       },
       "expected_sequent_list_as_json": []
     },
     {
       "request": {
-        "rule":"axiom",
+        "ruleRequest": {
+          "rule":"axiom",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"litteral","value":"a"},
             {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": []
     },
     {
       "request": {
-        "rule":"axiom",
+        "ruleRequest": {
+          "rule":"axiom",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"one"},
             {"type":"neutral","value":"bottom"}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": []
     },
     {
       "request": {
-        "rule":"tensor",
+        "ruleRequest": {
+          "rule":"tensor",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -193,8 +206,7 @@
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
@@ -211,7 +223,10 @@
     },
     {
       "request": {
-        "rule":"par",
+        "ruleRequest": {
+          "rule":"par",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -222,8 +237,7 @@
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
@@ -237,7 +251,10 @@
     },
     {
       "request": {
-        "rule":"with",
+        "ruleRequest": {
+          "rule":"with",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -248,8 +265,7 @@
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -263,7 +279,10 @@
     },
     {
       "request": {
-        "rule":"plus_left",
+        "ruleRequest": {
+          "rule":"plus_left",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -274,8 +293,7 @@
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -285,7 +303,10 @@
     },
     {
       "request": {
-        "rule":"plus_right",
+        "ruleRequest": {
+          "rule":"plus_right",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -296,8 +317,7 @@
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
@@ -307,12 +327,14 @@
     },
     {
       "request": {
-        "rule":"promotion",
+        "ruleRequest": {
+          "rule":"promotion",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [{"type":"ofcourse","value":{"type":"litteral","value":"a"}}]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"}
@@ -320,15 +342,17 @@
     },
     {
       "request": {
-        "rule":"promotion",
+        "ruleRequest": {
+          "rule":"promotion",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"whynot","value":{"type":"litteral","value":"b"}},
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"whynot","value":{"type":"litteral","value":"b"}},
@@ -337,40 +361,46 @@
     },
     {
       "request": {
-        "rule":"weakening",
+        "ruleRequest": {
+          "rule":"weakening",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[]}]
     },
     {
       "request": {
-        "rule":"dereliction",
+        "ruleRequest": {
+          "rule":"dereliction",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[{"type":"litteral","value":"a"}]}]
     },
     {
       "request": {
-        "rule":"contraction",
+        "ruleRequest": {
+          "rule":"contraction",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"whynot","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"whynot","value":{"type":"litteral","value":"a"}},
@@ -483,35 +513,42 @@
   "call_api_apply_rule_logic_exception": [
     {
       "request": {
-        "rule":"one",
+        "ruleRequest": {
+          "rule":"one",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"one"},
             {"type":"neutral","value":"one"}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_error_message": "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."
     },
     {
       "request": {
-        "rule":"axiom",
+        "ruleRequest": {
+          "rule":"axiom",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"one"},
             {"type":"neutral","value":"zero"}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_error_message": "Can not apply 'axiom' rule: the two formulas are not orthogonal."
     },
     {
       "request": {
-        "rule":"axiom",
+        "ruleRequest": {
+          "rule":"axiom",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
@@ -519,35 +556,38 @@
             {"type":"neutral","value":"bottom"},
             {"type":"neutral","value":"top"}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_error_message": "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."
     },
     {
       "request": {
-        "rule":"zero",
+        "ruleRequest": {
+          "rule":"zero",
+          "formulaPositions":[0]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"zero"}
           ]
-        },
-        "formulaPositions":[0]
+        }
       },
       "expected_error_message": "Can not apply 'zero' rule: there is no rule for introducing '0'."
     },
     {
       "request": {
-        "rule":"promotion",
+        "ruleRequest": {
+          "rule":"promotion",
+          "formulaPositions":[1]
+        },
         "sequent": {
           "hyp": [],
           "cons": [
             {"type":"neutral","value":"zero"},
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
-        },
-        "formulaPositions":[1]
+        }
       },
       "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
@@ -560,14 +600,16 @@
           "value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
       ]},
       "appliedRule":{
-        "rule":"par",
-        "formulaPositions":[0],
+        "ruleRequest":
+        {"rule":"par",
+        "formulaPositions":[0]},
         "premises":[
           {
             "sequentAsJson":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
-            ]},"appliedRule":{"rule":"axiom","formulaPositions":[0],"premises":[]}
+            ]},"appliedRule":{"ruleRequest":
+          {"rule":"axiom","formulaPositions":[0]},"premises":[]}
           }
         ]
       }
@@ -577,8 +619,9 @@
         {"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
         {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
       "appliedRule":{
-        "rule":"par",
-        "formulaPositions":[0],
+        "ruleRequest":
+        {"rule":"par",
+        "formulaPositions":[0]},
         "premises":[
           {
             "sequentAsJson":{"hyp":[],"cons":[
@@ -586,8 +629,9 @@
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
               {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
             "appliedRule":{
-              "rule":"exchange",
-              "formulaPositions":[1,2,0],
+              "ruleRequest":
+              {"rule":"exchange",
+              "formulaPositions":[1,2,0]},
               "premises":[
                 {
                   "sequentAsJson":{"hyp":[],"cons":[
@@ -595,31 +639,113 @@
                     {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
                     {"type":"litteral","value":"A"}]},
                   "appliedRule":{
-                    "rule":"tensor",
-                    "formulaPositions":[1],
+                    "ruleRequest":
+                    {"rule":"tensor",
+                    "formulaPositions":[1]},
                     "premises":[
                       {
                         "sequentAsJson":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
-                          "rule":"axiom","formulaPositions":[1],"premises":[]}},
+                          "ruleRequest":
+                          {"rule":"axiom","formulaPositions":[1]},"premises":[]}},
                       {
                         "sequentAsJson":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
-                          "rule":"axiom",
-                          "formulaPositions":[1],
+                          "ruleRequest":
+                          {"rule":"axiom",
+                          "formulaPositions":[1]},
                           "premises":[]}}]}}]}}]}
     },
     {
-      "sequentAsJson": {
-        "hyp": [],
-        "cons": [
-          {
+  "sequentAsJson": {
+    "hyp": [],
+    "cons": [
+      {
+        "type": "plus",
+        "value1": {
+          "type": "plus",
+          "value1": {
             "type": "plus",
             "value1": {
+              "type": "plus",
+              "value1": {
+                "type": "plus",
+                "value1": {
+                  "type": "plus",
+                  "value1": {
+                    "type": "plus",
+                    "value1": {
+                      "type": "plus",
+                      "value1": {
+                        "type": "plus",
+                        "value1": {
+                          "type": "neutral",
+                          "value": "one"
+                        },
+                        "value2": {
+                          "type": "litteral",
+                          "value": "A1"
+                        }
+                      },
+                      "value2": {
+                        "type": "litteral",
+                        "value": "A2"
+                      }
+                    },
+                    "value2": {
+                      "type": "litteral",
+                      "value": "A3"
+                    }
+                  },
+                  "value2": {
+                    "type": "litteral",
+                    "value": "A4"
+                  }
+                },
+                "value2": {
+                  "type": "litteral",
+                  "value": "A5"
+                }
+              },
+              "value2": {
+                "type": "litteral",
+                "value": "A6"
+              }
+            },
+            "value2": {
+              "type": "litteral",
+              "value": "A7"
+            }
+          },
+          "value2": {
+            "type": "litteral",
+            "value": "A8"
+          }
+        },
+        "value2": {
+          "type": "litteral",
+          "value": "A9"
+        }
+      }
+    ]
+  },
+  "appliedRule": {
+    "ruleRequest": {
+      "rule": "plus_left",
+      "formulaPositions": [
+        0
+      ]
+    },
+    "premises": [
+      {
+        "sequentAsJson": {
+          "hyp": [],
+          "cons": [
+            {
               "type": "plus",
               "value1": {
                 "type": "plus",
@@ -678,27 +804,22 @@
                 "type": "litteral",
                 "value": "A8"
               }
-            },
-            "value2": {
-              "type": "litteral",
-              "value": "A9"
             }
-          }
-        ]
-      },
-      "appliedRule": {
-        "rule": "plus_left",
-        "formulaPositions": [
-          0
-        ],
-        "premises": [
-          {
-            "sequentAsJson": {
-              "hyp": [],
-              "cons": [
-                {
-                  "type": "plus",
-                  "value1": {
+          ]
+        },
+        "appliedRule": {
+          "ruleRequest": {
+            "rule": "plus_left",
+            "formulaPositions": [
+              0
+            ]
+          },
+          "premises": [
+            {
+              "sequentAsJson": {
+                "hyp": [],
+                "cons": [
+                  {
                     "type": "plus",
                     "value1": {
                       "type": "plus",
@@ -750,27 +871,22 @@
                       "type": "litteral",
                       "value": "A7"
                     }
-                  },
-                  "value2": {
-                    "type": "litteral",
-                    "value": "A8"
                   }
-                }
-              ]
-            },
-            "appliedRule": {
-              "rule": "plus_left",
-              "formulaPositions": [
-                0
-              ],
-              "premises": [
-                {
-                  "sequentAsJson": {
-                    "hyp": [],
-                    "cons": [
-                      {
-                        "type": "plus",
-                        "value1": {
+                ]
+              },
+              "appliedRule": {
+                "ruleRequest": {
+                  "rule": "plus_left",
+                  "formulaPositions": [
+                    0
+                  ]
+                },
+                "premises": [
+                  {
+                    "sequentAsJson": {
+                      "hyp": [],
+                      "cons": [
+                        {
                           "type": "plus",
                           "value1": {
                             "type": "plus",
@@ -815,27 +931,22 @@
                             "type": "litteral",
                             "value": "A6"
                           }
-                        },
-                        "value2": {
-                          "type": "litteral",
-                          "value": "A7"
                         }
-                      }
-                    ]
-                  },
-                  "appliedRule": {
-                    "rule": "plus_left",
-                    "formulaPositions": [
-                      0
-                    ],
-                    "premises": [
-                      {
-                        "sequentAsJson": {
-                          "hyp": [],
-                          "cons": [
-                            {
-                              "type": "plus",
-                              "value1": {
+                      ]
+                    },
+                    "appliedRule": {
+                      "ruleRequest": {
+                        "rule": "plus_left",
+                        "formulaPositions": [
+                          0
+                        ]
+                      },
+                      "premises": [
+                        {
+                          "sequentAsJson": {
+                            "hyp": [],
+                            "cons": [
+                              {
                                 "type": "plus",
                                 "value1": {
                                   "type": "plus",
@@ -873,27 +984,22 @@
                                   "type": "litteral",
                                   "value": "A5"
                                 }
-                              },
-                              "value2": {
-                                "type": "litteral",
-                                "value": "A6"
                               }
-                            }
-                          ]
-                        },
-                        "appliedRule": {
-                          "rule": "plus_left",
-                          "formulaPositions": [
-                            0
-                          ],
-                          "premises": [
-                            {
-                              "sequentAsJson": {
-                                "hyp": [],
-                                "cons": [
-                                  {
-                                    "type": "plus",
-                                    "value1": {
+                            ]
+                          },
+                          "appliedRule": {
+                            "ruleRequest": {
+                              "rule": "plus_left",
+                              "formulaPositions": [
+                                0
+                              ]
+                            },
+                            "premises": [
+                              {
+                                "sequentAsJson": {
+                                  "hyp": [],
+                                  "cons": [
+                                    {
                                       "type": "plus",
                                       "value1": {
                                         "type": "plus",
@@ -924,27 +1030,22 @@
                                         "type": "litteral",
                                         "value": "A4"
                                       }
-                                    },
-                                    "value2": {
-                                      "type": "litteral",
-                                      "value": "A5"
                                     }
-                                  }
-                                ]
-                              },
-                              "appliedRule": {
-                                "rule": "plus_left",
-                                "formulaPositions": [
-                                  0
-                                ],
-                                "premises": [
-                                  {
-                                    "sequentAsJson": {
-                                      "hyp": [],
-                                      "cons": [
-                                        {
-                                          "type": "plus",
-                                          "value1": {
+                                  ]
+                                },
+                                "appliedRule": {
+                                  "ruleRequest": {
+                                    "rule": "plus_left",
+                                    "formulaPositions": [
+                                      0
+                                    ]
+                                  },
+                                  "premises": [
+                                    {
+                                      "sequentAsJson": {
+                                        "hyp": [],
+                                        "cons": [
+                                          {
                                             "type": "plus",
                                             "value1": {
                                               "type": "plus",
@@ -968,27 +1069,22 @@
                                               "type": "litteral",
                                               "value": "A3"
                                             }
-                                          },
-                                          "value2": {
-                                            "type": "litteral",
-                                            "value": "A4"
                                           }
-                                        }
-                                      ]
-                                    },
-                                    "appliedRule": {
-                                      "rule": "plus_left",
-                                      "formulaPositions": [
-                                        0
-                                      ],
-                                      "premises": [
-                                        {
-                                          "sequentAsJson": {
-                                            "hyp": [],
-                                            "cons": [
-                                              {
-                                                "type": "plus",
-                                                "value1": {
+                                        ]
+                                      },
+                                      "appliedRule": {
+                                        "ruleRequest": {
+                                          "rule": "plus_left",
+                                          "formulaPositions": [
+                                            0
+                                          ]
+                                        },
+                                        "premises": [
+                                          {
+                                            "sequentAsJson": {
+                                              "hyp": [],
+                                              "cons": [
+                                                {
                                                   "type": "plus",
                                                   "value1": {
                                                     "type": "plus",
@@ -1005,27 +1101,22 @@
                                                     "type": "litteral",
                                                     "value": "A2"
                                                   }
-                                                },
-                                                "value2": {
-                                                  "type": "litteral",
-                                                  "value": "A3"
                                                 }
-                                              }
-                                            ]
-                                          },
-                                          "appliedRule": {
-                                            "rule": "plus_left",
-                                            "formulaPositions": [
-                                              0
-                                            ],
-                                            "premises": [
-                                              {
-                                                "sequentAsJson": {
-                                                  "hyp": [],
-                                                  "cons": [
-                                                    {
-                                                      "type": "plus",
-                                                      "value1": {
+                                              ]
+                                            },
+                                            "appliedRule": {
+                                              "ruleRequest": {
+                                                "rule": "plus_left",
+                                                "formulaPositions": [
+                                                  0
+                                                ]
+                                              },
+                                              "premises": [
+                                                {
+                                                  "sequentAsJson": {
+                                                    "hyp": [],
+                                                    "cons": [
+                                                      {
                                                         "type": "plus",
                                                         "value1": {
                                                           "type": "neutral",
@@ -1035,88 +1126,64 @@
                                                           "type": "litteral",
                                                           "value": "A1"
                                                         }
-                                                      },
-                                                      "value2": {
-                                                        "type": "litteral",
-                                                        "value": "A2"
                                                       }
-                                                    }
-                                                  ]
-                                                },
-                                                "appliedRule": {
-                                                  "rule": "plus_left",
-                                                  "formulaPositions": [
-                                                    0
-                                                  ],
-                                                  "premises": [
-                                                    {
-                                                      "sequentAsJson": {
-                                                        "hyp": [],
-                                                        "cons": [
-                                                          {
-                                                            "type": "plus",
-                                                            "value1": {
+                                                    ]
+                                                  },
+                                                  "appliedRule": {
+                                                    "ruleRequest": {
+                                                      "rule": "plus_left",
+                                                      "formulaPositions": [
+                                                        0
+                                                      ]
+                                                    },
+                                                    "premises": [
+                                                      {
+                                                        "sequentAsJson": {
+                                                          "hyp": [],
+                                                          "cons": [
+                                                            {
                                                               "type": "neutral",
                                                               "value": "one"
-                                                            },
-                                                            "value2": {
-                                                              "type": "litteral",
-                                                              "value": "A1"
                                                             }
-                                                          }
-                                                        ]
-                                                      },
-                                                      "appliedRule": {
-                                                        "rule": "plus_left",
-                                                        "formulaPositions": [
-                                                          0
-                                                        ],
-                                                        "premises": [
-                                                          {
-                                                            "sequentAsJson": {
-                                                              "hyp": [],
-                                                              "cons": [
-                                                                {
-                                                                  "type": "neutral",
-                                                                  "value": "one"
-                                                                }
-                                                              ]
-                                                            },
-                                                            "appliedRule": {
-                                                              "rule": "one",
-                                                              "formulaPositions": [
-                                                                0
-                                                              ],
-                                                              "premises": []
-                                                            }
-                                                          }
-                                                        ]
+                                                          ]
+                                                        },
+                                                        "appliedRule": {
+                                                          "ruleRequest": {
+                                                            "rule": "one",
+                                                            "formulaPositions": [
+                                                              0
+                                                            ]
+                                                          },
+                                                          "premises": []
+                                                        }
                                                       }
-                                                    }
-                                                  ]
+                                                    ]
+                                                  }
                                                 }
-                                              }
-                                            ]
+                                              ]
+                                            }
                                           }
-                                        }
-                                      ]
+                                        ]
+                                      }
                                     }
-                                  }
-                                ]
+                                  ]
+                                }
                               }
-                            }
-                          ]
+                            ]
+                          }
                         }
-                      }
-                    ]
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
-          }
-        ]
+          ]
+        }
       }
-    }
+    ]
+  }
+}
   ],
   "call_api_is_proof_complete_exception": [
     {
@@ -1125,8 +1192,9 @@
         {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
         {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
       "appliedRule":{
-        "rule":"exchange",
-        "formulaPositions":[1,1,0],
+        "ruleRequest":
+        {"rule":"exchange",
+        "formulaPositions":[1,1,0]},
         "premises":[]}
     }
   ]

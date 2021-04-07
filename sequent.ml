@@ -43,26 +43,26 @@ let sequent_to_json sequent = `Assoc [
 
 (* JSON -> SEQUENT *)
 
-exception Bad_sequent_json_exception of string;;
+exception Json_exception of string;;
 
 let required_field json key =
     let value =
         try Yojson.Basic.Util.member key json
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("a sequent and a formula (or sub-formula) must be a json object"))
+        with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("a sequent and a formula (or sub-formula) must be a json object"))
     in
     if value = `Null
-    then raise (Bad_sequent_json_exception ("required field '" ^ key ^ "' is missing"))
+    then raise (Json_exception ("required field '" ^ key ^ "' is missing"))
     else value
 
 let get_json_string json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field '" ^ key ^ "' must be a string"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a string"))
 
 let get_json_list json key =
     let value = required_field json key in
     try Yojson.Basic.Util.to_list value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_sequent_json_exception ("field '" ^ key ^ "' must be a list"))
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"))
 
 let rec json_to_formula json =
   let formula_type = get_json_string json "type" in
@@ -73,7 +73,7 @@ let rec json_to_formula json =
        | "bottom" -> Bottom
        | "top" -> Top
        | "zero" -> Zero
-       | _ -> raise (Bad_sequent_json_exception ("unknown neutral value " ^ neutral_value)) )
+       | _ -> raise (Json_exception ("unknown neutral value " ^ neutral_value)) )
   | "litteral" -> Litt (get_json_string json "value")
   | "orthogonal" -> Orth (json_to_formula (required_field json "value"))
   | "tensor" -> Tensor ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
@@ -83,9 +83,9 @@ let rec json_to_formula json =
   | "lollipop" -> Lollipop ( json_to_formula (required_field json "value1") , json_to_formula (required_field json "value2"))
   | "ofcourse" -> Ofcourse (json_to_formula (required_field json "value"))
   | "whynot" -> Whynot (json_to_formula (required_field json "value"))
-  | _ -> raise (Bad_sequent_json_exception ("unknown formula type " ^ formula_type));;
+  | _ -> raise (Json_exception ("unknown formula type " ^ formula_type));;
 
-let json_to_sequent sequent_as_json =
+let from_json sequent_as_json =
     let hyp_formulas = List.map json_to_formula (get_json_list sequent_as_json "hyp") in
     let cons_formulas = List.map json_to_formula (get_json_list sequent_as_json "cons") in
     {hyp=hyp_formulas; cons=cons_formulas}
@@ -154,9 +154,16 @@ let rec simplify =
 let get_monolatery_sequent sequent =
     {hyp=[]; cons=List.map simplify sequent.cons @ List.map orthogonal (List.map simplify sequent.hyp)};;
 
-let is_whynot = function
-    | Whynot e -> true
-    | _ -> false;;
+exception Not_whynot;;
+
+let rec remove_whynot = function
+    | [] -> []
+    | Whynot e :: l -> e :: remove_whynot l
+    | _ -> raise Not_whynot;;
+
+let rec add_whynot = function
+    | [] -> []
+    | e :: l -> Whynot e :: add_whynot l;;
 
 let rec get_variable_names =
     function

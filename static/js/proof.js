@@ -79,7 +79,7 @@ function applyRule(rule, $sequentDiv, formulaPositions) {
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify({ rule, sequent, formulaPositions }),
+        data: JSON.stringify({ ruleRequest: {rule, formulaPositions}, sequent}),
         success: function(data)
         {
             console.log(data);
@@ -273,14 +273,16 @@ function recGetProofAsJson($table) {
                 })
             }
         }
-        appliedRule = { rule, formulaPositions, premises };
+        appliedRule = { ruleRequest: {rule, formulaPositions}, premises };
 
         let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
         if (!isIdentitySequentPermutation(permutationBeforeRule)) {
             let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
             appliedRule = {
-                rule: 'exchange',
-                formulaPositions: permutationBeforeRule['cons'],
+                ruleRequest: {
+                    rule: 'exchange',
+                    formulaPositions: permutationBeforeRule['cons']
+                },
                 premises: [{sequentAsJson: sequentWithPermutation, appliedRule}]
             }
         }

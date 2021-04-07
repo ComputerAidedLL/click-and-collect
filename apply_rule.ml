@@ -9,39 +9,30 @@ let get_key d k =
     then raise (Bad_request_exception ("required argument '" ^ k ^ "' is missing"))
     else value
 
-let get_string d k =
-    let value = get_key d k in
-    try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a string"))
-
-let get_int_list d k =
-    let value = get_key d k in
-    try List.map Yojson.Basic.Util.to_int (Yojson.Basic.Util.to_list value)
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a list of int"))
-
 let get_list d k =
     let value = get_key d k in
     try Yojson.Basic.Util.to_list value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("argument '" ^ k ^ "' must be a list"))
 
 let apply_rule_with_exceptions request_as_json =
-    let rule_as_string = get_string request_as_json "rule" in
-    let rule = Rule.string_to_rule rule_as_string in
+    let rule_request_as_json = get_key request_as_json "ruleRequest" in
+    let rule_request = Rule_request.from_json rule_request_as_json in
     let sequent_as_json = get_key request_as_json "sequent" in
-    let formula_positions = get_int_list request_as_json "formulaPositions" in
-    let sequent = Linear_logic.json_to_sequent sequent_as_json in
-    Rule.apply_rule rule sequent formula_positions
+    let sequent = Sequent.from_json sequent_as_json in
+    let proof = Proof.from_sequent_and_rule_request sequent rule_request in
+    Proof.get_premises proof
 
 let apply_rule request_as_json =
-    try let sequent_list = apply_rule_with_exceptions request_as_json in
+    try let proof_list = apply_rule_with_exceptions request_as_json in
+        let sequent_list = List.map Proof.get_conclusion proof_list in
         true, `Assoc [
             ("success", `Bool true);
-            ("sequentList", `List (List.map Linear_logic.sequent_to_json sequent_list))
+            ("sequentList", `List (List.map Sequent.sequent_to_json sequent_list))
         ]
     with
         | Bad_request_exception m -> false, `String ("Bad request: " ^ m)
-        | Rule.Bad_rule_string_exception m -> false, `String ("Bad rule json: " ^ m)
-        | Linear_logic.Bad_sequent_json_exception m -> false, `String ("Bad sequent json: " ^ m)
-        | Rule.Apply_rule_technical_exception m -> false, `String m
-        | Rule.Apply_rule_logic_exception m ->
+        | Rule_request.Json_exception m -> false, `String ("Bad rule json: " ^ m)
+        | Sequent.Json_exception m -> false, `String ("Bad sequent json: " ^ m)
+        | Proof.Technical_exception m -> false, `String m
+        | Proof.Pedagogic_exception m ->
             true, `Assoc [("success", `Bool false); ("errorMessage", `String m)]

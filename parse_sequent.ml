@@ -1,7 +1,7 @@
 let ll_parse sequent_as_string =
     let sequent = Ll_parser.main Ll_lexer.token (Lexing.from_string sequent_as_string) in
-    let monolatery_sequent = Linear_logic.get_monolatery_sequent sequent in
-    let sequent_as_json = Linear_logic.sequent_to_json monolatery_sequent in
+    let monolatery_sequent = Sequent.get_monolatery_sequent sequent in
+    let sequent_as_json = Sequent.sequent_to_json monolatery_sequent in
     sequent_as_json;;
 
 let safe_parse sequent_as_string =

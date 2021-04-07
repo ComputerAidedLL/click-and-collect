@@ -1,5 +1,5 @@
 %{
-open Linear_logic
+open Sequent
 %}
 
 %token THESIS
@@ -22,7 +22,7 @@ open Linear_logic
 %nonassoc ORTH              /* highest precedence */
 
 %start main                 /* the entry point */
-%type <Linear_logic.sequent> main
+%type <Sequent.sequent> main
 %%
 main:
     EOL                                   { {hyp=[]; cons=[]} }
