@@ -1,6 +1,6 @@
 From Coq Require Export List.
 From Coq Require Import PeanoNat Lia.
-Require Export nanoll.
+From NanoYalla Require Export nanoll.
 
 Export ListNotations.
 

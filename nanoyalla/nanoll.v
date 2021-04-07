@@ -49,4 +49,3 @@ Inductive ll : list formula -> Type :=
 | de_r : forall A l, ll (A :: l) -> ll (wn A :: l)
 | wk_r : forall A l, ll l -> ll (wn A :: l)
 | co_r : forall A l, ll (wn A :: wn A :: l) -> ll (wn A :: l).
-
