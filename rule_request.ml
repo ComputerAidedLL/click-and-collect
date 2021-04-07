@@ -66,21 +66,3 @@ let from_json rule_request_as_json =
         | "contraction" -> Contraction (get_first formula_positions)
         | "exchange" -> Exchange formula_positions
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;
-
-
-(* RULE -> COQ *)
-let coq_apply coq_rule =
-    Printf.sprintf "apply %s.\n" coq_rule;;
-
-let coq_change new_sequent =
-    Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
-
-let rule_to_coq rule sequent formula_positions =
-    match rule with
-    Axiom -> (match sequent.cons with
-        | Orth e1 :: e2 :: [] -> coq_apply "ax_exp"
-        | e1 :: Orth e2 :: [] -> coq_apply "ax_exp2"
-        | e1 :: e2 :: [] -> let new_sequent = {hyp=sequent.hyp; cons=[Orth e2; e2]} in
-            coq_change new_sequent  ^ coq_apply "ax_exp"
-        | _ -> "error")
-    | _ -> "not implemented";;

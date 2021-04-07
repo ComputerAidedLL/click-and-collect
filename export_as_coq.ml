@@ -8,18 +8,13 @@ let proof_variables conclusion =
     | [] -> ""
     | _ -> Printf.sprintf "Variable %s : formula.\n\n" (String.concat " " unique_variable_names);;
 
-(* let build_proof_body proof =
-    match proof.applied_rule with
-    | None -> raise (Cannot_export_proof_as_coq_exception "proof is not complete")
-    | Some applied_rule -> Rule.rule_to_coq applied_rule.rule proof.sequent applied_rule.formula_positions *)
-
 let proof_to_coq proof =
     let conclusion = get_conclusion proof in
     let start_file_line = "Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let goal_line = Printf.sprintf "Goal %s.\n" (Sequent.sequent_to_coq conclusion) in
     let start_proof_line = "Proof.\n" in
-    let proof_lines = "TODO\n" in
+    let proof_lines = Proof.to_coq proof in
     let end_proof_line = "Qed.\n\nEnd TheProof.\n" in
     Printf.sprintf "%s%s%s%s%s%s" start_file_line variable_line goal_line start_proof_line proof_lines end_proof_line;;
 

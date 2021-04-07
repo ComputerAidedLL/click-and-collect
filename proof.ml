@@ -109,9 +109,9 @@ let from_sequent_and_rule_request sequent rule_request =
             match sequent.cons with
             | e1 :: e2 :: [] -> if orthogonal e1 <> e2
                 then raise (Pedagogic_exception ("Can not apply 'axiom' rule: the two formulas are not orthogonal."))
-                else (match e1 with
-                | Orth e -> Axiom_right e
-                | _ -> Axiom_left e1)
+                else (match e2 with
+                | Orth e -> Axiom_left e
+                | _ -> Axiom_right e2)
             | _ -> raise (Pedagogic_exception ("Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
         )
         | One -> (
@@ -248,3 +248,29 @@ let rec is_complete = function
     | Hypothesis s -> false
     | proof -> let premises = get_premises proof in
         List.for_all is_complete premises;;
+
+
+(* PROOF -> COQ *)
+let coq_apply coq_rule =
+    Printf.sprintf "apply %s.\n" coq_rule;;
+
+let coq_change new_sequent =
+    Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
+
+let to_coq = function
+    | Axiom_left e -> coq_apply "ax_exp2"
+    | Axiom_right e -> coq_apply "ax_exp"
+    | One -> "not implemented"
+	| Top (head, tail) -> "not implemented"
+	| Bottom (head, tail, _) -> "not implemented"
+	| Tensor (head, e1, e2, tail, _, _) -> "not implemented"
+	| Par (head, e1, e2, tail, _) -> "not implemented"
+	| With (head, e1, e2, tail, _, _) -> "not implemented"
+	| Plus_left (head, e1, e2, tail, _) -> "not implemented"
+	| Plus_right (head, e1, e2, tail, _) -> "not implemented"
+	| Promotion (head_without_whynot, e, tail_without_whynot, _) -> "not implemented"
+	| Dereliction (head, e, tail, _) -> "not implemented"
+	| Weakening (head, e, tail, _) -> "not implemented"
+	| Contraction (head, e, tail, _) -> "not implemented"
+	| Exchange (sequent, permutation, _) -> "not implemented"
+	| Hypothesis sequent -> "not implemented";;
