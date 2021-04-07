@@ -93,7 +93,7 @@ function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, withInteract
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case 'litteral':
-            return `${formulaAsJson.value}`;
+            return formulaAsJson.value.replace(/\d+/, digits => `<sub>${digits}</sub>`);
 
         case 'neutral':
             let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
