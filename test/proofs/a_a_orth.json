@@ -1,0 +1,1 @@
+{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[1]},"premises":[]}}

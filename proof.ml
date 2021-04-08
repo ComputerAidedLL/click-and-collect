@@ -254,6 +254,9 @@ let rec is_complete = function
 let coq_apply coq_rule =
     Printf.sprintf "apply %s.\n" coq_rule;;
 
+let coq_apply_with_arg coq_rule arg =
+    Printf.sprintf "apply (%s %s).\n" coq_rule arg;;
+
 let coq_change new_sequent =
     Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
 
@@ -261,7 +264,7 @@ let to_coq = function
     | Axiom_left e -> coq_apply "ax_exp2"
     | Axiom_right e -> coq_apply "ax_exp"
     | One -> coq_apply "one_r"
-    | Top (head, tail) -> "not implemented\n"
+    | Top (head, tail) -> coq_apply_with_arg "top_r_ext" (formula_list_to_coq head)
     | Bottom (head, tail, _) -> "not implemented\n"
     | Tensor (head, e1, e2, tail, _, _) -> "not implemented\n"
     | Par (head, e1, e2, tail, _) -> "not implemented\n"

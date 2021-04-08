@@ -109,12 +109,13 @@ let rec formula_to_coq =
   | Ofcourse e -> "oc " ^ (formula_to_coq e)
   | Whynot e -> "wn " ^ (formula_to_coq e);;
 
+let formula_list_to_coq formula_list =
+    Printf.sprintf "[%s]" (String.concat "; " (List.map formula_to_coq formula_list));;
+
 let sequent_to_coq sequent =
-    let hyp_formulas_as_coq = List.map formula_to_coq sequent.hyp in
-    let cons_formulas_as_coq = List.map formula_to_coq sequent.cons in
     match sequent.hyp with
-    | [] -> Printf.sprintf "ll [%s]" (String.concat "; " cons_formulas_as_coq)
-    | _ -> Printf.sprintf "ll [%s] -> ll [%s]" (String.concat "; " hyp_formulas_as_coq) (String.concat "; " cons_formulas_as_coq)
+    | [] -> Printf.sprintf "ll %s" (formula_list_to_coq sequent.cons)
+    | _ -> Printf.sprintf "ll %s -> ll %s" (formula_list_to_coq sequent.hyp) (formula_list_to_coq sequent.cons);;
 
 
 (* OPERATIONS *)
