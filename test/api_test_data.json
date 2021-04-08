@@ -1183,7 +1183,26 @@
       }
     ]
   }
-}
+},
+    {
+      "sequentAsJson":{"hyp":[],"cons":[
+        {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
+        {"type":"tensor",
+          "value1":{"type":"ofcourse","value":{"type":"litteral","value":"A"}},
+          "value2":{"type":"orthogonal","value":{"type":"litteral","value":"B"}}},
+        {"type":"litteral","value":"B"}]},
+      "appliedRule":{
+        "ruleRequest":{"rule":"tensor","formulaPositions":[1]},
+        "premises":[
+          {"sequentAsJson":{"hyp":[],"cons":[
+            {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
+            {"type":"ofcourse","value":{"type":"litteral","value":"A"}}]},
+            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[]},"premises":[]}},
+          {"sequentAsJson":{"hyp":[],"cons":[
+            {"type":"orthogonal","value":{"type":"litteral","value":"B"}},
+            {"type":"litteral","value":"B"}]},
+            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[1]},"premises":[]}}]}
+    }
   ],
   "call_api_is_proof_complete_exception": [
     {

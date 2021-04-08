@@ -63,8 +63,8 @@ let set_premises proof premises = match proof, premises with
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
 let get_conclusion = function
-    | Axiom_left e -> {hyp=[]; cons=[e; Orth e]}
-    | Axiom_right e -> {hyp=[]; cons=[Orth e; e]}
+    | Axiom_left e -> {hyp=[]; cons=[e; orthogonal e]}
+    | Axiom_right e -> {hyp=[]; cons=[orthogonal e; e]}
     | One -> {hyp=[]; cons=[Sequent.One]}
     | Top (head, tail) -> {hyp=[]; cons=head @ [Sequent.Top] @ tail}
     | Bottom (head, tail, _) -> {hyp=[]; cons=head @ [Sequent.Bottom] @ tail}
