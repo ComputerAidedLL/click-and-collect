@@ -1,4 +1,5 @@
 echo "Preparing Coq environment..."
+cd ../test || exit
 cp ../nanoyalla/nanoll.v .
 cp ../nanoyalla/macroll.v .
 cp ../nanoyalla/_CoqProject .

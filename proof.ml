@@ -260,12 +260,12 @@ let coq_apply_with_arg coq_rule arg =
 let coq_change new_sequent =
     Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
 
-let to_coq = function
+let rec to_coq = function
     | Axiom_left e -> coq_apply "ax_exp2"
     | Axiom_right e -> coq_apply "ax_exp"
     | One -> coq_apply "one_r"
     | Top (head, tail) -> coq_apply_with_arg "top_r_ext" (formula_list_to_coq head)
-    | Bottom (head, tail, _) -> "not implemented\n"
+    | Bottom (head, tail, p) -> coq_apply_with_arg "bot_r_ext" (formula_list_to_coq head) ^ (to_coq p)
     | Tensor (head, e1, e2, tail, _, _) -> "not implemented\n"
     | Par (head, e1, e2, tail, _) -> "not implemented\n"
     | With (head, e1, e2, tail, _, _) -> "not implemented\n"
