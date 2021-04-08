@@ -1,6 +1,25 @@
 open Sequent
 open Rule_request
 
+(* PERMUTATIONS *)
+
+let is_valid_permutation l =
+    let sorted_l = List.sort Int.compare l in
+    let identity = List.init (List.length l) (fun n -> n) in
+    sorted_l = identity;;
+
+let permute l =
+    List.map (List.nth l);;
+
+let rec position_in_list a = function
+    | [] -> raise (Failure "Not found")
+    | h :: tl -> if a = h then 0 else 1 + position_in_list a tl
+
+let permutation_inverse perm =
+    let identity = List.init (List.length perm) (fun n -> n) in
+    List.map (fun x -> position_in_list x perm) identity
+
+
 (* PROOF *)
 
 type proof =
@@ -80,7 +99,7 @@ let get_conclusion = function
     | Dereliction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
     | Weakening (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
     | Contraction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
-    | Exchange (sequent, permutation, _) -> sequent
+    | Exchange (sequent, permutation, _) -> {hyp=[]; cons=permute sequent.cons permutation}
     | Hypothesis sequent -> sequent;;
 
 
@@ -94,14 +113,6 @@ let rec head_formula_tail n = function
     | f :: formula_list -> if n = 0 then [], f, formula_list
         else let head, formula, tail = head_formula_tail (n - 1) formula_list
         in f::head, formula, tail;;
-
-let is_valid_permutation l =
-    let sorted_l = List.sort Int.compare l in
-    let identity = List.init (List.length l) (fun n -> n) in
-    sorted_l = identity;;
-
-let permute l =
-    List.map (List.nth l);;
 
 let from_sequent_and_rule_request sequent rule_request =
     match rule_request with
@@ -195,7 +206,7 @@ let from_sequent_and_rule_request sequent rule_request =
             then raise (Technical_exception ("When applying exchange rule, formula_positions and sequent must have same size"))
             else if not (is_valid_permutation permutation)
             then raise (Technical_exception ("When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
-            else Exchange (sequent, permutation, (Hypothesis {hyp=[]; cons=permute sequent.cons permutation}))
+            else Exchange (sequent, permutation_inverse permutation, (Hypothesis {hyp=[]; cons=permute sequent.cons permutation}))
         );;
 
 let from_sequent_and_rule_request_and_premises sequent rule_request premises =
