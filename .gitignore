@@ -14,7 +14,7 @@ local/
 .depend
 
 # Executable
-test/execute
+test/api_test
 
 # Coq
 *.glob

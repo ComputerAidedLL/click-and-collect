@@ -327,7 +327,7 @@ apply (ex_transp_middle1 []); cbn.
 now apply top_r.
 Defined.
 
-Lemma tens_r_ext A B l1 l2 :
+Lemma tens_r_ext l1 A B l2 :
   ll (l1 ++ [A]) -> ll (B :: l2) -> ll (l1 ++ tens A B :: l2).
 Proof.
 intros pi1 pi2.
@@ -336,7 +336,7 @@ apply tens_r; auto.
 now apply (ex_transp_middle2 []) in pi1; rewrite app_nil_r in pi1.
 Defined.
 
-Lemma parr_r_ext A B l1 l2 :
+Lemma parr_r_ext l1 A B l2 :
   ll (l1 ++ A :: B :: l2) -> ll (l1 ++ parr A B :: l2).
 Proof.
 intros pi.
@@ -345,7 +345,7 @@ apply parr_r.
 now apply (ex_transp_middle2 [A]), (ex_transp_middle2 [] l1).
 Defined.
 
-Lemma with_r_ext A B l1 l2 :
+Lemma with_r_ext l1 A B l2 :
   ll (l1 ++ A :: l2) -> ll (l1 ++ B :: l2) -> ll (l1 ++ awith A B :: l2).
 Proof.
 intros pi1 pi2.
@@ -353,7 +353,7 @@ apply (ex_transp_middle1 []); cbn.
 now apply with_r; apply (ex_transp_middle2 []).
 Defined.
 
-Lemma plus_r1_ext A B l1 l2 :
+Lemma plus_r1_ext l1 A B l2 :
   ll (l1 ++ A :: l2) -> ll (l1 ++ aplus A B :: l2).
 Proof.
 intros pi.
@@ -362,7 +362,7 @@ apply plus_r1.
 now apply (ex_transp_middle2 []).
 Defined.
 
-Lemma plus_r2_ext A B l1 l2 :
+Lemma plus_r2_ext l1 A B l2 :
   ll (l1 ++ A :: l2) -> ll (l1 ++ aplus B A :: l2).
 Proof.
 intros pi.
@@ -371,7 +371,7 @@ apply plus_r2.
 now apply (ex_transp_middle2 []).
 Defined.
 
-Lemma oc_r_ext A l1 l2 :
+Lemma oc_r_ext l1 A l2 :
   ll (map wn l1 ++ A :: map wn l2) -> ll (map wn l1 ++ oc A :: map wn l2).
 Proof.
 intros pi.
@@ -382,7 +382,7 @@ rewrite map_app.
 now apply (ex_transp_middle2 []).
 Defined.
 
-Lemma de_r_ext A l1 l2 :
+Lemma de_r_ext l1 A l2 :
   ll (l1 ++ A :: l2) -> ll (l1 ++ wn A :: l2).
 Proof.
 intros pi.
@@ -391,7 +391,7 @@ apply de_r.
 now apply (ex_transp_middle2 []).
 Defined.
 
-Lemma wk_r_ext A l1 l2 :
+Lemma wk_r_ext l1 A l2 :
   ll (l1 ++ l2) -> ll (l1 ++ wn A :: l2).
 Proof.
 intros pi.
@@ -399,7 +399,7 @@ apply (ex_transp_middle1 []); cbn.
 now apply wk_r.
 Defined.
 
-Lemma co_r_ext A l1 l2 :
+Lemma co_r_ext l1 A l2 :
   ll (l1 ++ wn A :: wn A :: l2) -> ll (l1 ++ wn A :: l2).
 Proof.
 intros pi.

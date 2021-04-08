@@ -10,13 +10,18 @@ let proof_variables conclusion =
 
 let proof_to_coq proof =
     let conclusion = get_conclusion proof in
-    let start_file_line = "Require Import macroll.\n\nSection TheProof.\n\n" in
+    let header = "(* This Coq file has been generated using C1ick ⅋ c⊗LLec⊥ tool. *)\n"
+        ^ "(* https://click-and-collect.linear-logic.org/ *)\n"
+        ^ "(* /!\\ This is a work-in-progress feature. /!\\ *)\n"
+        ^ "(* Resources and instructions to make it run on: *)\n"
+        ^ "(* https://github.com/etiennecallies/click-and-collect/tree/master/nanoyalla *)\n\n" in
+    let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let goal_line = Printf.sprintf "Goal %s.\n" (Sequent.sequent_to_coq conclusion) in
     let start_proof_line = "Proof.\n" in
     let proof_lines = Proof.to_coq proof in
     let end_proof_line = "Qed.\n\nEnd TheProof.\n" in
-    Printf.sprintf "%s%s%s%s%s%s" start_file_line variable_line goal_line start_proof_line proof_lines end_proof_line;;
+    Printf.sprintf "%s%s%s%s%s%s%s" header start_file_line variable_line goal_line start_proof_line proof_lines end_proof_line;;
 
 let export_as_coq_with_exceptions request_as_json =
     let proof = Proof.from_json request_as_json in
