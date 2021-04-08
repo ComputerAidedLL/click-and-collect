@@ -5,7 +5,7 @@ From NanoYalla Require Export nanoll.
 Export ListNotations.
 
 
-(** * Exchange *)
+(** * Permutations *)
 
 (* Transpose elements of index n and S n in l *)
 Fixpoint transpS {A} n (l : list A) :=
@@ -39,7 +39,7 @@ Fixpoint transpL {A} s (l : list A) :=
   end.
 
 (* Transparent version of [map_length] *)
-Lemma map_length_transp {A B} (f : A -> B) l : length (map f l) = length l.
+Lemma map_length_transparent {A B} (f : A -> B) l : length (map f l) = length l.
 Proof. induction l; cbn; auto. Defined.
 
 (* Map a permutation of n elements
@@ -53,23 +53,13 @@ revert p Heqn; induction n as [|n IHn]; intros p Heqn.
 - exact nil.
 - destruct p as [|x p]; inversion Heqn as [Hn].
   destruct x as [|x].
-  + rewrite <- (map_length_transp pred) in Hn.
+  + rewrite <- (map_length_transparent pred) in Hn.
     exact (None :: IHn _ Hn).
-  + rewrite <- (map_length_transp (fun k => if k =? 0 then x else pred k) p) in Hn.
+  + rewrite <- (map_length_transparent (fun k => if k =? 0 then x else pred k) p) in Hn.
     exact (Some x :: IHn _ Hn).
 Defined.
 
-(*
-Section Test.
-Variable E : Set.
-Variable ee0 ee1 ee2 ee3 ee4 ee5 ee6 : E.
-Eval cbv in permL_of_perm [3;4;2;1;0].
-Eval cbv in transpL (permL_of_perm [3;4;2;1;0]) [ee0;ee1;ee2;ee3;ee4].
-Eval cbv in transpL (permL_of_perm [5;0;2;3;4;1]) [ee0;ee1;ee2;ee3;ee4;ee5].
-Eval cbv in transpL (permL_of_perm [0;1;2;3;4;5;6]) [ee0;ee1;ee2;ee3;ee4;ee5;ee6].
-Eval cbv in transpL (permL_of_perm [6;5;4;3;2;1;0]) [ee0;ee1;ee2;ee3;ee4;ee5;ee6].
-End Test.
-*)
+(* Properties *)
 
 Lemma transpS_lt {A} n (l : list A) : S n < length l ->
  {'(l1,l2,a,b) | (l = l1 ++ a :: b :: l2 /\ length l1 = n) & transpS n l = l1 ++ b :: a :: l2}.
@@ -122,27 +112,7 @@ revert a l; induction l0 as [|x l0 IHl0]; cbn; intros a l; auto.
 now rewrite transp_cons, <- IHl0.
 Defined.
 
-Lemma transp_compute {A} l1 (a : A) l2 b l3 :
-  transp (length l1) (length l2) (l1 ++ a :: l2 ++ b :: l3) = l1 ++ b :: l2 ++ a :: l3.
-Proof.
-remember (length l2) as m.
-revert a b l1 l2 Heqm; induction m; cbn; intros a b l1 l2 Heqm; subst.
-- symmetry in Heqm.
-  apply length_zero_iff_nil in Heqm; subst; cbn.
-  apply transpS_compute.
-- destruct l2; [cbn in Heqm; lia|].
-  cbn; rewrite transpS_compute.
-  cbn in Heqm; injection Heqm; intros Hl2.
-  replace (l1 ++ a0 :: a :: l2 ++ b :: l3)
-     with ((l1 ++ [a0]) ++ a :: l2 ++ b :: l3)
-    by now rewrite <- app_assoc.
-  specialize (IHm a b (l1 ++ [a0]) _ Hl2).
-  rewrite app_length in IHm.
-  rewrite Nat.add_comm in IHm.
-  cbn in IHm; rewrite IHm.
-  rewrite <- app_assoc; cbn.
-  apply transpS_compute.
-Defined.
+(* Extended exchange rules *)
 
 Lemma ex_transpS n l : ll l -> ll (transpS n l).
 Proof.
@@ -153,28 +123,11 @@ destruct (Compare_dec.le_lt_dec (length l) (S n)).
   now apply ex_t_r.
 Defined.
 
-Lemma ex_transpS_rev n l : ll (transpS n l) -> ll l.
-Proof.
-intros pi.
-destruct (Compare_dec.le_lt_dec (length l) (S n)).
-- now rewrite transpS_overflow in pi.
-- apply transpS_lt in l0 as [[[[l1 l2] b] c] [Heq1 _] Heq2]; subst.
-  rewrite Heq2 in pi.
-  now apply ex_t_r.
-Qed.
-
 Lemma ex_transp n m l : ll l -> ll (transp n m l).
 Proof.
 revert n l; induction m; intros n l pi.
 - now apply ex_transpS.
 - now apply ex_transpS, IHm, ex_transpS.
-Defined.
-
-Lemma ex_transp_rev n m l : ll (transp n m l) -> ll l.
-Proof.
-revert n l; induction m; intros n l pi.
-- now apply (ex_transpS_rev n).
-- now apply (ex_transpS_rev n), (IHm (S n)), (ex_transpS_rev n).
 Defined.
 
 Lemma ex_transp_middle1 l1 l2 l3 A :
@@ -223,34 +176,8 @@ revert l; induction s as [|[|] s IHs]; cbn; intros l l0 pi; auto.
   now rewrite <- app_assoc.
 Defined.
 
-Lemma ex_transpL_rev s l : ll (transpL s l) -> ll l.
-Proof.
-enough (forall l0, ll (l0 ++ transpL s l) -> ll (l0 ++ l)) as Hs
-  by now intros pi; apply (Hs []).
-revert l; induction s as [|[|] s IHs]; cbn; intros l l0 pi; auto.
-- remember (transp 0 n l) as lt.
-  destruct lt; auto.
-  replace (l0 ++ f :: transpL s lt) with ((l0 ++ f :: nil) ++ transpL s lt) in pi
-    by now rewrite <- app_assoc.
-  apply IHs in pi.
-  rewrite <- app_assoc in pi; cbn in pi.
-  rewrite Heqlt, <- transp_app_tl in pi.
-  now apply ex_transp_rev in pi.
-- destruct l; auto.
-  replace (l0 ++ f :: transpL s l) with ((l0 ++ f :: nil) ++ transpL s l) in pi
-    by now rewrite <- app_assoc.
-  apply IHs in pi.
-  now rewrite <- app_assoc in pi.
-Defined.
 
-Lemma ex_perm p l : ll l -> ll (transpL (permL_of_perm p) l).
-Proof. now apply ex_transpL. Defined.
-
-Lemma ex_perm_rev p l : ll (transpL (permL_of_perm p) l) -> ll l.
-Proof. now apply ex_transpL_rev. Defined.
-
-
-(** * Axiom Expansion *)
+(** * Extended rules *)
 
 Fixpoint dual A :=
 match A with
@@ -268,7 +195,7 @@ match A with
 | wn A      => oc (dual A)
 end.
 
-Lemma ax_exp A : ll [dual A; A].
+Lemma ax_r1_ext A : ll [dual A; A].
 Proof.
 induction A; cbn.
 - apply ax_r.
@@ -304,13 +231,15 @@ induction A; cbn.
   now apply (ex_t_r [] []), de_r, (ex_t_r [] []).
 Defined.
 
-Lemma ax_exp2 A : ll [A; dual A].
+Lemma ax_r2_ext A : ll [A; dual A].
 Proof.
-apply (ex_t_r [] []), ax_exp.
+apply (ex_t_r [] []), ax_r1_ext.
 Defined.
 
+Lemma ex_perm_r p l : ll l -> ll (transpL (permL_of_perm p) l).
+Proof. now apply ex_transpL. Defined.
 
-(** * Extended rules *)
+Definition one_r_ext := one_r.
 
 Lemma bot_r_ext l1 l2 :
   ll (l1 ++ l2) -> ll (l1 ++ bot :: l2).
