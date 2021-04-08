@@ -32,34 +32,34 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequentAsJson, withInteraction) {
+function createSequent(sequentAsJson, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
         .data('sequentWithoutPermutation', sequentAsJson);
 
     if ('hyp' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'hyp', $sequentDiv, withInteraction);
+        createFormulaList(sequentAsJson, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
-    if (withInteraction) {
+    if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
         $thesisSpan.on('click', function () {
-            applyRule('axiom', $sequentDiv, []);
+            applyRule('axiom', $sequentDiv, [], options);
         });
     }
     $sequentDiv.append($thesisSpan);
 
     if ('cons' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'cons', $sequentDiv, withInteraction);
+        createFormulaList(sequentAsJson, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, withInteraction) {
+function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, options) {
     let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
 
-    if (withInteraction) {
+    if (options.withInteraction) {
         $ul.sortable({
             helper : 'clone',
             axis: 'x',
@@ -79,9 +79,9 @@ function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, withInteract
             .html(createFormulaHTML(formulaAsJson, true));
         $li.append($span);
 
-        if (withInteraction) {
+        if (options.withInteraction) {
             // Add events (click, double-click), and classes for hover
-            addEventsAndStyle($li, formulaAsJson);
+            addEventsAndStyle($li, formulaAsJson, options);
         }
 
         $ul.append($li);
@@ -199,7 +199,7 @@ function getRules(formulaAsJson) {
     }
 }
 
-function addEventsAndStyle($li, formulaAsJson) {
+function addEventsAndStyle($li, formulaAsJson, options) {
     $li.find('span.' + 'main-formula').first().addClass('hoverable');
 
     let rules = getRules(formulaAsJson);
@@ -221,23 +221,23 @@ function addEventsAndStyle($li, formulaAsJson) {
         // Add click and double click events
         if (ruleEvent.onclick.length === 1) {
             // Single click
-            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li));
+            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options));
         } else {
             // Single click AND Double click event
-            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li);
-            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li);
+            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options);
+            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li, options);
 
             addClickAndDoubleClickEvent($spanForEvent, singleClickCallBack, doubleClickCallBack);
         }
     }
 }
 
-function buildApplyRuleCallBack(rule, $li) {
+function buildApplyRuleCallBack(rule, $li, options) {
     return function() {
         let $sequentDiv = $li.closest('div.sequent');
         let formulaPositions = [$li.parent().children().index($li)];
 
-        applyRule(rule, $sequentDiv, formulaPositions);
+        applyRule(rule, $sequentDiv, formulaPositions, options);
     }
 }
 

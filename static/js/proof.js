@@ -23,20 +23,20 @@ const RULES = {
 // PROOF DISPLAY
 // *************
 
-function initProof(proofAsJson, $container, withInteraction) {
+function initProof(proofAsJson, $container, options) {
     let $div = $('<div>', {'class': 'proofIsIncomplete'});
     let $div2 = $('<div>', {'class': 'proof'});
-    createSubProof(proofAsJson, $div2, withInteraction);
+    createSubProof(proofAsJson, $div2, options);
     $div.append($div2);
     $container.append($div);
 }
 
-function initProofWithSequent(sequentAsJson, $container, withInteraction) {
-    initProof({sequentAsJson, appliedRule: null}, $container, withInteraction);
+function initProofWithSequent(sequentAsJson, $container, options) {
+    initProof({sequentAsJson, appliedRule: null}, $container, options);
 }
 
-function createSubProof(proofAsJson, $subProofDivContainer, withInteraction) {
-    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson, withInteraction);
+function createSubProof(proofAsJson, $subProofDivContainer, options) {
+    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson, options);
     $subProofDivContainer.prepend($sequentTable);
     let $sequentDiv = $sequentTable.find('div' + '.sequent');
     if (proofAsJson.appliedRule) {
@@ -45,15 +45,15 @@ function createSubProof(proofAsJson, $subProofDivContainer, withInteraction) {
             proofAsJson.appliedRule.rule,
             proofAsJson.appliedRule.formulaPositions,
             proofAsJson.appliedRule.premises,
-            withInteraction);
+            options);
     }
 }
 
-function createSequentTable(sequentAsJson, withInteraction) {
+function createSequentTable(sequentAsJson, options) {
     let $table = $('<table>');
 
     let $td = $('<td>');
-    $td.append(createSequent(sequentAsJson, withInteraction));
+    $td.append(createSequent(sequentAsJson, options));
     $table.append($td);
 
     let $tagBox = $('<td>', {'class': 'tagBox'})
@@ -67,7 +67,7 @@ function createSequentTable(sequentAsJson, withInteraction) {
 // APPLY RULE
 // **********
 
-function applyRule(rule, $sequentDiv, formulaPositions) {
+function applyRule(rule, $sequentDiv, formulaPositions, options) {
     let $container = $sequentDiv.closest('.proof-container');
 
     // Sequent json that was stored in div may have been permuted before rule applying
@@ -82,13 +82,12 @@ function applyRule(rule, $sequentDiv, formulaPositions) {
         data: JSON.stringify({ ruleRequest: {rule, formulaPositions}, sequent}),
         success: function(data)
         {
-            console.log(data);
             if (data.success === true) {
                 cleanPedagogicError($container);
                 let premises = data['sequentList'].map(function (sequentAsJson) {
                     return { sequentAsJson, appliedRule: null };
                 });
-                addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, true);
+                addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, options);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -97,7 +96,7 @@ function applyRule(rule, $sequentDiv, formulaPositions) {
     });
 }
 
-function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, withInteraction) {
+function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, options) {
     // Save data
     $sequentDiv
         .data('permutationBeforeRule', permutationBeforeRule)
@@ -106,16 +105,16 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
 
     // Undo previously applied rule if any
     let $td = $sequentDiv.closest('td');
-    undoRule($td);
+    undoRule($td, options);
 
     // Add line
     $td.addClass('inference');
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': `tag ${rule}`}).html(RULES[rule]);
-    if (withInteraction) {
+    if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
-        $ruleSymbol.on('click', function() { undoRule($td); })
+        $ruleSymbol.on('click', function() { undoRule($td, options); })
     }
     $td.next('.tagBox').html($ruleSymbol);
 
@@ -123,16 +122,16 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     let $table = $td.closest('table');
     let $container = $table.closest('.proof-container');
     if (premises.length === 0) {
-        if (withInteraction) {
-            markAsCompleteIfProofIsComplete($container);
+        if (options.withInteraction) {
+            markAsCompleteIfProofIsComplete($container, options);
         }
     } else if (premises.length === 1) {
-        createSubProof(premises[0], $table.parent(), withInteraction);
+        createSubProof(premises[0], $table.parent(), options);
     } else {
         let $div = $('<div>');
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            createSubProof(premise, $sibling, withInteraction)
+            createSubProof(premise, $sibling, options)
             $div.append($sibling);
         }
         $table.addClass('binary-rule');
@@ -140,7 +139,7 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     }
 }
 
-function undoRule($td) {
+function undoRule($td, options) {
     // Remove line
     $td.removeClass('inference');
 
@@ -157,6 +156,11 @@ function undoRule($td) {
     // Mark proof as incomplete
     let $container = $table.closest('.proof-container');
     markAsIncomplete($container);
+
+    if (options.exportAsCoq) {
+        // Remove Coq button
+        removeExportAsCoqButton($container);
+    }
 }
 
 // ***************
@@ -268,14 +272,16 @@ function markAsIncomplete($container) {
     $mainDiv.addClass('proofIsIncomplete');
 }
 
-function markAsCompleteIfProofIsComplete($container) {
+function markAsCompleteIfProofIsComplete($container, options) {
     // We get proof stored in HTML
     let proofAsJson = getProofAsJson($container);
 
     // We check if proof is complete
     checkProofIsComplete(proofAsJson, function() {
         markAsComplete($container);
-        // createExportAsCoqButton($container);
+        if (options.exportAsCoq) {
+            createExportAsCoqButton($container);
+        }
     });
 }
 
@@ -309,7 +315,6 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
         data: JSON.stringify(proofAsJson),
         success: function(data)
         {
-            console.log(data);
             if (data['is_complete'] === true) {
                 callbackIfComplete();
             }
@@ -323,9 +328,15 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
 // *************
 
 function createExportAsCoqButton($container) {
-    let coqButton = $('<input type="button" value="Export as Coq"/>')
+    let coqLogoPath = 'images/coq.png';
+    let coqButton = $('<img src="' + coqLogoPath + '" alt="Export as Coq" title="Export as Coq" />')
+        .addClass('coq')
         .on('click', function () { exportAsCoq($container); });
     $container.append(coqButton);
+}
+
+function removeExportAsCoqButton($container) {
+    $container.find('img.coq').remove();
 }
 
 function exportAsCoq($container) {
@@ -339,8 +350,6 @@ function exportAsCoq($container) {
         data: JSON.stringify(proofAsJson),
         success: function(data)
         {
-            console.log(data);
-
             let a = document.createElement('a');
             let binaryData = [];
             binaryData.push(data);
