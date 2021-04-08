@@ -50,21 +50,20 @@ opam install alcotest
 
 First time and whenever you change test script (no need if you change only the json file):
 ```
-ocamlfind ocamlc -thread -linkpkg -package alcotest -package lwt -package cohttp -package cohttp-lwt-unix -package threads -package yojson -o test/execute test/api_test.ml
+ocamlfind ocamlc -thread -linkpkg -package alcotest -package lwt -package cohttp -package cohttp-lwt-unix -package threads -package yojson -o test/api_test test/api_test.ml
 ```
 
 To execute tests (you need to have `make test.byte` running):
 ```
-test/execute
+test/api_test
 ```
 
 ## Test Coq
-To check that coq files returned by API actually compile, we have some examples of proof as json object in `test/proofs`.
+To check that coq files returned by API actually compile, we have some examples of proof as json object in `test/coq_test_data`.
 
 To execute tests (you need to have `make test.byte` running):
 ```
-cd test
-./test_coq.sh
+test/coq_test.sh
 ```
 
 ## Files description
