@@ -15,7 +15,7 @@ let proof_to_coq proof =
         ^ "(* /!\\ This is a work-in-progress feature. /!\\ *)\n"
         ^ "(* Resources and instructions to make it run on: *)\n"
         ^ "(* https://github.com/etiennecallies/click-and-collect/tree/master/nanoyalla *)\n\n" in
-    let start_file_line = "Require Import macroll.\n\nSection TheProof.\n\n" in
+    let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let goal_line = Printf.sprintf "Goal %s.\n" (Sequent.sequent_to_coq conclusion) in
     let start_proof_line = "Proof.\n" in
