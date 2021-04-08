@@ -282,7 +282,7 @@ let add_indent_and_brace proof_as_coq =
 
 let rec to_coq = function
     | Axiom_left _ -> coq_apply "ax_r2_ext"
-    | Axiom_right _ -> coq_apply "ax_r1_ext"
+    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" [formula_to_coq f]
     | One -> coq_apply "one_r_ext"
     | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
     | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
