@@ -264,15 +264,22 @@ let coq_change new_sequent =
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
 
+let indent_line line =
+    "  " ^ line;;
+
+let add_indent_and_brace proof_as_coq =
+    let lines = String.split_on_char '\n' proof_as_coq in
+    indent_line (Printf.sprintf "{\n%s}\n" (String.concat "\n" (List.map indent_line lines)))
+
 let rec to_coq = function
     | Axiom_left _ -> coq_apply "ax_exp2"
     | Axiom_right _ -> coq_apply "ax_exp"
     | One -> coq_apply "one_r"
     | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
     | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | Tensor (head, _, _, _, p1, p2) -> coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ (to_coq p1) ^ (to_coq p2)
+    | Tensor (head, _, _, _, p1, p2) -> coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace (to_coq p1) ^ add_indent_and_brace (to_coq p2)
     | Par (head, _, _, _, p) -> coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | With (head, _, _, _, p1, p2) -> coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ (to_coq p1) ^ (to_coq p2)
+    | With (head, _, _, _, p1, p2) -> coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace (to_coq p1) ^ add_indent_and_brace (to_coq p2)
     | Plus_left (head, _, _, _, p) -> coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Plus_right (head, _, _, _, p) -> coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Promotion (head_without_whynot, e, tail_without_whynot, p) ->
