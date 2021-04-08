@@ -11,21 +11,16 @@ $( function() {
         submitSequent($sequentForm);
     }
 
-    // Create tutorial proof
-    $('.tutorial .proof-container').each(function (i, container) {
-        let $container = $(container);
-        let sequentAsJson = JSON.parse($container.html());
-        $container.html('');
-        initProofWithSequent(sequentAsJson, $container, true);
-    })
+    // Parse URL hash
+    switch (window.location.hash) {
+        case '#tutorial':
+            showTutorial();
+            break;
 
-    // Create rules proof
-    $('.rules .proof-container').each(function (i, container) {
-        let $container = $(container);
-        let proofAsJson = JSON.parse($container.html());
-        $container.html('');
-        initProof(proofAsJson, $container, false);
-    })
+        case '#rules':
+            showRules();
+            break;
+    }
 } );
 
 // ************
@@ -67,5 +62,37 @@ function parseSequentAsString(sequentAsString, $container) {
 
 function cleanMainProof() {
     $('#main-proof-container').html('');
+}
+
+// ********
+// TUTORIAL
+// ********
+
+function showTutorial() {
+    // Create tutorial proof
+    $('.tutorial .proof-container').each(function (i, container) {
+        let $container = $(container);
+        let sequentAsJson = JSON.parse($container.html());
+        $container.html('');
+        initProofWithSequent(sequentAsJson, $container, true);
+    })
+
+    $('.tutorial').removeClass('hidden');
+}
+
+// *****
+// RULES
+// *****
+
+function showRules() {
+    // Create rules proof
+    $('.rules .proof-container').each(function (i, container) {
+        let $container = $(container);
+        let proofAsJson = JSON.parse($container.html());
+        $container.html('');
+        initProof(proofAsJson, $container, false);
+    })
+
+    $('.rules').removeClass('hidden');
 }
 

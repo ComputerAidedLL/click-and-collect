@@ -104,13 +104,15 @@
                         </ul>
                     </li>
                     <li>If you change your mind, you can click again lower in the ongoing proof, or click on the rule name you want to undo.</li>
+                    <li>Want to learn how to use this tool step by step? Try our <a href="#tutorial" onclick="showTutorial();">tutorial</a>.</li>
+                    <li>Not familiar with linear logic? Check <a href="#rules" onclick="showRules();">derivation rules</a>.</li>
                 </ul>
 
         </div>
 
         </div>
-        <div class="section tutorial">
-            <h3>Tutorial</h3>
+        <div class="section tutorial hidden">
+            <h3><a id="tutorial"></a>Tutorial</h3>
             <div class="subsection">
                 <p>
                     Here is a short tutorial to learn how to interact with the tool. You should be able to have all example proofs complete (with green background).
@@ -150,8 +152,8 @@
             </div>
         </div>
 
-        <div class="section rules">
-            <h3>Derivation rules</h3>
+        <div class="section rules hidden">
+            <h3><a id="rules"></a>Derivation rules</h3>
             <div class="row">
                 <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"rule":"axiom","formulaPositions":[],"premises":[]}}</div>
             </div>
@@ -182,7 +184,7 @@
         </div>
 
 
-        <div class="section rules">
+        <div class="section">
             <a href="https://github.com/etiennecallies/click-and-collect">
                 <img src="images/github-icon.svg" alt="View source code" height="25" width="25"/>
             </a>

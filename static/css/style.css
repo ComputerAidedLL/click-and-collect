@@ -11,6 +11,7 @@ h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
 h3 { text-align: center; }
 .section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
 .subsection { text-indent: 2em; }
+.hidden { display: none; }
 
 form{ display: flex; flex-flow: wrap; justify-content: center; }
 form input{ border: none; padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
