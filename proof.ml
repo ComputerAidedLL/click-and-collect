@@ -254,26 +254,32 @@ let rec is_complete = function
 let coq_apply coq_rule =
     Printf.sprintf "apply %s.\n" coq_rule;;
 
-let coq_apply_with_arg coq_rule arg =
-    Printf.sprintf "apply (%s %s).\n" coq_rule arg;;
+let coq_apply_with_args coq_rule args =
+    let args_as_string = (String.concat " " args) in
+    Printf.sprintf "apply (%s %s).\n" coq_rule args_as_string;;
 
 let coq_change new_sequent =
     Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
 
+let permutation_to_coq permutation =
+    Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
+
 let rec to_coq = function
-    | Axiom_left e -> coq_apply "ax_exp2"
-    | Axiom_right e -> coq_apply "ax_exp"
+    | Axiom_left _ -> coq_apply "ax_exp2"
+    | Axiom_right _ -> coq_apply "ax_exp"
     | One -> coq_apply "one_r"
-    | Top (head, tail) -> coq_apply_with_arg "top_r_ext" (formula_list_to_coq head)
-    | Bottom (head, tail, p) -> coq_apply_with_arg "bot_r_ext" (formula_list_to_coq head) ^ (to_coq p)
-    | Tensor (head, e1, e2, tail, _, _) -> "not implemented\n"
-    | Par (head, e1, e2, tail, _) -> "not implemented\n"
-    | With (head, e1, e2, tail, _, _) -> "not implemented\n"
-    | Plus_left (head, e1, e2, tail, _) -> "not implemented\n"
-    | Plus_right (head, e1, e2, tail, _) -> "not implemented\n"
-    | Promotion (head_without_whynot, e, tail_without_whynot, _) -> "not implemented\n"
-    | Dereliction (head, e, tail, _) -> "not implemented\n"
-    | Weakening (head, e, tail, _) -> "not implemented\n"
-    | Contraction (head, e, tail, _) -> "not implemented\n"
-    | Exchange (sequent, permutation, _) -> "not implemented\n"
+    | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
+    | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Tensor (head, _, _, _, p1, p2) -> coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ (to_coq p1) ^ (to_coq p2)
+    | Par (head, _, _, _, p) -> coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | With (head, _, _, _, p1, p2) -> coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ (to_coq p1) ^ (to_coq p2)
+    | Plus_left (head, _, _, _, p) -> coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Plus_right (head, _, _, _, p) -> coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Promotion (head_without_whynot, e, tail_without_whynot, p) ->
+        coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; formula_to_coq e; formula_list_to_coq tail_without_whynot] ^ (to_coq p)
+    | Dereliction (head, _, _, p) -> coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Weakening (head, _, _, p) -> coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Contraction (head, _, _, p) -> coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+    | Exchange (sequent, permutation, p) ->
+        coq_apply_with_args "ex_perm" [permutation_to_coq permutation; formula_list_to_coq (permute sequent.cons permutation)] ^ (to_coq p)
     | Hypothesis sequent -> "not implemented\n";;
