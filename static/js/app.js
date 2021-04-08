@@ -10,7 +10,7 @@ $( function() {
         $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
         submitSequent($sequentForm);
     }
-
+    
     // Parse URL hash
     switch (window.location.hash) {
         case '#tutorial':
@@ -51,7 +51,7 @@ function parseSequentAsString(sequentAsString, $container) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProofWithSequent(data['sequent_as_json'], $container, true);
+                initProofWithSequent(data['sequent_as_json'], $container, {withInteraction: true, exportAsCoq: true});
             } else {
                 displayPedagogicError(data['error_message'], $container);
             }
@@ -74,7 +74,7 @@ function showTutorial() {
         let $container = $(container);
         let sequentAsJson = JSON.parse($container.html());
         $container.html('');
-        initProofWithSequent(sequentAsJson, $container, true);
+        initProofWithSequent(sequentAsJson, $container, {withInteraction: true, exportAsCoq: false});
     })
 
     $('.tutorial').removeClass('hidden');
@@ -90,7 +90,7 @@ function showRules() {
         let $container = $(container);
         let proofAsJson = JSON.parse($container.html());
         $container.html('');
-        initProof(proofAsJson, $container, false);
+        initProof(proofAsJson, $container, {withInteraction: false, exportAsCoq: false});
     })
 
     $('.rules').removeClass('hidden');

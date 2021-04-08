@@ -17,8 +17,8 @@ apply tens_r_ext.
   apply ax_exp.
 - change (ll (oc B :: map wn [aplus (dual A) (dual B)])).
   apply oc_r.
-  apply (de_r_ext _ [_]).
-  apply (plus_r2_ext _ _ [_]); cbn.
+  apply (de_r_ext [_]).
+  apply (plus_r2_ext [_]); cbn.
   apply ax_exp2.
 Qed.
 
