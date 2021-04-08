@@ -277,8 +277,8 @@ let indent_line line =
     "  " ^ line;;
 
 let add_indent_and_brace proof_as_coq =
-    let lines = String.split_on_char '\n' proof_as_coq in
-    indent_line (Printf.sprintf "{\n%s}\n" (String.concat "\n" (List.map indent_line lines)))
+    let lines = List.filter (fun s -> s <> "") (String.split_on_char '\n' proof_as_coq) in
+    Printf.sprintf "{ %s }\n" (String.concat "\n" (List.map indent_line lines))
 
 let rec to_coq = function
     | Axiom_left _ -> coq_apply "ax_r2_ext"
