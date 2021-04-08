@@ -28,9 +28,9 @@ const NEUTRAL_ELEMENTS = {
     'zero': '0'
 };
 
-// ****************
-// DISPLAY FUNCTION
-// ****************
+// ***************
+// DISPLAY SEQUENT
+// ***************
 
 function createSequent(sequentAsJson, withInteraction) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
@@ -264,4 +264,43 @@ function addClickAndDoubleClickEvent ($element, singleClickCallBack, doubleClick
             window.clickCount = 0;
         }
     })
+}
+
+// *******************
+// FORMULA PERMUTATION
+// *******************
+
+function getSequentPermutation($sequentDiv) {
+    return {
+        'hyp': getFormulasPermutation($sequentDiv.find('ul.hyp')),
+        'cons': getFormulasPermutation($sequentDiv.find('ul.cons'))
+    };
+}
+
+function getFormulasPermutation($ul) {
+    let permutation = [];
+
+    $ul.find('li').each(function(i, obj) {
+        let initialPosition = $(obj).data('initialPosition');
+        permutation.push(initialPosition);
+    })
+
+    return permutation;
+}
+
+function permuteSequent(sequentWithoutPermutation, sequentPermutation) {
+    return {
+        'hyp': permuteFormulas(sequentWithoutPermutation['hyp'], sequentPermutation['hyp']),
+        'cons': permuteFormulas(sequentWithoutPermutation['cons'], sequentPermutation['cons'])
+    };
+}
+
+function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
+    let newFormulas = [];
+
+    for (let initialPosition of formulasPermutation) {
+        newFormulas.push(formulasWithoutPermutation[initialPosition]);
+    }
+
+    return newFormulas;
 }

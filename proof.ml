@@ -4,22 +4,22 @@ open Rule_request
 (* PROOF *)
 
 type proof =
-	| Axiom_left of formula
-	| Axiom_right of formula
-	| One
-	| Top of formula list * formula list
-	| Bottom of formula list * formula list * proof
-	| Tensor of formula list * formula * formula * formula list * proof * proof
-	| Par of formula list * formula * formula * formula list * proof
-	| With of formula list * formula * formula * formula list * proof * proof
-	| Plus_left of formula list * formula * formula * formula list * proof
-	| Plus_right of formula list * formula * formula * formula list * proof
-	| Promotion of formula list * formula * formula list * proof
-	| Dereliction of formula list * formula * formula list * proof
-	| Weakening of formula list * formula * formula list * proof
-	| Contraction of formula list * formula * formula list * proof
-	| Exchange of sequent * int list * proof
-	| Hypothesis of sequent;;
+    | Axiom_left of formula
+    | Axiom_right of formula
+    | One
+    | Top of formula list * formula list
+    | Bottom of formula list * formula list * proof
+    | Tensor of formula list * formula * formula * formula list * proof * proof
+    | Par of formula list * formula * formula * formula list * proof
+    | With of formula list * formula * formula * formula list * proof * proof
+    | Plus_left of formula list * formula * formula * formula list * proof
+    | Plus_right of formula list * formula * formula * formula list * proof
+    | Promotion of formula list * formula * formula list * proof
+    | Dereliction of formula list * formula * formula list * proof
+    | Weakening of formula list * formula * formula list * proof
+    | Contraction of formula list * formula * formula list * proof
+    | Exchange of sequent * int list * proof
+    | Hypothesis of sequent;;
 
 
 (* GETTERS & SETTERS *)
@@ -28,60 +28,60 @@ let get_premises = function
     | Axiom_left _ -> []
     | Axiom_right _ -> []
     | One -> []
-	| Top (_, _) -> []
-	| Bottom (_, _, p) -> [p]
-	| Tensor (_, _, _, _, p1, p2) -> [p1; p2]
-	| Par (_, _, _, _, p) -> [p]
-	| With (_, _, _, _, p1, p2) -> [p1; p2]
-	| Plus_left (_, _, _, _, p) -> [p]
-	| Plus_right (_, _, _, _, p) -> [p]
-	| Promotion (_, _, _, p) -> [p]
-	| Dereliction (_, _, _, p) -> [p]
-	| Weakening (_, _, _, p) -> [p]
-	| Contraction (_, _, _, p) -> [p]
-	| Exchange (_, _, p) -> [p]
-	| Hypothesis s -> raise (Failure "Can not get premises of hypothesis");;
+    | Top (_, _) -> []
+    | Bottom (_, _, p) -> [p]
+    | Tensor (_, _, _, _, p1, p2) -> [p1; p2]
+    | Par (_, _, _, _, p) -> [p]
+    | With (_, _, _, _, p1, p2) -> [p1; p2]
+    | Plus_left (_, _, _, _, p) -> [p]
+    | Plus_right (_, _, _, _, p) -> [p]
+    | Promotion (_, _, _, p) -> [p]
+    | Dereliction (_, _, _, p) -> [p]
+    | Weakening (_, _, _, p) -> [p]
+    | Contraction (_, _, _, p) -> [p]
+    | Exchange (_, _, p) -> [p]
+    | Hypothesis s -> raise (Failure "Can not get premises of hypothesis");;
 
 let set_premises proof premises = match proof, premises with
     | Axiom_left _, [] -> proof
     | Axiom_right _, [] -> proof
     | One, [] -> proof
-	| Top (_, _), [] -> proof
-	| Bottom (head, tail, _), [p] -> Bottom (head, tail, p)
-	| Tensor (head, e1, e2, tail, _, _), [p1; p2] -> Tensor (head, e1, e2, tail, p1, p2)
-	| Par (head, e1, e2, tail, _), [p]  -> Par (head, e1, e2, tail, p)
-	| With (head, e1, e2, tail, _, _), [p1; p2] -> With (head, e1, e2, tail, p1, p2)
-	| Plus_left (head, e1, e2, tail, _), [p] -> Plus_left (head, e1, e2, tail, p)
-	| Plus_right (head, e1, e2, tail, _), [p] -> Plus_right (head, e1, e2, tail, p)
-	| Promotion (head_without_whynot, e, tail_without_whynot, _), [p] ->
-	    Promotion (head_without_whynot, e, tail_without_whynot, p)
-	| Dereliction (head, e, tail, _), [p] -> Dereliction (head, e, tail, p)
-	| Weakening (head, e, tail, _), [p] -> Weakening (head, e, tail, p)
-	| Contraction (head, e, tail, _), [p] -> Contraction (head, e, tail, p)
-	| Exchange (sequent, permutation, _), [p] -> Exchange (sequent, permutation, p)
-	| Hypothesis sequent, _ -> raise (Failure "Can not set premises of hypothesis")
-	| _ -> raise (Failure "Number of premises mismatch with given proof");;
+    | Top (_, _), [] -> proof
+    | Bottom (head, tail, _), [p] -> Bottom (head, tail, p)
+    | Tensor (head, e1, e2, tail, _, _), [p1; p2] -> Tensor (head, e1, e2, tail, p1, p2)
+    | Par (head, e1, e2, tail, _), [p]  -> Par (head, e1, e2, tail, p)
+    | With (head, e1, e2, tail, _, _), [p1; p2] -> With (head, e1, e2, tail, p1, p2)
+    | Plus_left (head, e1, e2, tail, _), [p] -> Plus_left (head, e1, e2, tail, p)
+    | Plus_right (head, e1, e2, tail, _), [p] -> Plus_right (head, e1, e2, tail, p)
+    | Promotion (head_without_whynot, e, tail_without_whynot, _), [p] ->
+        Promotion (head_without_whynot, e, tail_without_whynot, p)
+    | Dereliction (head, e, tail, _), [p] -> Dereliction (head, e, tail, p)
+    | Weakening (head, e, tail, _), [p] -> Weakening (head, e, tail, p)
+    | Contraction (head, e, tail, _), [p] -> Contraction (head, e, tail, p)
+    | Exchange (sequent, permutation, _), [p] -> Exchange (sequent, permutation, p)
+    | Hypothesis sequent, _ -> raise (Failure "Can not set premises of hypothesis")
+    | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
 let get_conclusion = function
     | Axiom_left e -> {hyp=[]; cons=[e; Orth e]}
     | Axiom_right e -> {hyp=[]; cons=[Orth e; e]}
     | One -> {hyp=[]; cons=[Sequent.One]}
-	| Top (head, tail) -> {hyp=[]; cons=head @ [Sequent.Top] @ tail}
-	| Bottom (head, tail, _) -> {hyp=[]; cons=head @ [Sequent.Bottom] @ tail}
-	| Tensor (head, e1, e2, tail, _, _) -> {hyp=[]; cons=head @ [Sequent.Tensor (e1, e2)] @ tail}
-	| Par (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Sequent.Par (e1, e2)] @ tail}
-	| With (head, e1, e2, tail, _, _) -> {hyp=[]; cons=head @ [Sequent.With (e1, e2)] @ tail}
-	| Plus_left (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Plus (e1, e2)] @ tail}
-	| Plus_right (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Plus (e1, e2)] @ tail}
-	| Promotion (head_without_whynot, e, tail_without_whynot, _) ->
-	    let head = Sequent.add_whynot head_without_whynot in
-	    let tail = Sequent.add_whynot tail_without_whynot in
-	    {hyp=[]; cons=head @ [Ofcourse e] @ tail}
-	| Dereliction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
-	| Weakening (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
-	| Contraction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
-	| Exchange (sequent, permutation, _) -> sequent
-	| Hypothesis sequent -> sequent;;
+    | Top (head, tail) -> {hyp=[]; cons=head @ [Sequent.Top] @ tail}
+    | Bottom (head, tail, _) -> {hyp=[]; cons=head @ [Sequent.Bottom] @ tail}
+    | Tensor (head, e1, e2, tail, _, _) -> {hyp=[]; cons=head @ [Sequent.Tensor (e1, e2)] @ tail}
+    | Par (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Sequent.Par (e1, e2)] @ tail}
+    | With (head, e1, e2, tail, _, _) -> {hyp=[]; cons=head @ [Sequent.With (e1, e2)] @ tail}
+    | Plus_left (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Plus (e1, e2)] @ tail}
+    | Plus_right (head, e1, e2, tail, _) -> {hyp=[]; cons=head @ [Plus (e1, e2)] @ tail}
+    | Promotion (head_without_whynot, e, tail_without_whynot, _) ->
+        let head = Sequent.add_whynot head_without_whynot in
+        let tail = Sequent.add_whynot tail_without_whynot in
+        {hyp=[]; cons=head @ [Ofcourse e] @ tail}
+    | Dereliction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
+    | Weakening (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
+    | Contraction (head, e, tail, _) -> {hyp=[]; cons=head @ [Whynot e] @ tail}
+    | Exchange (sequent, permutation, _) -> sequent
+    | Hypothesis sequent -> sequent;;
 
 
 (* SEQUENT & RULE_REQUEST -> PROOF *)
@@ -260,17 +260,17 @@ let coq_change new_sequent =
 let to_coq = function
     | Axiom_left e -> coq_apply "ax_exp2"
     | Axiom_right e -> coq_apply "ax_exp"
-    | One -> "not implemented"
-	| Top (head, tail) -> "not implemented"
-	| Bottom (head, tail, _) -> "not implemented"
-	| Tensor (head, e1, e2, tail, _, _) -> "not implemented"
-	| Par (head, e1, e2, tail, _) -> "not implemented"
-	| With (head, e1, e2, tail, _, _) -> "not implemented"
-	| Plus_left (head, e1, e2, tail, _) -> "not implemented"
-	| Plus_right (head, e1, e2, tail, _) -> "not implemented"
-	| Promotion (head_without_whynot, e, tail_without_whynot, _) -> "not implemented"
-	| Dereliction (head, e, tail, _) -> "not implemented"
-	| Weakening (head, e, tail, _) -> "not implemented"
-	| Contraction (head, e, tail, _) -> "not implemented"
-	| Exchange (sequent, permutation, _) -> "not implemented"
-	| Hypothesis sequent -> "not implemented";;
+    | One -> coq_apply "one_r"
+    | Top (head, tail) -> "not implemented\n"
+    | Bottom (head, tail, _) -> "not implemented\n"
+    | Tensor (head, e1, e2, tail, _, _) -> "not implemented\n"
+    | Par (head, e1, e2, tail, _) -> "not implemented\n"
+    | With (head, e1, e2, tail, _, _) -> "not implemented\n"
+    | Plus_left (head, e1, e2, tail, _) -> "not implemented\n"
+    | Plus_right (head, e1, e2, tail, _) -> "not implemented\n"
+    | Promotion (head_without_whynot, e, tail_without_whynot, _) -> "not implemented\n"
+    | Dereliction (head, e, tail, _) -> "not implemented\n"
+    | Weakening (head, e, tail, _) -> "not implemented\n"
+    | Contraction (head, e, tail, _) -> "not implemented\n"
+    | Exchange (sequent, permutation, _) -> "not implemented\n"
+    | Hypothesis sequent -> "not implemented\n";;

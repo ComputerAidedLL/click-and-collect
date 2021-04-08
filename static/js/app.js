@@ -61,13 +61,7 @@ function parseSequentAsString(sequentAsString, $container) {
                 displayPedagogicError(data['error_message'], $container);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(jqXHR.responseText);
-            console.log(textStatus);
-            console.log(errorThrown);
-            alert('Technical error, check browser console for more details.');
-        }
+        error: onAjaxError
     });
 }
 

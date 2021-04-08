@@ -63,9 +63,9 @@ function createSequentTable(sequentAsJson, withInteraction) {
     return $table;
 }
 
-// ************
-// PROOF UPDATE
-// ************
+// **********
+// APPLY RULE
+// **********
 
 function applyRule(rule, $sequentDiv, formulaPositions) {
     let $container = $sequentDiv.closest('.proof-container');
@@ -93,49 +93,8 @@ function applyRule(rule, $sequentDiv, formulaPositions) {
                 displayPedagogicError(data['errorMessage'], $container);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(jqXHR.responseText);
-            console.log(textStatus);
-            console.log(errorThrown);
-            alert('Technical error, check browser console for more details.');
-        }
+        error: onAjaxError
     });
-}
-
-function getSequentPermutation($sequentDiv) {
-    return {
-        'hyp': getFormulasPermutation($sequentDiv.find('ul.hyp')),
-        'cons': getFormulasPermutation($sequentDiv.find('ul.cons'))
-    };
-}
-
-function getFormulasPermutation($ul) {
-    let permutation = [];
-
-    $ul.find('li').each(function(i, obj) {
-        let initialPosition = $(obj).data('initialPosition');
-        permutation.push(initialPosition);
-    })
-
-    return permutation;
-}
-
-function permuteSequent(sequentWithoutPermutation, sequentPermutation) {
-    return {
-        'hyp': permuteFormulas(sequentWithoutPermutation['hyp'], sequentPermutation['hyp']),
-        'cons': permuteFormulas(sequentWithoutPermutation['cons'], sequentPermutation['cons'])
-    };
-}
-
-function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
-    let newFormulas = [];
-
-    for (let initialPosition of formulasPermutation) {
-        newFormulas.push(formulasWithoutPermutation[initialPosition]);
-    }
-
-    return newFormulas;
 }
 
 function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, withInteraction) {
@@ -225,34 +184,18 @@ function cleanPedagogicError($container) {
         .remove();
 }
 
-// **********************
-// CHECK PROOF COMPLETION
-// **********************
+// ******************
+// GET COMPLETE PROOF
+// ******************
 
-function markAsComplete($container) {
-    let $mainDiv = $container.children('div');
-    $mainDiv.removeClass('proofIsIncomplete');
-    $mainDiv.addClass('proofIsDone');
-}
-
-function markAsIncomplete($container) {
-    let $mainDiv = $container.children('div');
-    $mainDiv.removeClass('proofIsDone');
-    $mainDiv.addClass('proofIsIncomplete');
-}
-
-function markAsCompleteIfProofIsComplete($container) {
+function getProofAsJson($container) {
     let $mainTable = $container
         .children('div')
         .children('div.proof')
         .children('table')
         .last();
 
-    // We get proof stored in HTML
-    let proofAsJson = recGetProofAsJson($mainTable);
-
-    // We check if proof is complete
-    checkProofIsComplete(proofAsJson, function() {markAsComplete($container);});
+    return recGetProofAsJson($mainTable);
 }
 
 function recGetProofAsJson($table) {
@@ -309,6 +252,33 @@ function isIdentity(permutation) {
     return true;
 }
 
+// **********************
+// CHECK PROOF COMPLETION
+// **********************
+
+function markAsComplete($container) {
+    let $mainDiv = $container.children('div');
+    $mainDiv.removeClass('proofIsIncomplete');
+    $mainDiv.addClass('proofIsDone');
+}
+
+function markAsIncomplete($container) {
+    let $mainDiv = $container.children('div');
+    $mainDiv.removeClass('proofIsDone');
+    $mainDiv.addClass('proofIsIncomplete');
+}
+
+function markAsCompleteIfProofIsComplete($container) {
+    // We get proof stored in HTML
+    let proofAsJson = getProofAsJson($container);
+
+    // We check if proof is complete
+    checkProofIsComplete(proofAsJson, function() {
+        markAsComplete($container);
+        // createExportAsCoqButton($container);
+    });
+}
+
 function checkProofIsComplete(proofAsJson, callbackIfComplete) {
     checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete);
 
@@ -332,7 +302,6 @@ function recCheckIsComplete(proofAsJson) {
 }
 
 function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
-    console.log(proofAsJson);
     $.ajax({
         type: 'POST',
         url: '/is_proof_complete',
@@ -345,12 +314,52 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
                 callbackIfComplete();
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(jqXHR.responseText);
-            console.log(textStatus);
-            console.log(errorThrown);
-            alert('Technical error, check browser console for more details.');
-        }
+        error: onAjaxError
     });
+}
+
+// *************
+// EXPORT AS COQ
+// *************
+
+function createExportAsCoqButton($container) {
+    let coqButton = $('<input type="button" value="Export as Coq"/>')
+        .on('click', function () { exportAsCoq($container); });
+    $container.append(coqButton);
+}
+
+function exportAsCoq($container) {
+    // We get proof stored in HTML
+    let proofAsJson = getProofAsJson($container);
+
+    $.ajax({
+        type: 'POST',
+        url: '/export_as_coq',
+        contentType:'application/json; charset=utf-8',
+        data: JSON.stringify(proofAsJson),
+        success: function(data)
+        {
+            console.log(data);
+
+            let a = document.createElement('a');
+            let binaryData = [];
+            binaryData.push(data);
+            let url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/text"}))
+            a.href = url;
+            a.download = 'proof_as_coq.v';
+            document.body.append(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        },
+        error: onAjaxError
+    });
+}
+
+function onAjaxError(jqXHR, textStatus, errorThrown) {
+    console.log(jqXHR);
+    console.log(jqXHR.responseText);
+    console.log(textStatus);
+    console.log(errorThrown);
+    alert('Technical error, check browser console for more details.');
 }
