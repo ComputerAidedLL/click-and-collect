@@ -100,14 +100,14 @@ let rec formula_to_coq =
   | Top -> "top"
   | Zero -> "zero"
   | Litt x -> x
-  | Orth e -> "dual " ^ (formula_to_coq e)
-  | Tensor (e1, e2) -> Printf.sprintf "tens (%s) (%s)" (formula_to_coq e1) (formula_to_coq e2)
-  | Par (e1, e2) -> Printf.sprintf "parr (%s) (%s)" (formula_to_coq e1) (formula_to_coq e2)
-  | With (e1, e2) -> Printf.sprintf "awith (%s) (%s)" (formula_to_coq e1) (formula_to_coq e2)
-  | Plus (e1, e2) -> Printf.sprintf "aplus (%s) (%s)" (formula_to_coq e1) (formula_to_coq e2)
+  | Orth e -> Printf.sprintf "(dual %s)" (formula_to_coq e)
+  | Tensor (e1, e2) -> Printf.sprintf "(tens %s %s)" (formula_to_coq e1) (formula_to_coq e2)
+  | Par (e1, e2) -> Printf.sprintf "(parr %s %s)" (formula_to_coq e1) (formula_to_coq e2)
+  | With (e1, e2) -> Printf.sprintf "(awith %s %s)" (formula_to_coq e1) (formula_to_coq e2)
+  | Plus (e1, e2) -> Printf.sprintf "(aplus %s %s)" (formula_to_coq e1) (formula_to_coq e2)
   | Lollipop (e1, e2) -> formula_to_coq (Par (Orth e1, e2))
-  | Ofcourse e -> "oc " ^ (formula_to_coq e)
-  | Whynot e -> "wn " ^ (formula_to_coq e);;
+  | Ofcourse e -> Printf.sprintf "(oc %s)" (formula_to_coq e)
+  | Whynot e -> Printf.sprintf "(wn %s)" (formula_to_coq e);;
 
 let formula_list_to_coq formula_list =
     Printf.sprintf "[%s]" (String.concat "; " (List.map formula_to_coq formula_list));;

@@ -56,7 +56,7 @@ function parseSequentAsString(sequentAsString, $container) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProofWithSequent(data['sequent_as_json'], $container, {withInteraction: true, exportAsCoq: false});
+                initProofWithSequent(data['sequent_as_json'], $container, {withInteraction: true, exportAsCoq: true});
             } else {
                 displayPedagogicError(data['error_message'], $container);
             }
