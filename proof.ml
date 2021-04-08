@@ -206,7 +206,8 @@ let from_sequent_and_rule_request sequent rule_request =
             then raise (Technical_exception ("When applying exchange rule, formula_positions and sequent must have same size"))
             else if not (is_valid_permutation permutation)
             then raise (Technical_exception ("When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
-            else Exchange (sequent, permutation_inverse permutation, (Hypothesis {hyp=[]; cons=permute sequent.cons permutation}))
+            else let permuted_sequent = {hyp=[]; cons=permute sequent.cons permutation} in
+            Exchange (permuted_sequent, permutation_inverse permutation, (Hypothesis permuted_sequent))
         );;
 
 let from_sequent_and_rule_request_and_premises sequent rule_request premises =
