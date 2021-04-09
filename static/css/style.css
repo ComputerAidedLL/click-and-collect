@@ -1,4 +1,4 @@
-html, body { max-width: 100%; overflow-x: hidden; }
+html, body { max-width: 100%; overflow-x: hidden; margin: 0; }
 body {font-size: 1.2em; }
 
 sup, sub { font-size:0.6em; }
@@ -8,18 +8,24 @@ sup, sub { font-size:0.6em; }
 
 h1 { margin: 0 auto; text-align: center; font-weight: 100; color: gray; font-size: 1.5em; }
 h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
-h3 { text-align: center; }
-.section { margin-bottom: 3em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
+h3 { margin-top: 0; text-align: center; }
+.section { padding-top: 2em; padding-bottom: 2em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
 .subsection { text-indent: 2em; }
 .hidden { display: none; }
 
+.section-wrapper.light-gray { background: #f9f9f9; }
+.section-wrapper.darker-gray { background: #ececec; }
+.section-wrapper.dark-gray { background: #dfdfdf; }
+
 form{ display: flex; flex-flow: wrap; justify-content: center; }
-form input{ border: none; padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
+form input{ border: solid 2px #005; padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
 form input:focus { outline: none; box-shadow: none; }
 form input[type="submit"]{ background-color: #005; color: white; font-weight: bold; }
-input[type=text], .code { background-color: #EEE; font-family: "Courier New", sans-serif; }
+input[type=text], .code { background-color: #FFF; font-family: "Courier New", sans-serif; }
 
-.code {   border-radius: 0.3em; padding: 0.1em; white-space: nowrap; box-decoration-break: clone; }
+#main-proof-container { margin-bottom: 2em; }
+
+.code { border-radius: 0.3em; padding: 0.1em 0.2em; white-space: nowrap; box-decoration-break: clone; }
 .example { font-style: italic; margin-right: 1em; }
 
 .syntax { line-height: 1.4; }

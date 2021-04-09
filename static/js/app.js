@@ -36,6 +36,7 @@ function submitSequent(element) {
     // We update current URL by adding sequent in query parameters
     let currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('s', sequentAsString.toString());
+    currentUrl.hash = '';
     window.history.pushState(sequentAsString, "Linear logic proof start", currentUrl.toString());
 
     parseSequentAsString(sequentAsString, $('#main-proof-container'));

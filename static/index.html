@@ -29,167 +29,178 @@
         </script>
     </head>
     <body>
-        <div class="section">
-            <h2>C1ick <span class="flip">&</span> c⊗LLec⊥</h2>
-            <h1>Interactive linear logic prover</h1>
-        </div>
-        <div class="section">
-            <form action="#" id="sequent-form">
-                <label>
-                    <input type="text" name="sequentAsString" placeholder="Type sequent to prove..." size="24" />
-                </label>
-                <input type="submit" value="Prove" onclick="submitSequent(this)">
-            </form>
-        </div>
+        <div class="section-wrapper">
+            <div class="section">
+                <h2>C1ick <span class="flip">&</span> c⊗LLec⊥</h2>
+                <h1>Interactive linear logic prover</h1>
+            </div>
+            <div class="section">
+                <form action="#" id="sequent-form">
+                    <label>
+                        <input type="text" name="sequentAsString" placeholder="Type sequent to prove..." size="24" />
+                    </label>
+                    <input type="submit" value="Prove" onclick="submitSequent(this)">
+                </form>
+            </div>
 
-        <div class="section">
-            <div id="main-proof-container" class="proof-container">
+            <div class="section">
+                <div id="main-proof-container" class="proof-container">
 
+                </div>
             </div>
         </div>
 
-        <div class="section syntax">
-            <h3>Syntax</h3>
-            <div class="subsection">
-                <h4>
-                    Sequent syntax
-                </h4>
-                <table>
-                    <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas</td></tr>
-                    <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
-                    <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
-                    <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
-                </table>
-                <p>
-                    <span class="example">Example: </span><span class="code">A0,A1,A2,B |- A',A'',Γ</span>
-                </p>
+        <div class="section-wrapper darker-gray">
+            <div class="section syntax">
+                <h3>Syntax</h3>
+                <div class="subsection">
+                    <h4>
+                        Sequent syntax
+                    </h4>
+                    <table>
+                        <tr><td><span class="code">A</span>, <span class="code">B</span>, ..., <span class="code">Z</span></td><td>formulas</td></tr>
+                        <tr><td><span class="code">,</span></td><td>to separate formulas</td></tr>
+                        <tr><td><span class="code">(</span> and <span class="code">)</span></td><td>around a sub-formula</td></tr>
+                        <tr><td><span class="code">|-</span> or <span class="code">⊢</span></td><td>thesis sign</td></tr>
+                    </table>
+                    <p>
+                        <span class="example">Example: </span><span class="code">A0,A1,A2,B |- A',A'',Γ</span>
+                    </p>
 
-                <h4>
-                    Linear logic formulas
-                </h4>
-                <table>
-                    <tr><td><span class="code">^</span></td><td>dual (e.g. <span class="code">A^</span>)</td></tr>
-                    <tr><td><span class="code">*</span> or <span class="code">⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
-                    <tr><td><span class="code">|</span> or <span class="code">⅋</span></td><td>par (multiplicative disjunction)</td></tr>
-                    <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
-                    <tr><td><span class="code">+</span> or <span class="code">⊕</span></td><td>plus (additive disjunction)</td></tr>
-                    <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
-                    <tr><td><span class="code">bot</span> or <span class="code">⊥</span> or <span class="code">_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
-                    <tr><td><span class="code">top</span> or <span class="code">⊤</span> or <span class="code">T</span></td><td>top (additive conjunction unit)</td></tr>
-                    <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
-                    <tr><td><span class="code">-o</span> or <span class="code">⊸</span></td><td>lollipop (linear implication)</td></tr>
-                    <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
-                    <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
-                </table>
-                <p>
-                    <span class="example">Example: </span><span class="code">!(A&B) |- !A*!B</span>
-                </p>
+                    <h4>
+                        Linear logic formulas
+                    </h4>
+                    <table>
+                        <tr><td><span class="code">^</span></td><td>dual (e.g. <span class="code">A^</span>)</td></tr>
+                        <tr><td><span class="code">*</span> or <span class="code">⊗</span></td><td>tensor (multiplicative conjunction)</td></tr>
+                        <tr><td><span class="code">|</span> or <span class="code">⅋</span></td><td>par (multiplicative disjunction)</td></tr>
+                        <tr><td><span class="code">&</span></td><td>with (additive conjunction)</td></tr>
+                        <tr><td><span class="code">+</span> or <span class="code">⊕</span></td><td>plus (additive disjunction)</td></tr>
+                        <tr><td><span class="code">1</span></td><td>one (multiplicative conjunction unit)</td></tr>
+                        <tr><td><span class="code">bot</span> or <span class="code">⊥</span> or <span class="code">_</span></td><td>bottom (multiplicative disjunction unit)</td></tr>
+                        <tr><td><span class="code">top</span> or <span class="code">⊤</span> or <span class="code">T</span></td><td>top (additive conjunction unit)</td></tr>
+                        <tr><td><span class="code">0</span></td><td>zero (additive disjunction unit)</td></tr>
+                        <tr><td><span class="code">-o</span> or <span class="code">⊸</span></td><td>lollipop (linear implication)</td></tr>
+                        <tr><td><span class="code">!</span></td><td>"of course"</td></tr>
+                        <tr><td><span class="code">?</span></td><td>"why not"</td></tr>
+                    </table>
+                    <p>
+                        <span class="example">Example: </span><span class="code">!(A&B) |- !A*!B</span>
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="section memo">
-            <h3>Interactions</h3>
-            <div class="subsection">
-                <ul>
-                    <li><span class="bold">Exchange:</span> you can drag and drop formulas to move them inside a sequent</li>
-                    <li><span class="bold">Axiom:</span> click on the turnstile symbol or on an atomic formula</li>
-                    <li><span class="bold">Connectives:</span> click to apply the introduction rule (if it is unique)</li>
-                    <li><span class="bold">Tensor:</span> the context is split according to which formulas are on the left or on the right of the clicked tensor formula</li>
-                    <li><span class="bold">Plus:</span> click on the sub-formula you want to keep for plus rules</li>
-                    <li><span class="bold">Why-not</span> rules:
-                        <ul>
-                            <li>single click on "?": weakening rule</li>
-                            <li>double click on "?": contraction rule</li>
-                            <li>single click on the sub-formula: dereliction rule</li>
-                        </ul>
-                    </li>
-                    <li>If you change your mind, you can click again lower in the ongoing proof, or click on the rule name you want to undo.</li>
-                    <li>Want to learn how to use this tool step by step? Try our <a href="#tutorial" onclick="showTutorial();">tutorial</a>.</li>
-                    <li>Not familiar with linear logic? Check the <a href="#rules" onclick="showRules();">derivation rules</a>.</li>
-                </ul>
-
+        <div class="section-wrapper light-gray">
+            <div class="section memo">
+                <h3>Interactions</h3>
+                <div class="subsection">
+                    <ul>
+                        <li><span class="bold">Exchange:</span> you can drag and drop formulas to move them inside a sequent</li>
+                        <li><span class="bold">Axiom:</span> click on the turnstile symbol or on an atomic formula</li>
+                        <li><span class="bold">Connectives:</span> click to apply the introduction rule (if it is unique)</li>
+                        <li><span class="bold">Tensor:</span> the context is split according to which formulas are on the left or on the right of the clicked tensor formula</li>
+                        <li><span class="bold">Plus:</span> click on the sub-formula you want to keep for plus rules</li>
+                        <li><span class="bold">Why-not</span> rules:
+                            <ul>
+                                <li>single click on "?": weakening rule</li>
+                                <li>double click on "?": contraction rule</li>
+                                <li>single click on the sub-formula: dereliction rule</li>
+                            </ul>
+                        </li>
+                        <li>If you change your mind, you can click again lower in the ongoing proof, or click on the rule name you want to undo.</li>
+                        <li>Want to learn how to use this tool step by step? Try our <a href="/#tutorial" onclick="showTutorial();">tutorial</a>.</li>
+                        <li>Not familiar with linear logic? Check the <a href="/#rules" onclick="showRules();">derivation rules</a>.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        </div>
-        <div class="section tutorial hidden">
+        <div class="section-wrapper">
             <a id="tutorial"></a>
-            <h3>Tutorial</h3>
-            <div class="subsection">
-                <p>
-                    Here is a short tutorial to learn how to interact with the tool. You should be able to have all example proofs complete (with green background).
-                </p>
-                <p>
-                    Click on a formula or its orthogonal to apply the <span class="bold">axiom rule</span>.
-                </p>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]}</div>
-                <p>
-                    If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply the axiom rule on a two-formulas sequent.
-                </p>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"neutral","value":"one"},{"type":"neutral","value":"bottom"}]}</div>
-                <p>
-                    Click on <span class="bold">connectives</span> to apply the associated rules.
-                </p>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
-                <p>
-                    <span class="bold">Move formulas</span> within the list before applying <span class="bold">tensor rule</span>.
-                        Formulas on the left of the tensor formula will move to the left premise, and formulas on the right of the tensor formula will move to the right premise.
-                </p>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
-                <p>
-                    As for <span class="bold">plus rules</span>, just click on the left or right sub-formula.
-                </p>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"plus","value1":{"type":"litteral","value":"B"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
-                <p>
-                    For the <span class="bold">whynot</span> connective, you have three possibilities:
-                </p>
-                <ul><li>single click on whynot connective applies <span class="bold">weakening</span></li>
-                    <li>single click on the sub-formula applies <span class="bold">dereliction</span></li>
-                    <li>double click applies <span class="bold">contraction</span>.</li>
-                </ul>
-                <div class="proof-container">{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"B"}},{"type":"tensor","value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
-                <p>
-                    <span class="bold">That's it!</span> Have fun!
-                </p>
+            <div class="section tutorial hidden">
+                <h3>Tutorial</h3>
+                <div class="subsection">
+                    <p>
+                        Here is a short tutorial to learn how to interact with the tool. You should be able to have all example proofs complete (with green background).
+                    </p>
+                    <p>
+                        Click on a formula or its orthogonal to apply the <span class="bold">axiom rule</span>.
+                    </p>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]}</div>
+                    <p>
+                        If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply the axiom rule on a two-formulas sequent.
+                    </p>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"neutral","value":"one"},{"type":"neutral","value":"bottom"}]}</div>
+                    <p>
+                        Click on <span class="bold">connectives</span> to apply the associated rules.
+                    </p>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <p>
+                        <span class="bold">Move formulas</span> within the list before applying <span class="bold">tensor rule</span>.
+                            Formulas on the left of the tensor formula will move to the left premise, and formulas on the right of the tensor formula will move to the right premise.
+                    </p>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <p>
+                        As for <span class="bold">plus rules</span>, just click on the left or right sub-formula.
+                    </p>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"plus","value1":{"type":"litteral","value":"B"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <p>
+                        For the <span class="bold">whynot</span> connective, you have three possibilities:
+                    </p>
+                    <ul><li>single click on whynot connective applies <span class="bold">weakening</span></li>
+                        <li>single click on the sub-formula applies <span class="bold">dereliction</span></li>
+                        <li>double click applies <span class="bold">contraction</span>.</li>
+                    </ul>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"B"}},{"type":"tensor","value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <p>
+                        <span class="bold">That's it!</span> Have fun!
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="section rules hidden">
+        <div class="section-wrapper darker-gray">
             <a id="rules"></a>
-            <h3>Derivation rules</h3>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"rule":"axiom","formulaPositions":[],"premises":[]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"neutral","value":"one"}]},"appliedRule":{"rule":"one","formulaPositions":[0],"premises":[]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"bottom"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"bottom","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"top"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"top","formulaPositions":[1],"premises":[]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"tensor","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"}]},"appliedRule":null},{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"par","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"with","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"with","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null},{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"plus_left","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"plus_right","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"ofcourse","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":{"rule":"promotion","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"litteral","value":"A"},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":null}]}}</div>
-            </div>
-            <div class="row">
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"weakening","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"dereliction","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"contraction","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+            <div class="section rules hidden">
+                <h3>Derivation rules</h3>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"rule":"axiom","formulaPositions":[],"premises":[]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"neutral","value":"one"}]},"appliedRule":{"rule":"one","formulaPositions":[0],"premises":[]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"bottom"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"bottom","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"top"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"top","formulaPositions":[1],"premises":[]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"tensor","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"}]},"appliedRule":null},{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"par","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"with","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"with","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null},{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"plus_left","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"plus_right","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"ofcourse","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":{"rule":"promotion","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"litteral","value":"A"},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":null}]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"weakening","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"dereliction","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"rule":"contraction","formulaPositions":[1],"premises":[{"sequentAsJson":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                </div>
             </div>
         </div>
 
 
-        <div class="section">
-            <a href="https://github.com/etiennecallies/click-and-collect">
-                <img src="images/github-icon.svg" alt="View source code" title="View source code" height="25" width="25"/>
-            </a>
+        <div class="section-wrapper dark-gray">
+            <div class="section">
+                <a href="https://github.com/etiennecallies/click-and-collect">
+                    <img src="images/github-icon.svg" alt="View source code" title="View source code" height="25" width="25"/>
+                </a>
+            </div>
         </div>
     </body>
 </html>
