@@ -297,5 +297,5 @@ let rec to_coq = function
     | Weakening (head, _, _, p) -> coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Contraction (head, _, _, p) -> coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Exchange (sequent, permutation, p) ->
-        coq_apply_with_args "ex_perm" [permutation_to_coq permutation; formula_list_to_coq (permute sequent.cons permutation)] ^ (to_coq p)
+        coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ (to_coq p)
     | Hypothesis sequent -> "not implemented\n";;
