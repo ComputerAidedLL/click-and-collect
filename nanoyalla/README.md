@@ -1,4 +1,6 @@
-**This is NanoYalla version 1.0.0**
+**This is NanoYalla version 1.0.1**
+
+*tested with Coq >= 8.8*
 
 Compile and install using:
 
