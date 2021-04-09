@@ -10,8 +10,8 @@ a { text-decoration: none; }
 h1 { margin: 0 auto; text-align: center; font-weight: 100; color: gray; font-size: 1.5em; }
 h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
 h3 { margin-top: 0; text-align: center; }
-.section { padding-top: 2em; padding-bottom: 2em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
-.subsection { text-indent: 2em; }
+.section { padding: 2em 0.4em; margin-left: auto; margin-right: auto; display: table; max-width: 40em; }
+.subsection { text-indent: 2em; text-align: justify; }
 .hidden { display: none; }
 
 .section-wrapper.light-gray { background: #f9f9f9; }
@@ -35,16 +35,16 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .syntax td:nth-child(1) { text-align: right; padding-right: 1em; }
 .syntax td:nth-child(2) { text-align: left; }
 
-.memo ul { margin-top: 0; }
+.memo ul { margin-top: 0; padding-left: 1.4em; }
 .memo li { text-indent: 0; margin-top: 0.4em; list-style: circle; }
 .memo ul ul li { list-style: disc; margin-top: 0.1em; }
 
 .tutorial p { margin-top: 1.5em; margin-bottom: 0; }
 .tutorial ul { margin-top: 0; margin-left: 3em; }
-.tutorial li { text-indent: 0; }
+.tutorial li { text-indent: 0; text-align: left; }
 .tutorial .proof-container { margin-top: 0.7em; }
-.tutorial ul.examples {list-style: none; text-align: center; margin: 1em 0; padding: 0; }
-.tutorial ul.examples li { margin: 0.3em; }
+.tutorial ul.examples {list-style: none; margin: 1em 0; padding: 0; }
+.tutorial ul.examples li { margin: 0.3em; text-align: center; }
 
 /* PROOF */
 .proof-container { position: relative; }
