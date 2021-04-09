@@ -326,4 +326,26 @@ let rec to_coq_with_hyps_increment i = function
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ s, n, hyps
     | Hypothesis sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
-let to_coq_with_hyps = to_coq_with_hyps_increment 0
+(* PROOF -> LATEX *)
+let latex_apply latex_rule conclusion =
+    Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
+
+let rec to_latex proof =
+    let conclusion = sequent_to_latex (get_conclusion proof) in
+    match proof with
+    | Axiom_left _ -> latex_apply "axv" conclusion
+    | Axiom_right _ -> latex_apply "axv" conclusion
+    | One -> latex_apply "onev" conclusion
+    | Top _ -> latex_apply "topv" conclusion
+    | Bottom (_, _, p) -> to_latex p ^ (latex_apply "botv" conclusion)
+    | Tensor (_, _, _, _, p1, p2) -> to_latex p1 ^ (to_latex p2) ^ (latex_apply "tensorv" conclusion)
+    | Par (_, _, _, _, p) -> to_latex p ^ (latex_apply "parrv" conclusion)
+    | With (_, _, _, _, p1, p2) -> to_latex p1 ^ (to_latex p2) ^ (latex_apply "withv" conclusion)
+    | Plus_left (_, _, _, _, p) -> to_latex p ^ (latex_apply "pluslv" conclusion)
+    | Plus_right (_, _, _, _, p) -> to_latex p ^ (latex_apply "plusrv" conclusion)
+    | Promotion (_, _, _, p) -> to_latex p ^ (latex_apply "ocv" conclusion)
+    | Dereliction (_, _, _, p) -> to_latex p ^ (latex_apply "dev" conclusion)
+    | Weakening (_, _, _, p) -> to_latex p ^ (latex_apply "wkv" conclusion)
+    | Contraction (_, _, _, p) -> to_latex p ^ (latex_apply "cov" conclusion)
+    | Exchange (_, _, p) -> to_latex p ^ (latex_apply "exv" conclusion)
+    | Hypothesis _ -> latex_apply "hypv" conclusion;;
