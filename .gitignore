@@ -29,3 +29,6 @@ nanoyalla/*Makefile*
 *.aux
 *.log
 *.pdf
+
+# Emacs
+*~
