@@ -278,7 +278,11 @@ let indent_line line =
 
 let add_indent_and_brace proof_as_coq =
     let lines = List.filter (fun s -> s <> "") (String.split_on_char '\n' proof_as_coq) in
-    Printf.sprintf "{ %s }\n" (String.concat "\n" (List.map indent_line lines))
+    let indented_lines =
+      match lines with
+      | [] -> raise (Failure "Empty generated Coq proof")
+      | first_line :: other_lines -> first_line :: List.map indent_line other_lines
+    in Printf.sprintf "{ %s }\n" (String.concat "\n" indented_lines)
 
 let rec to_coq = function
     | Axiom_left _ -> coq_apply "ax_r2_ext"
