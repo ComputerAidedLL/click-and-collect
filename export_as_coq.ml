@@ -13,8 +13,8 @@ let proof_to_coq proof =
     let header = "(* This Coq file has been generated using C1ick ⅋ c⊗LLec⊥ tool. *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/ *)\n"
         ^ "(* /!\\ This is a work-in-progress feature. /!\\ *)\n"
-        ^ "(* First install NanoYalla, resources and instructions to make it run on: *)\n"
-        ^ "(* https://github.com/etiennecallies/click-and-collect/tree/master/nanoyalla *)\n\n" in
+        ^ "(* First download and install NanoYalla version 1.0.0, see README.md: *)\n"
+        ^ "(* https://click-and-collect.linear-logic.org/download/nanoyalla.zip *)\n\n" in
     let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let goal_line = Printf.sprintf "Goal %s.\n" (Sequent.sequent_to_coq conclusion) in
