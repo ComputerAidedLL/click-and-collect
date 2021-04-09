@@ -2,6 +2,7 @@ html, body { max-width: 100%; overflow-x: hidden; margin: 0; }
 body {font-size: 1.2em; }
 
 sup, sub { font-size:0.6em; }
+a { text-decoration: none; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
@@ -18,9 +19,10 @@ h3 { margin-top: 0; text-align: center; }
 .section-wrapper.dark-gray { background: #dfdfdf; }
 
 form{ display: flex; flex-flow: wrap; justify-content: center; }
-form input{ border: solid 2px #005; padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
+form input{ padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
 form input:focus { outline: none; box-shadow: none; }
-form input[type="submit"]{ background-color: #005; color: white; font-weight: bold; }
+input[type=text] { border: solid 2px gray; }
+form input[type="submit"]{ border: none; background-color: #005; color: white; font-weight: bold; }
 input[type=text], .code { background-color: #FFF; font-family: "Courier New", sans-serif; }
 
 #main-proof-container { margin-bottom: 2em; }
@@ -41,6 +43,8 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .tutorial ul { margin-top: 0; margin-left: 3em; }
 .tutorial li { text-indent: 0; }
 .tutorial .proof-container { margin-top: 0.7em; }
+.tutorial ul.examples {list-style: none; text-align: center; margin: 1em 0; padding: 0; }
+.tutorial ul.examples li { margin: 0.3em; }
 
 /* PROOF */
 .proof-container { position: relative; }

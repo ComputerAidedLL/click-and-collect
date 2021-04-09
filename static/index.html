@@ -154,8 +154,28 @@
                     </ul>
                     <div class="proof-container">{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"B"}},{"type":"tensor","value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
                     <p>
-                        <span class="bold">That's it!</span> Have fun!
+                        <span class="bold">That's it!</span> Here are some extra examples for you to prove. Have fun!
                     </p>
+                    <ul class="examples">
+                        <li><a href="/?s=A%E2%8A%97B+%E2%8A%A2+B%E2%8A%97A">A⊗B ⊢ B⊗A</a></li>
+                        <li><a href="/?s=%28A%E2%8A%97B%29%E2%8A%97C+%E2%8A%A2+A%E2%8A%97%28B%E2%8A%97C%29">(A⊗B)⊗C ⊢ A⊗(B⊗C)</a></li>
+                        <li><a href="/?s=A%E2%8A%97%28B%E2%8A%B8C%29+%E2%8A%A2+B%E2%8A%B8%28A%E2%8A%97C%29">A⊗(B⊸C) ⊢ B⊸(A⊗C)</a></li>
+                        <li><a href="/?s=A%E2%8A%97%28B%E2%8A%95C%29+%E2%8A%A2+%28A%E2%8A%97B%29%E2%8A%95%28A%E2%8A%97C%29">A⊗(B⊕C) ⊢ (A⊗B)⊕(A⊗C)</a></li>
+                        <li><a href="/?s=%21%28A%26B%29+%E2%8A%A2+%21A%E2%8A%97%21B">!(A&amp;B) ⊢ !A⊗!B</a></li>
+                        <li><a href="/?s=%21A%E2%8A%97%21B%E2%8A%A2%21%28A%26B%29">!A⊗!B ⊢ !(A&amp;B)</a></li>
+                        <li><a href="/?s=%21A%E2%8A%97%21B+%E2%8A%A2+%21%28A%E2%8A%97B%29">!A⊗!B ⊢ !(A⊗B)</a></li>
+                        <li><a href="/?s=A%E2%8A%97%28A%E2%8A%B8A%29+%E2%8A%A2+A%E2%8A%97%21%28A%E2%8A%B8A%29">A⊗(A⊸A) ⊢ A⊗!(A⊸A)</a></li>
+                        <li><a href="/?s=%21%28%21A%E2%8A%B8B%29%2C+%21%28%21B%E2%8A%B8C%29+%E2%8A%A2+%21A%E2%8A%B8C">!(!A⊸B), !(!B⊸C) ⊢ !A⊸C</a></li>
+                        <li><a href="/?s=A%E2%8A%97A%E2%8A%B8A%E2%8A%97A">A⊗A⊸A⊗A</a></li>
+                        <li><a href="/?s=%21%28A%E2%8A%B8A%29%E2%8A%B8%21%28A%E2%8A%B8A%29">!(A⊸A)⊸!(A⊸A)</a></li>
+                        <li><a href="/?s=%28%28A%E2%8A%B8R%29%E2%8A%B8R%29%E2%8A%97%28%28B%E2%8A%B8R%29%E2%8A%B8R%29+%E2%8A%A2+%28%28A%E2%8A%97B%29%E2%8A%B8R%29%E2%8A%B8R">((A⊸R)⊸R)⊗((B⊸R)⊸R) ⊢ ((A⊗B)⊸R)⊸R</a></li>
+                        <li><a href="/?s=%28%28A%E2%8A%B8R%29%E2%8A%B8R%29%E2%8A%95%28%28B%E2%8A%B8R%29%E2%8A%B8R%29+%E2%8A%A2+%28%28A%E2%8A%95B%29%E2%8A%B8R%29%E2%8A%B8R">((A⊸R)⊸R)⊕((B⊸R)⊸R) ⊢ ((A⊕B)⊸R)⊸R</a></li>
+                        <li><a href="/?s=%28%28A%E2%8A%B8%3FB%29%E2%8A%B8A%29%E2%8A%B8%3FA">((A⊸?B)⊸A)⊸?A</a></li>
+                        <li><a href="/?s=%21%28A%E2%85%8BB%29%E2%8A%B8%28%3F%21%3FA%E2%85%8B%3F%21%3FB%29">!(A<span class="flip">&</span>B)⊸(?!?A<span class="flip">&</span>?!?B)</a></li>
+                        <li><a href="/?s=%E2%8A%A2+%3FA%2C+%3F%28B%E2%85%8BB%29%2C+%3F%28A%5E%E2%85%8BB%5E%29%2C+%3F%28%E2%8A%A5%E2%8A%97%E2%8A%A5%29">⊢ ?A, ?(B<span class="flip">&</span>B), ?(A<sup>⊥</sup><span class="flip">&</span>B<sup>⊥</sup>), ?(⊥⊗⊥)</a></li>
+                        <li><a href="/?s=%28%28%28%280%E2%8A%B81%29%E2%8A%B81%29%E2%8A%B80%29%E2%8A%B80%29%E2%8A%B81">((((0⊸1)⊸1)⊸0)⊸0)⊸1</a></li>
+                        <li><a href="/?s=%28%28%28A%E2%8A%97%E2%8A%A4%29%26%28B%E2%8A%97%E2%8A%A4%29%29%E2%8A%B80%29%E2%8A%B8%28%28A%E2%8A%B8A%27%29%E2%8A%95%28B%E2%8A%B8B%27%29%29">(((A⊗⊤)&(B⊗⊤))⊸0)⊸((A⊸A')⊕(B⊸B'))</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
