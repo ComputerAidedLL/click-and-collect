@@ -286,7 +286,7 @@ let add_indent_and_brace proof_as_coq =
 
 let rec to_coq = function
     | Axiom_left _ -> coq_apply "ax_r2_ext"
-    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" [formula_to_coq f]
+    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" ["(" ^ formula_to_coq f ^ ")"]
     | One -> coq_apply "one_r_ext"
     | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
     | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
@@ -296,10 +296,10 @@ let rec to_coq = function
     | Plus_left (head, _, _, _, p) -> coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Plus_right (head, _, _, _, p) -> coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Promotion (head_without_whynot, e, tail_without_whynot, p) ->
-        coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; formula_to_coq e; formula_list_to_coq tail_without_whynot] ^ (to_coq p)
+        coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; "(" ^ formula_to_coq e ^ ")"; formula_list_to_coq tail_without_whynot] ^ (to_coq p)
     | Dereliction (head, _, _, p) -> coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Weakening (head, _, _, p) -> coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Contraction (head, _, _, p) -> coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Exchange (sequent, permutation, p) ->
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ (to_coq p)
-    | Hypothesis sequent -> "not implemented\n";;
+    | Hypothesis sequent -> "admit.\n";;
