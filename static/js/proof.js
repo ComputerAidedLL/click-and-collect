@@ -355,7 +355,7 @@ function exportAsCoq($container) {
             binaryData.push(data);
             let url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/text"}))
             a.href = url;
-            a.download = 'proof_as_coq.v';
+            a.download = 'ccLLproof.v';
             document.body.append(a);
             a.click();
             a.remove();
