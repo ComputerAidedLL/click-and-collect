@@ -270,9 +270,6 @@ let coq_apply_with_args coq_rule args =
     let args_as_string = (String.concat " " args) in
     Printf.sprintf "apply (%s %s).\n" coq_rule args_as_string;;
 
-let coq_change new_sequent =
-    Printf.sprintf "change (%s).\n" (Sequent.sequent_to_coq new_sequent);;
-
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
 
@@ -280,13 +277,13 @@ let indent_line line =
     "  " ^ line;;
 
 let add_indent_and_brace proof_as_coq =
-    let lines = String.split_on_char '\n' proof_as_coq in
-    indent_line (Printf.sprintf "{\n%s}\n" (String.concat "\n" (List.map indent_line lines)))
+    let lines = List.filter (fun s -> s <> "") (String.split_on_char '\n' proof_as_coq) in
+    Printf.sprintf "{ %s }\n" (String.concat "\n" (List.map indent_line lines))
 
 let rec to_coq = function
-    | Axiom_left _ -> coq_apply "ax_exp2"
-    | Axiom_right _ -> coq_apply "ax_exp"
-    | One -> coq_apply "one_r"
+    | Axiom_left _ -> coq_apply "ax_r2_ext"
+    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" [formula_to_coq f]
+    | One -> coq_apply "one_r_ext"
     | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
     | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Tensor (head, _, _, _, p1, p2) -> coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace (to_coq p1) ^ add_indent_and_brace (to_coq p2)
@@ -300,5 +297,5 @@ let rec to_coq = function
     | Weakening (head, _, _, p) -> coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Contraction (head, _, _, p) -> coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ (to_coq p)
     | Exchange (sequent, permutation, p) ->
-        coq_apply_with_args "ex_perm" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ (to_coq p)
+        coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ (to_coq p)
     | Hypothesis sequent -> "not implemented\n";;

@@ -14,13 +14,13 @@ apply tens_r.
   apply (ex_t_r [] [] _ _).
   apply de_r.
   apply plus_r1.
-  apply ax_exp.
+  apply ax_r1_ext.
 - change (ll (oc B :: map wn [aplus (dual A) (dual B)])).
   apply oc_r.
   apply (ex_t_r [] [] _ _).
   apply de_r.
   apply plus_r2.
-  apply ax_exp.
+  apply ax_r1_ext.
 Qed.
 
 End TheProof.
