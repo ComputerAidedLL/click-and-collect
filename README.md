@@ -4,7 +4,7 @@ The repository contains
 frontend and backend code
 for an online interactive sequent prover for linear logic.
 
-## Deploy
+## Deploy on local dev environment
 - Install dependencies
 ```
 sudo apt-get install opam
@@ -14,6 +14,14 @@ opam depext ocsigen-start
 opam install ocsigen-start
 ```
 - Clone this repository
+- Launch
+```
+cd click-and-collect
+make test.byte
+```
+
+## Deploy on server
+Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
 - Add this nginx config (install it with `sudo apt install nginx`)
 ```
 server {
@@ -27,12 +35,13 @@ server {
 }
 ```
 - Allow https by adding a certificate `sudo certbot --nginx`
-- Launch
-```
-cd click-and-collect
-make all # first time you'll need to comment ocaml dependencies
-make test.byte
-```
+
+## Modify Coq nanoyalla package
+Whenever a file in `nanoyalla/` directory package is modified, nanoyalla version should be incremented that way:
+
+1. Increment version in `nanoyalla/README.md`.
+2. Increment version in `export_as_coq.ml`, in header printed in generated files.
+3. Zip `nanoyalla/` directory `zip -r static/download/nanoyalla.zip nanoyalla/`.
 
 ## Modify parser
 Do not modify `ll_parser.mli` or `ll_parser.ml` neither `ll_lexer.mll`, but just `ll_parser.mly` and `ll_lexer.mll` and then run
