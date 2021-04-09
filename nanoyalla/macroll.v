@@ -65,9 +65,9 @@ Lemma transpS_lt {A} n (l : list A) : S n < length l ->
  {'(l1,l2,a,b) | (l = l1 ++ a :: b :: l2 /\ length l1 = n) & transpS n l = l1 ++ b :: a :: l2}.
 Proof.
 revert l; induction n; cbn; intros l Hl.
-- destruct l as [|a [|b l]]; try (cbn in Hl; lia).
+- destruct l as [|a [|b l]]; try (cbn in Hl; exfalso; lia).
   now exists ([],l,a,b).
-- destruct l as [|a l]; cbn in Hl; try lia.
+- destruct l as [|a l]; cbn in Hl; try (exfalso; lia).
   destruct (IHn l) as [[[[l1 l2] b] c] [-> Hl1] ->]; [lia|].
   now exists (a :: l1, l2, b, c); split; cbn; subst.
 Defined.
@@ -94,7 +94,7 @@ destruct (transpS_lt (length l1) (l1 ++ a :: b :: l2)) as [[[[l1' l2'] c] d] [H 
       inversion H; subst; f_equal.
       apply IHl1; auto. }
   f_equal.
-  apply app_inv_head_iff in H.
+  apply app_inv_head in H.
   now inversion H; subst.
 Defined.
 

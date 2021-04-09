@@ -3,11 +3,12 @@
 Open Scope list_scope.
 
 (* Same definition as [List.map] *)
-Definition map [A B : Type] (f : A -> B) :=
+Definition map (A B : Type) (f : A -> B) :=
   fix map l := match l with
                | nil => nil
                | a :: t => f a :: map t
                end.
+Arguments map [A B] f l.
 
 
 (* Adapted from yalla/formulas.v *)
