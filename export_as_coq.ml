@@ -8,6 +8,9 @@ let proof_variables conclusion =
     | [] -> ""
     | _ -> Printf.sprintf "Variable %s : formula.\n\n" (String.concat " " unique_variable_names);;
 
+let list_of_intros k =
+  String.concat " " (List.init k (fun n -> "Hyp" ^ (string_of_int n)))
+
 let proof_to_coq proof =
     let conclusion = get_conclusion proof in
     let header = "(* This Coq file has been generated using C1ick ⅋ c⊗LLec⊥ tool. *)\n"
@@ -17,9 +20,13 @@ let proof_to_coq proof =
         ^ "(* https://click-and-collect.linear-logic.org/download/nanoyalla.zip *)\n\n" in
     let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
-    let goal_line = Printf.sprintf "Goal %s.\n" (Sequent.sequent_to_coq conclusion) in
-    let start_proof_line = "Proof.\n" in
-    let proof_lines = Proof.to_coq proof in
+    let proof_lines, number_of_hypotheses, hypotheses = to_coq_with_hyps proof in
+    let goal_line = Printf.sprintf "Goal %s.\n" (String.concat " -> " (hypotheses @ [sequent_to_coq conclusion])) in
+    let intros_list =
+        if number_of_hypotheses > 0 then
+          Printf.sprintf "intros %s.\n" (list_of_intros number_of_hypotheses)
+        else "" in
+    let start_proof_line = "Proof.\n" ^ intros_list in
     let end_proof_line = "Qed.\n\nEnd TheProof.\n" in
     Printf.sprintf "%s%s%s%s%s%s%s" header start_file_line variable_line goal_line start_proof_line proof_lines end_proof_line;;
 
