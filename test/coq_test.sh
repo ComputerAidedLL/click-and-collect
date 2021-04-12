@@ -18,8 +18,8 @@ proofs_directory='test/coq_test_data/*.json'
 for f in $proofs_directory
 do
   echo "$f"
-  curl -s -X POST 'http://localhost:8080/export_as_coq' -H 'content-type:text/plain;charset=UTF-8' -d @"$f" > proof_as_coq.v
-  coqc -R . NanoYalla proof_as_coq.v || cat proof_as_coq.v
+  curl -s -X POST 'http://localhost:8080/export_as_coq' -H 'content-type:text/plain;charset=UTF-8' -d @"$f" > ccLLproof.v
+  coqc -R . NanoYalla ccLLproof.v || cat ccLLproof.v
 done
 
 echo "Cleaning Coq environment..."
@@ -29,5 +29,5 @@ rm macroll.*
 rm .macroll.*
 rm example*.*
 rm .example*.*
-rm proof_as_coq.*
-rm .proof_as_coq.*
+rm ccLLproof.*
+rm .ccLLproof.*
