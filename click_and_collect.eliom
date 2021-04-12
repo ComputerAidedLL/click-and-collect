@@ -9,6 +9,7 @@ open Parse_sequent
 open Apply_rule
 open Is_proof_complete
 open Export_as_coq
+open Export_as_latex
 open Yojson
 
 
@@ -160,4 +161,35 @@ let export_as_coq_handler () (content_type, raw_content_opt) =
 
 let () =
   Eliom_registration.Any.register export_as_coq_service export_as_coq_handler;
+  ()
+
+(*******************)
+(* EXPORT AS LATEX *)
+(*******************)
+
+(* Service declaration *)
+let export_as_latex_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["export_as_latex"])
+      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ()
+
+(* Service definition *)
+let export_as_latex_handler () (content_type, raw_content_opt) =
+    match raw_content_opt with
+    | None -> send_json ~code:400 "Body content is missing"
+    | Some raw_content -> Lwt.catch (fun () ->
+        read_raw_content raw_content >>= fun request_as_string ->
+        try
+            let request_as_json = Yojson.Basic.from_string request_as_string in
+            let technical_success, string_response = export_as_latex request_as_json in
+            if technical_success then send_file ~code:200 string_response
+            else send_json ~code:400 string_response
+        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
+        (function
+        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
+        | _ as e -> raise e)
+
+let () =
+  Eliom_registration.Any.register export_as_latex_service export_as_latex_handler;
   ()
