@@ -324,6 +324,6 @@ let rec to_coq_with_hyps_increment i = function
     | Exchange (sequent, permutation, p) ->
         let s, n, hyps = to_coq_with_hyps_increment i p in
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ s, n, hyps
-    | Hypothesis sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [sequent_to_coq sequent];;
+    | Hypothesis sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
 let to_coq_with_hyps = to_coq_with_hyps_increment 0
