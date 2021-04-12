@@ -102,24 +102,24 @@ function applyRule(rule, $sequentDiv, formulaPositions, options) {
 }
 
 function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, options) {
+    // Undo previously applied rule if any
+    undoRule($sequentDiv);
+
     // Save data
     $sequentDiv
         .data('permutationBeforeRule', permutationBeforeRule)
         .data('rule', rule)
         .data('formulaPositions', formulaPositions);
 
-    // Undo previously applied rule if any
-    let $td = $sequentDiv.closest('td');
-    undoRule($td);
-
     // Add line
+    let $td = $sequentDiv.closest('td');
     $td.addClass('inference');
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': `tag ${rule}`}).html(RULES[rule]);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
-        $ruleSymbol.on('click', function() { undoRule($td); })
+        $ruleSymbol.on('click', function() { undoRule($sequentDiv); })
     }
     $td.next('.tagBox').html($ruleSymbol);
 
@@ -144,8 +144,15 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     }
 }
 
-function undoRule($td) {
+function undoRule($sequentDiv) {
+    // Erase data
+    $sequentDiv
+        .data('permutationBeforeRule', null)
+        .data('rule', null)
+        .data('formulaPositions', null);
+
     // Remove line
+    let $td = $sequentDiv.closest('td');
     $td.removeClass('inference');
 
     // Remove rule symbol
