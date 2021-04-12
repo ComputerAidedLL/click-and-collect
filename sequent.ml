@@ -150,16 +150,20 @@ let sequent_to_coq sequent =
 
 (* SEQUENT -> LATEX *)
 
+let litteral_to_latex s =
+   (* Set numbers as indices. E.g.: A01' -> A_{01}' *)
+    Str.global_replace (Str.regexp "\\([0-9]+\\)") "_{\\1}" s;;
+
 let rec formula_to_latex_atomic =
   function
   | One -> "\\one", true
   | Bottom -> "\\bot", true
   | Top -> "\\top", true
   | Zero -> "\\zero", true
-  | Litt x -> x, true
+  | Litt x -> litteral_to_latex x, true
   | Orth e ->
       let s, atomic = formula_to_latex_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      let s_parenthesis = if atomic then "{" ^ s ^ "}" else "(" ^ s ^ ")" in
       Printf.sprintf "%s\\orth" s_parenthesis, true
   | Tensor (e1, e2) ->
       let s1, atomic1 = formula_to_latex_atomic e1 in

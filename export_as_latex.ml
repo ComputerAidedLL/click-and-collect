@@ -3,9 +3,8 @@ open Proof
 exception Cannot_export_proof_as_latex_exception of string;;
 
 let proof_to_latex proof =
-    let header = "% This LaTeX file has been generated using Click&coLLect tool.\n"
+    let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
         ^ "% https://click-and-collect.linear-logic.org/\n"
-        ^ "% /!\\ This is a work-in-progress feature. /!\\\n\n"
         ^ "% you can use it to generate pdf or image\n"
         ^ "% pdflatex ccLLproof.tex\n"
         ^ "% convert ccLLproof.pdf -colorspace RGB ccLLproof.png\n\n" in
@@ -33,7 +32,7 @@ let proof_to_latex proof =
         ^ "\\newcommand*{\\wkv}[1]{\\infer{1}[\\ensuremath{?\\mathit{w}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\cov}[1]{\\infer{1}[\\ensuremath{?\\mathit{c}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n\n" in
-    let start_proof = "\\begin{document}\n\n\\begin{prooftree}\n" in
+    let start_proof = "\\begin{document}\n\n%\scriptsize\n\\begin{prooftree}\n" in
     let proof_lines = Proof.to_latex proof in
     let end_proof = "\\end{prooftree}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
