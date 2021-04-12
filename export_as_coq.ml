@@ -15,7 +15,6 @@ let proof_to_coq proof =
     let conclusion = get_conclusion proof in
     let header = "(* This Coq file has been generated using C1ick ⅋ c⊗LLec⊥ tool. *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/ *)\n"
-        ^ "(* /!\\ This is a work-in-progress feature. /!\\ *)\n"
         ^ "(* First download and install NanoYalla version 1.0.1, see README.md: *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/download/nanoyalla.zip *)\n\n" in
     let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
