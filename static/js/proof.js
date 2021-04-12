@@ -29,6 +29,11 @@ function initProof(proofAsJson, $container, options) {
     createSubProof(proofAsJson, $div2, options);
     $div.append($div2);
     $container.append($div);
+
+    if (options.exportButtons) {
+        createExportAsCoqButton($container);
+        createExportAsLatexButton($container);
+    }
 }
 
 function initProofWithSequent(sequentAsJson, $container, options) {
@@ -105,7 +110,7 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
 
     // Undo previously applied rule if any
     let $td = $sequentDiv.closest('td');
-    undoRule($td, options);
+    undoRule($td);
 
     // Add line
     $td.addClass('inference');
@@ -114,7 +119,7 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     let $ruleSymbol = $('<div>', {'class': `tag ${rule}`}).html(RULES[rule]);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
-        $ruleSymbol.on('click', function() { undoRule($td, options); })
+        $ruleSymbol.on('click', function() { undoRule($td); })
     }
     $td.next('.tagBox').html($ruleSymbol);
 
@@ -123,7 +128,7 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     let $container = $table.closest('.proof-container');
     if (premises.length === 0) {
         if (options.withInteraction) {
-            markAsCompleteIfProofIsComplete($container, options);
+            markAsCompleteIfProofIsComplete($container);
         }
     } else if (premises.length === 1) {
         createSubProof(premises[0], $table.parent(), options);
@@ -139,7 +144,7 @@ function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions,
     }
 }
 
-function undoRule($td, options) {
+function undoRule($td) {
     // Remove line
     $td.removeClass('inference');
 
@@ -156,11 +161,6 @@ function undoRule($td, options) {
     // Mark proof as incomplete
     let $container = $table.closest('.proof-container');
     markAsIncomplete($container);
-
-    if (options.exportAsCoq) {
-        // Remove Coq button
-        removeExportAsCoqButton($container);
-    }
 }
 
 // ***************
@@ -272,16 +272,13 @@ function markAsIncomplete($container) {
     $mainDiv.addClass('proofIsIncomplete');
 }
 
-function markAsCompleteIfProofIsComplete($container, options) {
+function markAsCompleteIfProofIsComplete($container) {
     // We get proof stored in HTML
     let proofAsJson = getProofAsJson($container);
 
     // We check if proof is complete
     checkProofIsComplete(proofAsJson, function() {
         markAsComplete($container);
-        if (options.exportAsCoq) {
-            createExportAsCoqButton($container);
-        }
     });
 }
 
@@ -331,12 +328,9 @@ function createExportAsCoqButton($container) {
     let coqLogoPath = 'images/coq.png';
     let coqButton = $('<img src="' + coqLogoPath + '" alt="Export as Coq" title="Export as Coq" />')
         .addClass('coq')
+        .addClass('export')
         .on('click', function () { exportAsCoq($container); });
     $container.append(coqButton);
-}
-
-function removeExportAsCoqButton($container) {
-    $container.find('img.coq').remove();
 }
 
 function exportAsCoq($container) {
@@ -364,6 +358,50 @@ function exportAsCoq($container) {
         error: onAjaxError
     });
 }
+
+
+// ***************
+// EXPORT AS LATEX
+// ***************
+
+function createExportAsLatexButton($container) {
+    let latexLogoPath = 'images/latex-logo-vector.svg';
+    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as Latex" title="Export as Latex" />')
+        .addClass('latex')
+        .addClass('export')
+        .on('click', function () { exportAsLatex($container); });
+    $container.append(latexButton);
+}
+
+function exportAsLatex($container) {
+    // We get proof stored in HTML
+    let proofAsJson = getProofAsJson($container);
+
+    $.ajax({
+        type: 'POST',
+        url: '/export_as_latex',
+        contentType:'application/json; charset=utf-8',
+        data: JSON.stringify(proofAsJson),
+        success: function(data)
+        {
+            let a = document.createElement('a');
+            let binaryData = [];
+            binaryData.push(data);
+            let url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/text"}))
+            a.href = url;
+            a.download = 'ccLLproof.tex';
+            document.body.append(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        },
+        error: onAjaxError
+    });
+}
+
+// *****
+// UTILS
+// *****
 
 function onAjaxError(jqXHR, textStatus, errorThrown) {
     console.log(jqXHR);
