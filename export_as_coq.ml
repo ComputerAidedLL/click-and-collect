@@ -20,7 +20,7 @@ let proof_to_coq proof =
     let start_file_line = "From NanoYalla Require Import macroll.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let proof_lines, number_of_hypotheses, hypotheses = to_coq_with_hyps proof in
-    let goal_line = Printf.sprintf "Goal %s.\n" (String.concat " -> " (hypotheses @ [sequent_to_coq conclusion])) in
+    let goal_line = Printf.sprintf "Goal %s.\n" (String.concat " -> " (hypotheses @ [Sequent.sequent_to_coq conclusion])) in
     let intros_list =
         if number_of_hypotheses > 0 then
           Printf.sprintf "intros %s.\n" (list_of_intros number_of_hypotheses)
