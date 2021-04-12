@@ -365,7 +365,7 @@ function exportAsCoq($container) {
 // ***************
 
 function createExportAsLatexButton($container) {
-    let latexLogoPath = 'images/latex-logo-vector.svg';
+    let latexLogoPath = 'images/LaTeX_logo.png';
     let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as Latex" title="Export as Latex" />')
         .addClass('latex')
         .addClass('export')

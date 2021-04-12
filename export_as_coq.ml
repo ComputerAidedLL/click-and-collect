@@ -31,8 +31,7 @@ let proof_to_coq proof =
 
 let export_as_coq_with_exceptions request_as_json =
     let proof = Proof.from_json request_as_json in
-    if not (Proof.is_complete proof) then raise (Cannot_export_proof_as_coq_exception "proof is not complete")
-    else proof_to_coq proof;;
+    proof_to_coq proof;;
 
 let export_as_coq request_as_json =
     try let proof_as_coq = export_as_coq_with_exceptions request_as_json in
