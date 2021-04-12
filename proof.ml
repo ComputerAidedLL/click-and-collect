@@ -285,8 +285,8 @@ let add_indent_and_brace proof_as_coq =
     in Printf.sprintf "{ %s }\n" (String.concat "\n" indented_lines)
 
 let rec to_coq_with_hyps_increment i = function
-    | Axiom_left _ -> coq_apply "ax_r2_ext", i, []
-    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" ["(" ^ formula_to_coq f ^ ")"], i, []
+    | Axiom_left _ -> "ax_expansion.\n", i, []
+    | Axiom_right _ -> "ax_expansion.\n", i, []
     | One -> coq_apply "one_r_ext", i, []
     | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head], i, []
     | Bottom (head, _, p) ->
