@@ -284,22 +284,46 @@ let add_indent_and_brace proof_as_coq =
       | first_line :: other_lines -> first_line :: List.map indent_line other_lines
     in Printf.sprintf "{ %s }\n" (String.concat "\n" indented_lines)
 
-let rec to_coq = function
-    | Axiom_left _ -> coq_apply "ax_r2_ext"
-    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" [formula_to_coq f]
-    | One -> coq_apply "one_r_ext"
-    | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head]
-    | Bottom (head, _, p) -> coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | Tensor (head, _, _, _, p1, p2) -> coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace (to_coq p1) ^ add_indent_and_brace (to_coq p2)
-    | Par (head, _, _, _, p) -> coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | With (head, _, _, _, p1, p2) -> coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace (to_coq p1) ^ add_indent_and_brace (to_coq p2)
-    | Plus_left (head, _, _, _, p) -> coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | Plus_right (head, _, _, _, p) -> coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ (to_coq p)
+let rec to_coq_with_hyps_increment i = function
+    | Axiom_left _ -> coq_apply "ax_r2_ext", i, []
+    | Axiom_right f -> coq_apply_with_args "ax_r1_ext" ["(" ^ formula_to_coq f ^ ")"], i, []
+    | One -> coq_apply "one_r_ext", i, []
+    | Top (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head], i, []
+    | Bottom (head, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ s, n, hyps
+    | Tensor (head, _, _, _, p1, p2) -> 
+        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
+    | Par (head, _, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ s, n, hyps
+    | With (head, _, _, _, p1, p2) ->
+        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
+    | Plus_left (head, _, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ s, n, hyps
+    | Plus_right (head, _, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Promotion (head_without_whynot, e, tail_without_whynot, p) ->
-        coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; formula_to_coq e; formula_list_to_coq tail_without_whynot] ^ (to_coq p)
-    | Dereliction (head, _, _, p) -> coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | Weakening (head, _, _, p) -> coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ (to_coq p)
-    | Contraction (head, _, _, p) -> coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ (to_coq p)
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; "(" ^ formula_to_coq e ^ ")"; formula_list_to_coq tail_without_whynot] ^ s, n, hyps
+    | Dereliction (head, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ s, n, hyps
+    | Weakening (head, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ s, n, hyps
+    | Contraction (head, _, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Exchange (sequent, permutation, p) ->
-        coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ (to_coq p)
-    | Hypothesis sequent -> "not implemented\n";;
+        let s, n, hyps = to_coq_with_hyps_increment i p in
+        coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent.cons] ^ s, n, hyps
+    | Hypothesis sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
+
+let to_coq_with_hyps = to_coq_with_hyps_increment 0

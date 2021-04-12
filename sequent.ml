@@ -93,21 +93,53 @@ let from_json sequent_as_json =
 
 (* SEQUENT -> COQ *)
 
-let rec formula_to_coq =
+let rec formula_to_coq_atomic =
   function
-  | One -> "one"
-  | Bottom -> "bot"
-  | Top -> "top"
-  | Zero -> "zero"
-  | Litt x -> x
-  | Orth e -> Printf.sprintf "(dual %s)" (formula_to_coq e)
-  | Tensor (e1, e2) -> Printf.sprintf "(tens %s %s)" (formula_to_coq e1) (formula_to_coq e2)
-  | Par (e1, e2) -> Printf.sprintf "(parr %s %s)" (formula_to_coq e1) (formula_to_coq e2)
-  | With (e1, e2) -> Printf.sprintf "(awith %s %s)" (formula_to_coq e1) (formula_to_coq e2)
-  | Plus (e1, e2) -> Printf.sprintf "(aplus %s %s)" (formula_to_coq e1) (formula_to_coq e2)
-  | Lollipop (e1, e2) -> formula_to_coq (Par (Orth e1, e2))
-  | Ofcourse e -> Printf.sprintf "(oc %s)" (formula_to_coq e)
-  | Whynot e -> Printf.sprintf "(wn %s)" (formula_to_coq e);;
+  | One -> "one", true
+  | Bottom -> "bot", true
+  | Top -> "top", true
+  | Zero -> "zero", true
+  | Litt x -> x, true
+  | Orth e ->
+      let s, atomic = formula_to_coq_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "dual %s" s_parenthesis, false
+  | Tensor (e1, e2) ->
+      let s1, atomic1 = formula_to_coq_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_coq_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "tens %s %s" s1_parenthesis s2_parenthesis, false
+  | Par (e1, e2) ->
+      let s1, atomic1 = formula_to_coq_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_coq_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "parr %s %s" s1_parenthesis s2_parenthesis, false
+  | With (e1, e2) ->
+      let s1, atomic1 = formula_to_coq_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_coq_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "awith %s %s" s1_parenthesis s2_parenthesis, false
+  | Plus (e1, e2) ->
+      let s1, atomic1 = formula_to_coq_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_coq_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "aplus %s %s" s1_parenthesis s2_parenthesis, false
+  | Lollipop (e1, e2) -> formula_to_coq_atomic (Par (Orth e1, e2))
+  | Ofcourse e ->
+      let s, atomic = formula_to_coq_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "oc %s" s_parenthesis, false
+  | Whynot e ->
+      let s, atomic = formula_to_coq_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "wn %s" s_parenthesis, false
+
+let formula_to_coq formula =
+  let s, _ = formula_to_coq_atomic formula in s
 
 let formula_list_to_coq formula_list =
     Printf.sprintf "[%s]" (String.concat "; " (List.map formula_to_coq formula_list));;
