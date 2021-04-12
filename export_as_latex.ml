@@ -40,8 +40,7 @@ let proof_to_latex proof =
 
 let export_as_latex_with_exceptions request_as_json =
     let proof = Proof.from_json request_as_json in
-    if not (Proof.is_complete proof) then raise (Cannot_export_proof_as_latex_exception "proof is not complete")
-    else proof_to_latex proof;;
+    proof_to_latex proof;;
 
 let export_as_latex request_as_json =
     try let proof_as_latex = export_as_latex_with_exceptions request_as_json in
