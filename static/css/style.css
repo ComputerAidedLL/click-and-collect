@@ -86,3 +86,5 @@ img.latex { bottom: -1.7em; right: 0.2em; height: 1em; }
 /* RULES */
 .rules .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
 .rules .proof-container { display: inline-block; vertical-align: bottom; }
+
+.section.footer .subsection { display: table; margin: auto; font-size: 0.8em; }
