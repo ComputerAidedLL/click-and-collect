@@ -1,5 +1,5 @@
 %{
-open Sequent
+open Raw_sequent
 %}
 
 %token THESIS
@@ -22,7 +22,7 @@ open Sequent
 %nonassoc ORTH              /* highest precedence */
 
 %start main                 /* the entry point */
-%type <Sequent.sequent> main
+%type <Raw_sequent.raw_sequent> main
 %%
 main:
     EOL                                   { {hyp=[]; cons=[]} }

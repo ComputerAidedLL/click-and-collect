@@ -45,7 +45,7 @@ let export_as_latex request_as_json =
     try let proof_as_latex = export_as_latex_with_exceptions request_as_json in
         true, proof_as_latex
     with Proof.Json_exception m -> false, "Bad proof json: " ^ m
-        | Sequent.Json_exception m -> false, "Bad sequent json: " ^ m
+        | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m
         | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m
         | Proof.Technical_exception m -> false, "Invalid proof: " ^ m
         | Cannot_export_proof_as_latex_exception m -> false, "Cannot export proof as LaTeX: " ^ m;;
