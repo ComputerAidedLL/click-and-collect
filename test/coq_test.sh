@@ -5,16 +5,19 @@ coqc -R . NanoYalla nanoll.v
 cp ./nanoyalla/macroll.v .
 coqc -R . NanoYalla macroll.v
 
-cp ./test/coq_test_data/example1.v .
-coqc -R . NanoYalla example1.v
-cp ./test/coq_test_data/example2.v .
-coqc -R . NanoYalla example2.v
-cp ./test/coq_test_data/example3.v .
-coqc -R . NanoYalla example3.v
+echo "Executing Coq tests..."
 
-echo "Executing tests..."
+coq_directory='test/coq_test_data/*.v'
+for f in $coq_directory
+do
+  echo "$f"
+  cp -f "$f" ccLLproof.v
+  coqc -R . NanoYalla ccLLproof.v || cat ccLLproof.v
+done
 
-proofs_directory='test/coq_test_data/*.json'
+echo "Executing generic tests..."
+
+proofs_directory='test/proof_test_data/*.json'
 for f in $proofs_directory
 do
   echo "$f"
@@ -27,7 +30,5 @@ rm nanoll.*
 rm .nanoll.*
 rm macroll.*
 rm .macroll.*
-rm example*.*
-rm .example*.*
 rm ccLLproof.*
 rm .ccLLproof.*
