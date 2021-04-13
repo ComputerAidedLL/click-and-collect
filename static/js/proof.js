@@ -147,8 +147,7 @@ function undoRule($sequentDiv) {
     // Erase data
     $sequentDiv
         .data('permutationBeforeRule', null)
-        .data('rule', null)
-        .data('formulaPositions', null);
+        .data('ruleRequest', null);
 
     // Remove line
     let $td = $sequentDiv.closest('td');
@@ -233,7 +232,7 @@ function recGetProofAsJson($table) {
             appliedRule = {
                 ruleRequest: {
                     rule: 'exchange',
-                    formulaPositions: permutationBeforeRule['cons']
+                    permutation: permutationBeforeRule['cons']
                 },
                 premises: [{sequent: sequentWithPermutation, appliedRule}]
             }

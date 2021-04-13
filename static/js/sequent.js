@@ -44,7 +44,7 @@ function createSequent(sequent, options) {
     if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
         $thesisSpan.on('click', function () {
-            applyRule({rule: 'axiom', formulaPositions: []}, $sequentDiv, options);
+            applyRule({rule: 'axiom'}, $sequentDiv, options);
         });
     }
     $sequentDiv.append($thesisSpan);
@@ -160,38 +160,46 @@ function getRules(formulaAsJson) {
     switch (formulaAsJson.type) {
         case 'litteral':
         case 'orthogonal':
-            return [{'element': 'main-formula', 'onclick': ['axiom']}];
+            return [{'element': 'main-formula', 'onclick': [{'rule': 'axiom', 'needPosition': false}]}];
 
         case 'tensor':
         case 'par':
         case 'with':
-            return [{'element': 'main-formula', 'onclick': [formulaAsJson.type]}];
+            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
 
         case 'plus':
             return [
-                {'element': 'left-formula', 'onclick': ['plus_left']},
-                {'element': 'right-formula', 'onclick': ['plus_right']}
+                {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true}]},
+                {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true}]}
             ];
 
         case 'neutral':
             switch (formulaAsJson.value) {
                 case 'one':
+                case 'zero': // click on zero will display a pedagogic error
+                    return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.value, 'needPosition': false}]}];
+
                 case 'top':
                 case 'bottom':
-                case 'zero': // click on zero will display a pedagogic error
-                    return [{'element': 'main-formula', 'onclick': [formulaAsJson.value]}];
+                    return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.value, 'needPosition': true}]}];
 
                 default:
                     return [];
             }
 
         case 'ofcourse':
-            return [{'element': 'main-formula', 'onclick': ['promotion']}];
+            return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true}]}];
 
         case 'whynot':
             return [
-                {'element': 'primaryConnector', 'onclick': ['weakening', 'contraction']},
-                {'element': 'sub-formula', 'onclick': ['dereliction', 'contraction']}
+                {'element': 'primaryConnector', 'onclick': [
+                    {'rule': 'weakening', 'needPosition': true},
+                    {'rule': 'contraction', 'needPosition': true}
+                ]},
+                {'element': 'sub-formula', 'onclick': [
+                    {'rule': 'dereliction', 'needPosition': true},
+                    {'rule': 'contraction', 'needPosition': true}
+                ]}
             ];
 
         default:
@@ -232,11 +240,14 @@ function addEventsAndStyle($li, formulaAsJson, options) {
     }
 }
 
-function buildApplyRuleCallBack(rule, $li, options) {
+function buildApplyRuleCallBack(ruleConfig, $li, options) {
     return function() {
         let $sequentDiv = $li.closest('div.sequent');
-        let formulaPositions = [$li.parent().children().index($li)];
-        let ruleRequest = {rule, formulaPositions};
+        let ruleRequest = {rule: ruleConfig.rule};
+
+        if (ruleConfig.needPosition) {
+            ruleRequest['formulaPosition'] = $li.parent().children().index($li);
+        }
 
         applyRule(ruleRequest, $sequentDiv, options);
     }

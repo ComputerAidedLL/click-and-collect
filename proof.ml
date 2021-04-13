@@ -136,7 +136,7 @@ let from_sequent_and_rule_request sequent rule_request =
             | Top -> Top_proof (head, tail)
             | _ -> raise (Technical_exception ("Cannot apply top rule on this formula"))
         )
-        | Zero n -> raise (Pedagogic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
+        | Zero -> raise (Pedagogic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
         | Tensor n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with

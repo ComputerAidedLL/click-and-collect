@@ -5,7 +5,7 @@ type rule_request =
     | One
     | Bottom of int
     | Top of int
-    | Zero of int
+    | Zero
     | Tensor of int
     | Par of int
     | With of int
@@ -36,33 +36,32 @@ let get_string d k =
     try Yojson.Basic.Util.to_string value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ k ^ "' must be a string"));;
 
+let get_int d k =
+    let value = get_key d k in
+    try Yojson.Basic.Util.to_int value
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ k ^ "' must be an int"));;
+
 let get_int_list d k =
     let value = get_key d k in
     try List.map Yojson.Basic.Util.to_int (Yojson.Basic.Util.to_list value)
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ k ^ "' must be a list of int"));;
 
-let get_first = function
-    | [] -> raise (Json_exception ("formula_positions is empty"))
-    | n :: [] -> n
-    | _ -> raise (Json_exception ("formula_positions must contain exactly one element for this rule"));;
-
 let from_json rule_request_as_json =
     let rule = get_string rule_request_as_json "rule" in
-    let formula_positions = get_int_list rule_request_as_json "formulaPositions" in
     match rule with
         | "axiom" -> Axiom
         | "one" -> One
-        | "bottom" -> Bottom (get_first formula_positions)
-        | "top" -> Top (get_first formula_positions)
-        | "zero" -> Zero (get_first formula_positions)
-        | "tensor" -> Tensor (get_first formula_positions)
-        | "par" -> Par (get_first formula_positions)
-        | "with" -> With (get_first formula_positions)
-        | "plus_left" -> Plus_left (get_first formula_positions)
-        | "plus_right" -> Plus_right (get_first formula_positions)
-        | "promotion" -> Promotion (get_first formula_positions)
-        | "dereliction" -> Dereliction (get_first formula_positions)
-        | "weakening" -> Weakening (get_first formula_positions)
-        | "contraction" -> Contraction (get_first formula_positions)
-        | "exchange" -> Exchange formula_positions
+        | "bottom" -> Bottom (get_int rule_request_as_json "formulaPosition")
+        | "top" -> Top (get_int rule_request_as_json "formulaPosition")
+        | "zero" -> Zero
+        | "tensor" -> Tensor (get_int rule_request_as_json "formulaPosition")
+        | "par" -> Par (get_int rule_request_as_json "formulaPosition")
+        | "with" -> With (get_int rule_request_as_json "formulaPosition")
+        | "plus_left" -> Plus_left (get_int rule_request_as_json "formulaPosition")
+        | "plus_right" -> Plus_right (get_int rule_request_as_json "formulaPosition")
+        | "promotion" -> Promotion (get_int rule_request_as_json "formulaPosition")
+        | "dereliction" -> Dereliction (get_int rule_request_as_json "formulaPosition")
+        | "weakening" -> Weakening (get_int rule_request_as_json "formulaPosition")
+        | "contraction" -> Contraction (get_int rule_request_as_json "formulaPosition")
+        | "exchange" -> Exchange (get_int_list rule_request_as_json "permutation")
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;

@@ -109,7 +109,7 @@
       "request": {
         "ruleRequest": {
           "rule":"one",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -124,7 +124,7 @@
       "request": {
         "ruleRequest": {
           "rule":"bottom",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -145,7 +145,7 @@
       "request": {
         "ruleRequest": {
           "rule":"top",
-          "formulaPositions":[2]
+          "formulaPosition":2
         },
         "sequent": {
           "hyp": [],
@@ -162,7 +162,7 @@
       "request": {
         "ruleRequest": {
           "rule":"axiom",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -178,7 +178,7 @@
       "request": {
         "ruleRequest": {
           "rule":"axiom",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -194,7 +194,7 @@
       "request": {
         "ruleRequest": {
           "rule":"tensor",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -225,7 +225,7 @@
       "request": {
         "ruleRequest": {
           "rule":"par",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -253,7 +253,7 @@
       "request": {
         "ruleRequest": {
           "rule":"with",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -281,7 +281,7 @@
       "request": {
         "ruleRequest": {
           "rule":"plus_left",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -305,7 +305,7 @@
       "request": {
         "ruleRequest": {
           "rule":"plus_right",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -329,7 +329,7 @@
       "request": {
         "ruleRequest": {
           "rule":"promotion",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -344,7 +344,7 @@
       "request": {
         "ruleRequest": {
           "rule":"promotion",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -363,7 +363,7 @@
       "request": {
         "ruleRequest": {
           "rule":"weakening",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -378,7 +378,7 @@
       "request": {
         "ruleRequest": {
           "rule":"dereliction",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -393,7 +393,7 @@
       "request": {
         "ruleRequest": {
           "rule":"contraction",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -422,7 +422,7 @@
         }
       ]
       },
-      "formulaPositions":[0]
+      "formulaPosition":0
     },
     {
       "rule": "par",
@@ -434,7 +434,7 @@
         }
       ]
       },
-      "formulaPositions":[0]
+      "formulaPosition":0
     },
     {
       "rule": "par",
@@ -446,7 +446,7 @@
         }
       ]
       },
-      "formulaPositions":[0]
+      "formulaPosition":0
     },
     {
       "rule": "par",
@@ -458,7 +458,7 @@
         }
       ]
       },
-      "formulaPositions":[1]
+      "formulaPosition":1
     },
     {
       "rule": "par",
@@ -470,7 +470,7 @@
         }
       ]
       },
-      "formulaPositions":[-1]
+      "formulaPosition":-1
     },
     {
       "rule":"bottom",
@@ -482,7 +482,7 @@
           {"type":"litteral","value":"a"}
         ]
       },
-      "formulaPositions":[0]
+      "formulaPosition":0
     },
     {
       "rule":"top",
@@ -493,7 +493,7 @@
           {"type":"neutral","value":"one"}
         ]
       },
-      "formulaPositions":[1]
+      "formulaPosition":1
     },
     {
       "rule": "plus",
@@ -507,7 +507,7 @@
           }
         ]
       },
-      "formulaPositions":[0]
+      "formulaPosition":0
     }
   ],
   "call_api_apply_rule_logic_exception": [
@@ -515,7 +515,7 @@
       "request": {
         "ruleRequest": {
           "rule":"one",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -531,7 +531,7 @@
       "request": {
         "ruleRequest": {
           "rule":"axiom",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -547,7 +547,7 @@
       "request": {
         "ruleRequest": {
           "rule":"axiom",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -564,7 +564,7 @@
       "request": {
         "ruleRequest": {
           "rule":"zero",
-          "formulaPositions":[0]
+          "formulaPosition":0
         },
         "sequent": {
           "hyp": [],
@@ -579,7 +579,7 @@
       "request": {
         "ruleRequest": {
           "rule":"promotion",
-          "formulaPositions":[1]
+          "formulaPosition":1
         },
         "sequent": {
           "hyp": [],
@@ -602,14 +602,14 @@
       "appliedRule":{
         "ruleRequest":
         {"rule":"par",
-        "formulaPositions":[0]},
+        "formulaPosition":0},
         "premises":[
           {
             "sequent":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
             ]},"appliedRule":{"ruleRequest":
-          {"rule":"axiom","formulaPositions":[0]},"premises":[]}
+          {"rule":"axiom","formulaPosition":0},"premises":[]}
           }
         ]
       }
@@ -621,7 +621,7 @@
       "appliedRule":{
         "ruleRequest":
         {"rule":"par",
-        "formulaPositions":[0]},
+        "formulaPosition":0},
         "premises":[
           {
             "sequent":{"hyp":[],"cons":[
@@ -631,7 +631,7 @@
             "appliedRule":{
               "ruleRequest":
               {"rule":"exchange",
-              "formulaPositions":[1,2,0]},
+              "permutation":[1,2,0]},
               "premises":[
                 {
                   "sequent":{"hyp":[],"cons":[
@@ -641,7 +641,7 @@
                   "appliedRule":{
                     "ruleRequest":
                     {"rule":"tensor",
-                    "formulaPositions":[1]},
+                    "formulaPosition":1},
                     "premises":[
                       {
                         "sequent":{"hyp":[],"cons":[
@@ -649,7 +649,7 @@
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
                           "ruleRequest":
-                          {"rule":"axiom","formulaPositions":[1]},"premises":[]}},
+                          {"rule":"axiom","formulaPosition":1},"premises":[]}},
                       {
                         "sequent":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
@@ -657,7 +657,7 @@
                         "appliedRule":{
                           "ruleRequest":
                           {"rule":"axiom",
-                          "formulaPositions":[1]},
+                          "formulaPosition":1},
                           "premises":[]}}]}}]}}]}
     },
     {
@@ -736,9 +736,7 @@
   "appliedRule": {
     "ruleRequest": {
       "rule": "plus_left",
-      "formulaPositions": [
-        0
-      ]
+      "formulaPosition": 0
     },
     "premises": [
       {
@@ -810,9 +808,7 @@
         "appliedRule": {
           "ruleRequest": {
             "rule": "plus_left",
-            "formulaPositions": [
-              0
-            ]
+            "formulaPosition": 0
           },
           "premises": [
             {
@@ -877,9 +873,7 @@
               "appliedRule": {
                 "ruleRequest": {
                   "rule": "plus_left",
-                  "formulaPositions": [
-                    0
-                  ]
+                  "formulaPosition": 0
                 },
                 "premises": [
                   {
@@ -937,9 +931,7 @@
                     "appliedRule": {
                       "ruleRequest": {
                         "rule": "plus_left",
-                        "formulaPositions": [
-                          0
-                        ]
+                        "formulaPosition": 0
                       },
                       "premises": [
                         {
@@ -990,9 +982,7 @@
                           "appliedRule": {
                             "ruleRequest": {
                               "rule": "plus_left",
-                              "formulaPositions": [
-                                0
-                              ]
+                              "formulaPosition": 0
                             },
                             "premises": [
                               {
@@ -1036,9 +1026,7 @@
                                 "appliedRule": {
                                   "ruleRequest": {
                                     "rule": "plus_left",
-                                    "formulaPositions": [
-                                      0
-                                    ]
+                                    "formulaPosition": 0
                                   },
                                   "premises": [
                                     {
@@ -1075,9 +1063,7 @@
                                       "appliedRule": {
                                         "ruleRequest": {
                                           "rule": "plus_left",
-                                          "formulaPositions": [
-                                            0
-                                          ]
+                                          "formulaPosition": 0
                                         },
                                         "premises": [
                                           {
@@ -1107,9 +1093,7 @@
                                             "appliedRule": {
                                               "ruleRequest": {
                                                 "rule": "plus_left",
-                                                "formulaPositions": [
-                                                  0
-                                                ]
+                                                "formulaPosition": 0
                                               },
                                               "premises": [
                                                 {
@@ -1132,9 +1116,7 @@
                                                   "appliedRule": {
                                                     "ruleRequest": {
                                                       "rule": "plus_left",
-                                                      "formulaPositions": [
-                                                        0
-                                                      ]
+                                                      "formulaPosition": 0
                                                     },
                                                     "premises": [
                                                       {
@@ -1150,9 +1132,7 @@
                                                         "appliedRule": {
                                                           "ruleRequest": {
                                                             "rule": "one",
-                                                            "formulaPositions": [
-                                                              0
-                                                            ]
+                                                            "formulaPosition": 0
                                                           },
                                                           "premises": []
                                                         }
@@ -1192,16 +1172,16 @@
           "value2":{"type":"orthogonal","value":{"type":"litteral","value":"B"}}},
         {"type":"litteral","value":"B"}]},
       "appliedRule":{
-        "ruleRequest":{"rule":"tensor","formulaPositions":[1]},
+        "ruleRequest":{"rule":"tensor","formulaPosition":1},
         "premises":[
           {"sequent":{"hyp":[],"cons":[
             {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
             {"type":"ofcourse","value":{"type":"litteral","value":"A"}}]},
-            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[]},"premises":[]}},
+            "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}},
           {"sequent":{"hyp":[],"cons":[
             {"type":"orthogonal","value":{"type":"litteral","value":"B"}},
             {"type":"litteral","value":"B"}]},
-            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[1]},"premises":[]}}]}
+            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPosition":1},"premises":[]}}]}
     }
   ],
   "call_api_is_proof_complete_exception": [
@@ -1213,7 +1193,7 @@
       "appliedRule":{
         "ruleRequest":
         {"rule":"exchange",
-        "formulaPositions":[1,1,0]},
+        "permutation":[1,1,0]},
         "premises":[]}
     }
   ]
