@@ -14,7 +14,7 @@ apply (tens_r_ext [wn (aplus (dual A) (dual B))] ).
 { apply (oc_r_ext [aplus (dual A) (dual B)] A []).
   apply (de_r_ext []).
   apply (plus_r1_ext []).
-  apply ax_r1_ext. }
+  ax_expansion. }
 { apply (oc_r_ext [] C [aplus (dual A) (dual B)]).
   apply (de_r_ext [C]).
   apply (plus_r2_ext [C]).
