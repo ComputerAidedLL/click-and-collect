@@ -145,9 +145,68 @@ let formula_list_to_coq formula_list =
     Printf.sprintf "[%s]" (String.concat "; " (List.map formula_to_coq formula_list));;
 
 let sequent_to_coq sequent =
-    match sequent.hyp with
-    | [] -> Printf.sprintf "ll %s" (formula_list_to_coq sequent.cons)
-    | _ -> Printf.sprintf "ll %s -> ll %s" (formula_list_to_coq sequent.hyp) (formula_list_to_coq sequent.cons);;
+    Printf.sprintf "ll %s" (formula_list_to_coq sequent.cons)
+
+
+(* SEQUENT -> LATEX *)
+
+let litteral_to_latex s =
+   (* Set numbers as indices. E.g.: A01' -> A_{01}' *)
+    Str.global_replace (Str.regexp "\\([0-9]+\\)") "_{\\1}" s;;
+
+let rec formula_to_latex_atomic =
+  function
+  | One -> "\\one", true
+  | Bottom -> "\\bot", true
+  | Top -> "\\top", true
+  | Zero -> "\\zero", true
+  | Litt x -> litteral_to_latex x, true
+  | Orth e ->
+      let s, atomic = formula_to_latex_atomic e in
+      let s_parenthesis = if atomic then "{" ^ s ^ "}" else "(" ^ s ^ ")" in
+      Printf.sprintf "%s\\orth" s_parenthesis, true
+  | Tensor (e1, e2) ->
+      let s1, atomic1 = formula_to_latex_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_latex_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s \\tensor %s" s1_parenthesis s2_parenthesis, false
+  | Par (e1, e2) ->
+      let s1, atomic1 = formula_to_latex_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_latex_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s \\parr %s" s1_parenthesis s2_parenthesis, false
+  | With (e1, e2) ->
+      let s1, atomic1 = formula_to_latex_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_latex_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s \\with %s" s1_parenthesis s2_parenthesis, false
+  | Plus (e1, e2) ->
+      let s1, atomic1 = formula_to_latex_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_latex_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s \\plus %s" s1_parenthesis s2_parenthesis, false
+  | Lollipop (e1, e2) -> formula_to_latex_atomic (Par (Orth e1, e2))
+  | Ofcourse e ->
+      let s, atomic = formula_to_latex_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "\\oc %s" s_parenthesis, true
+  | Whynot e ->
+      let s, atomic = formula_to_latex_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "\\wn %s" s_parenthesis, true
+
+let formula_to_latex formula =
+  let s, _ = formula_to_latex_atomic formula in s
+
+let formula_list_to_latex formula_list =
+    String.concat ", " (List.map formula_to_latex formula_list);;
+
+let sequent_to_latex sequent =
+    formula_list_to_latex sequent.cons
 
 
 (* OPERATIONS *)
