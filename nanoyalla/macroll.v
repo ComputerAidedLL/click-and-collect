@@ -9,18 +9,18 @@ Export ListNotations.
 
 (* Transpose elements of index n and S n in l *)
 Fixpoint transpS {A} n (l : list A) :=
-match n, l with
-| 0, x :: y :: r => y :: x :: r
-| S n, x :: r => x :: transpS n r
-| _, r => r
-end.
+  match n, l with
+  | 0, x :: y :: r => y :: x :: r
+  | S n, x :: r => x :: transpS n r
+  | _, r => r
+  end.
 
 (* Transpose elements of index n and S (n + m) in l *)
 Fixpoint transp {A} n m (l : list A) :=
-match m with
-| 0 => transpS n l
-| S m => transpS n (transp (S n) m (transpS n l))
-end.
+  match m with
+  | 0 => transpS n l
+  | S m => transpS n (transp (S n) m (transpS n l))
+  end.
 
 (* Apply list of transpositions described as a [list (option nat)]:
    [Some k0;...; Some kn] means (n, n + S kn) o ... o (0, S k0)
@@ -51,8 +51,7 @@ intros p.
 remember (length p) as n eqn:Heqn.
 revert p Heqn; induction n as [|n IHn]; intros p Heqn.
 - exact nil.
-- destruct p as [|x p]; inversion Heqn as [Hn].
-  destruct x as [|x].
+- destruct p as [|[|x] p]; inversion Heqn as [Hn].
   + rewrite <- (map_length_transparent pred) in Hn.
     exact (None :: IHn _ Hn).
   + rewrite <- (map_length_transparent (fun k => if k =? 0 then x else pred k) p) in Hn.
@@ -65,7 +64,7 @@ Lemma transpS_lt {A} n (l : list A) : S n < length l ->
  {'(l1,l2,a,b) | (l = l1 ++ a :: b :: l2 /\ length l1 = n) & transpS n l = l1 ++ b :: a :: l2}.
 Proof.
 revert l; induction n as [|n IHn]; cbn; intros l Hl.
-- destruct l as [|a [|b l]]; try (cbn in Hl; exfalso; lia).
+- destruct l as [|a [|b l]]; cbn in Hl; try (exfalso; lia).
   now exists ([],l,a,b).
 - destruct l as [|a l]; cbn in Hl; try (exfalso; lia).
   destruct (IHn l) as [[[[l1 l2] b] c] [-> Hl1] ->]; [lia|].
@@ -85,17 +84,17 @@ Defined.
 Lemma transpS_compute {A} l1 (a b : A) l2 :
   transpS (length l1) (l1 ++ a :: b :: l2) = l1 ++ b :: a :: l2.
 Proof.
-destruct (transpS_lt (length l1) (l1 ++ a :: b :: l2)) as [[[[l1' l2'] c] d] [H Hl] ->].
+destruct (transpS_lt (length l1) (l1 ++ a :: b :: l2)) as [[[[l1' l2'] c] d] [Heq Hl] ->].
 - rewrite app_length; cbn; lia.
 - assert (l1 = l1') as ->.
-  { revert l1' H Hl; induction l1 as [|h l1 IHl1]; cbn; intros l1' H Hl.
+  { revert l1' Heq Hl; induction l1 as [|h l1 IHl1]; cbn; intros l1' Heq Hl.
     - now apply length_zero_iff_nil in Hl.
     - destruct l1'; inversion Hl; subst.
-      inversion H; subst; f_equal.
+      inversion Heq; subst; f_equal.
       apply IHl1; auto. }
   f_equal.
-  apply app_inv_head in H.
-  now inversion H; subst.
+  apply app_inv_head in Heq.
+  now inversion Heq; subst.
 Defined.
 
 Lemma transp_cons {A} a b x (l : list A) :
@@ -252,8 +251,7 @@ Ltac ax_expansion :=
          (try rewrite Hd at 1); apply ax_r_ext
   end.
 
-Lemma ex_perm_r p l : ll l -> ll (transpL (permL_of_perm p) l).
-Proof. now apply ex_transpL. Defined.
+Definition ex_perm_r p := ex_transpL (permL_of_perm p).
 
 Definition one_r_ext := one_r.
 
@@ -321,9 +319,7 @@ Lemma oc_r_ext l1 A l2 :
 Proof.
 intros pi.
 apply (ex_transp_middle1 []); cbn.
-rewrite <- map_app.
-apply oc_r.
-rewrite map_app.
+rewrite <- map_app; apply oc_r; rewrite map_app.
 now apply (ex_transp_middle2 []).
 Defined.
 
