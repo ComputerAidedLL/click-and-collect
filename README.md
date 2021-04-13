@@ -68,7 +68,7 @@ test/api_test
 ```
 
 ## Test Coq
-To check that coq files returned by API actually compile, we have some examples of proof as json object in `test/coq_test_data`.
+To check that Coq files returned by API actually compile, we have some examples of proof as json object in `test/proof_test_data`. Some additional Coq files can be checked to compile in `test/coq_test_data`.
 
 To execute tests (you need to have `make test.byte` running):
 ```
