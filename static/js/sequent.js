@@ -32,31 +32,31 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequentAsJson, options) {
+function createSequent(sequent, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
-        .data('sequentWithoutPermutation', sequentAsJson);
+        .data('sequentWithoutPermutation', sequent);
 
-    if ('hyp' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'hyp', $sequentDiv, options);
+    if ('hyp' in sequent) {
+        createFormulaList(sequent, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
     if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
         $thesisSpan.on('click', function () {
-            applyRule('axiom', $sequentDiv, [], options);
+            applyRule({rule: 'axiom', formulaPositions: []}, $sequentDiv, options);
         });
     }
     $sequentDiv.append($thesisSpan);
 
-    if ('cons' in sequentAsJson) {
-        createFormulaList(sequentAsJson, 'cons', $sequentDiv, options);
+    if ('cons' in sequent) {
+        createFormulaList(sequent, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, options) {
+function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
     let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
 
     if (options.withInteraction) {
@@ -70,8 +70,8 @@ function createFormulaList(sequentAsJson, sequentPart, $sequentDiv, options) {
         });
     }
 
-    for (let i = 0; i < sequentAsJson[sequentPart].length; i++) {
-        let formulaAsJson = sequentAsJson[sequentPart][i];
+    for (let i = 0; i < sequent[sequentPart].length; i++) {
+        let formulaAsJson = sequent[sequentPart][i];
         let $li = $('<li>').data('initialPosition', i);
 
         // Build formula
@@ -236,8 +236,9 @@ function buildApplyRuleCallBack(rule, $li, options) {
     return function() {
         let $sequentDiv = $li.closest('div.sequent');
         let formulaPositions = [$li.parent().children().index($li)];
+        let ruleRequest = {rule, formulaPositions};
 
-        applyRule(rule, $sequentDiv, formulaPositions, options);
+        applyRule(ruleRequest, $sequentDiv, options);
     }
 }
 

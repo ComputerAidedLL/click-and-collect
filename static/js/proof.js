@@ -36,29 +36,28 @@ function initProof(proofAsJson, $container, options) {
     }
 }
 
-function initProofWithSequent(sequentAsJson, $container, options) {
-    initProof({sequentAsJson, appliedRule: null}, $container, options);
+function initProofWithSequent(sequent, $container, options) {
+    initProof({sequent, appliedRule: null}, $container, options);
 }
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
-    let $sequentTable = createSequentTable(proofAsJson.sequentAsJson, options);
+    let $sequentTable = createSequentTable(proofAsJson.sequent, options);
     $subProofDivContainer.prepend($sequentTable);
     let $sequentDiv = $sequentTable.find('div' + '.sequent');
     if (proofAsJson.appliedRule) {
         addPremises($sequentDiv,
             null,
-            proofAsJson.appliedRule.rule,
-            proofAsJson.appliedRule.formulaPositions,
+            proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
             options);
     }
 }
 
-function createSequentTable(sequentAsJson, options) {
+function createSequentTable(sequent, options) {
     let $table = $('<table>');
 
     let $td = $('<td>');
-    $td.append(createSequent(sequentAsJson, options));
+    $td.append(createSequent(sequent, options));
     $table.append($td);
 
     let $tagBox = $('<td>', {'class': 'tagBox'})
@@ -72,7 +71,7 @@ function createSequentTable(sequentAsJson, options) {
 // APPLY RULE
 // **********
 
-function applyRule(rule, $sequentDiv, formulaPositions, options) {
+function applyRule(ruleRequest, $sequentDiv, options) {
     let $container = $sequentDiv.closest('.proof-container');
 
     // Sequent json that was stored in div may have been permuted before rule applying
@@ -84,15 +83,15 @@ function applyRule(rule, $sequentDiv, formulaPositions, options) {
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify({ ruleRequest: {rule, formulaPositions}, sequent}),
+        data: JSON.stringify({ ruleRequest, sequent }),
         success: function(data)
         {
             if (data.success === true) {
                 cleanPedagogicError($container);
-                let premises = data['sequentList'].map(function (sequentAsJson) {
-                    return { sequentAsJson, appliedRule: null };
+                let premises = data['sequentList'].map(function (sequent) {
+                    return { sequent, appliedRule: null };
                 });
-                addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, options);
+                addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, options);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -101,22 +100,21 @@ function applyRule(rule, $sequentDiv, formulaPositions, options) {
     });
 }
 
-function addPremises($sequentDiv, permutationBeforeRule, rule, formulaPositions, premises, options) {
+function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, options) {
     // Undo previously applied rule if any
     undoRule($sequentDiv);
 
     // Save data
     $sequentDiv
         .data('permutationBeforeRule', permutationBeforeRule)
-        .data('rule', rule)
-        .data('formulaPositions', formulaPositions);
+        .data('ruleRequest', ruleRequest);
 
     // Add line
     let $td = $sequentDiv.closest('td');
     $td.addClass('inference');
 
     // Add rule symbol
-    let $ruleSymbol = $('<div>', {'class': `tag ${rule}`}).html(RULES[rule]);
+    let $ruleSymbol = $('<div>', {'class': `tag ${ruleRequest.rule}`}).html(RULES[ruleRequest.rule]);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
         $ruleSymbol.on('click', function() { undoRule($sequentDiv); })
@@ -212,10 +210,9 @@ function getProofAsJson($container) {
 function recGetProofAsJson($table) {
     let $sequentDiv = $table.find('div.sequent');
     let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
-    let rule = $sequentDiv.data('rule') || null;
+    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
     let appliedRule = null;
-    if (rule !== null) {
-        let formulaPositions = $sequentDiv.data('formulaPositions');
+    if (ruleRequest !== null) {
         let $prev = $table.prev();
         let premises = [];
         if ($prev.length) {
@@ -227,7 +224,7 @@ function recGetProofAsJson($table) {
                 })
             }
         }
-        appliedRule = { ruleRequest: {rule, formulaPositions}, premises };
+        appliedRule = { ruleRequest, premises };
 
         let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
         if (!isIdentitySequentPermutation(permutationBeforeRule)) {
@@ -237,12 +234,12 @@ function recGetProofAsJson($table) {
                     rule: 'exchange',
                     formulaPositions: permutationBeforeRule['cons']
                 },
-                premises: [{sequentAsJson: sequentWithPermutation, appliedRule}]
+                premises: [{sequent: sequentWithPermutation, appliedRule}]
             }
         }
     }
 
-    return { sequentAsJson: sequentWithoutPermutation, appliedRule };
+    return { sequent: sequentWithoutPermutation, appliedRule };
 }
 
 function isIdentitySequentPermutation(sequentPermutation) {

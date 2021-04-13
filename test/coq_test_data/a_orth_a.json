@@ -1,1 +1,1 @@
-{"sequentAsJson":{"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"A"}]},"appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[0]},"premises":[]}}
+{"sequent":{"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"A"}]},"appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[0]},"premises":[]}}

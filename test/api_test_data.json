@@ -594,7 +594,7 @@
   ],
   "call_api_is_proof_complete": [
     {
-      "sequentAsJson":{"hyp":[],"cons":[
+      "sequent":{"hyp":[],"cons":[
         {"type":"par",
           "value1":{"type":"litteral","value":"A"},
           "value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
@@ -605,7 +605,7 @@
         "formulaPositions":[0]},
         "premises":[
           {
-            "sequentAsJson":{"hyp":[],"cons":[
+            "sequent":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
             ]},"appliedRule":{"ruleRequest":
@@ -615,7 +615,7 @@
       }
     },
     {
-      "sequentAsJson":{"hyp":[],"cons":[
+      "sequent":{"hyp":[],"cons":[
         {"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
         {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
       "appliedRule":{
@@ -624,7 +624,7 @@
         "formulaPositions":[0]},
         "premises":[
           {
-            "sequentAsJson":{"hyp":[],"cons":[
+            "sequent":{"hyp":[],"cons":[
               {"type":"litteral","value":"A"},
               {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
               {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
@@ -634,7 +634,7 @@
               "formulaPositions":[1,2,0]},
               "premises":[
                 {
-                  "sequentAsJson":{"hyp":[],"cons":[
+                  "sequent":{"hyp":[],"cons":[
                     {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                     {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
                     {"type":"litteral","value":"A"}]},
@@ -644,14 +644,14 @@
                     "formulaPositions":[1]},
                     "premises":[
                       {
-                        "sequentAsJson":{"hyp":[],"cons":[
+                        "sequent":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
                           "ruleRequest":
                           {"rule":"axiom","formulaPositions":[1]},"premises":[]}},
                       {
-                        "sequentAsJson":{"hyp":[],"cons":[
+                        "sequent":{"hyp":[],"cons":[
                           {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
                           {"type":"litteral","value":"A"}]},
                         "appliedRule":{
@@ -661,7 +661,7 @@
                           "premises":[]}}]}}]}}]}
     },
     {
-  "sequentAsJson": {
+  "sequent": {
     "hyp": [],
     "cons": [
       {
@@ -742,7 +742,7 @@
     },
     "premises": [
       {
-        "sequentAsJson": {
+        "sequent": {
           "hyp": [],
           "cons": [
             {
@@ -816,7 +816,7 @@
           },
           "premises": [
             {
-              "sequentAsJson": {
+              "sequent": {
                 "hyp": [],
                 "cons": [
                   {
@@ -883,7 +883,7 @@
                 },
                 "premises": [
                   {
-                    "sequentAsJson": {
+                    "sequent": {
                       "hyp": [],
                       "cons": [
                         {
@@ -943,7 +943,7 @@
                       },
                       "premises": [
                         {
-                          "sequentAsJson": {
+                          "sequent": {
                             "hyp": [],
                             "cons": [
                               {
@@ -996,7 +996,7 @@
                             },
                             "premises": [
                               {
-                                "sequentAsJson": {
+                                "sequent": {
                                   "hyp": [],
                                   "cons": [
                                     {
@@ -1042,7 +1042,7 @@
                                   },
                                   "premises": [
                                     {
-                                      "sequentAsJson": {
+                                      "sequent": {
                                         "hyp": [],
                                         "cons": [
                                           {
@@ -1081,7 +1081,7 @@
                                         },
                                         "premises": [
                                           {
-                                            "sequentAsJson": {
+                                            "sequent": {
                                               "hyp": [],
                                               "cons": [
                                                 {
@@ -1113,7 +1113,7 @@
                                               },
                                               "premises": [
                                                 {
-                                                  "sequentAsJson": {
+                                                  "sequent": {
                                                     "hyp": [],
                                                     "cons": [
                                                       {
@@ -1138,7 +1138,7 @@
                                                     },
                                                     "premises": [
                                                       {
-                                                        "sequentAsJson": {
+                                                        "sequent": {
                                                           "hyp": [],
                                                           "cons": [
                                                             {
@@ -1185,7 +1185,7 @@
   }
 },
     {
-      "sequentAsJson":{"hyp":[],"cons":[
+      "sequent":{"hyp":[],"cons":[
         {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
         {"type":"tensor",
           "value1":{"type":"ofcourse","value":{"type":"litteral","value":"A"}},
@@ -1194,11 +1194,11 @@
       "appliedRule":{
         "ruleRequest":{"rule":"tensor","formulaPositions":[1]},
         "premises":[
-          {"sequentAsJson":{"hyp":[],"cons":[
+          {"sequent":{"hyp":[],"cons":[
             {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
             {"type":"ofcourse","value":{"type":"litteral","value":"A"}}]},
             "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[]},"premises":[]}},
-          {"sequentAsJson":{"hyp":[],"cons":[
+          {"sequent":{"hyp":[],"cons":[
             {"type":"orthogonal","value":{"type":"litteral","value":"B"}},
             {"type":"litteral","value":"B"}]},
             "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPositions":[1]},"premises":[]}}]}
@@ -1206,7 +1206,7 @@
   ],
   "call_api_is_proof_complete_exception": [
     {
-      "sequentAsJson":{"hyp":[],"cons":[
+      "sequent":{"hyp":[],"cons":[
         {"type":"litteral","value":"A"},
         {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
         {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},

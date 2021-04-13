@@ -73,9 +73,9 @@ function showTutorial() {
     // Create tutorial proof
     $('.tutorial .proof-container').each(function (i, container) {
         let $container = $(container);
-        let sequentAsJson = JSON.parse($container.html());
+        let sequent = JSON.parse($container.html());
         $container.html('');
-        initProofWithSequent(sequentAsJson, $container, {withInteraction: true, exportButtons: false});
+        initProofWithSequent(sequent, $container, {withInteraction: true, exportButtons: false});
     })
 
     $('.tutorial').removeClass('hidden');

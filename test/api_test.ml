@@ -106,7 +106,7 @@ let call_api_apply_rule_logic_exception () =
     List.iter run_test test_samples
 
 let call_api_is_proof_complete_full_response () =
-    let body_as_string = "{\"sequentAsJson\":{\"hyp\": [],\"cons\": [{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"orthogonal\",\"value\":{\"type\":\"litteral\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\",\"formulaPositions\":[0]},\"premises\":[]}}" in
+    let body_as_string = "{\"sequent\":{\"hyp\": [],\"cons\": [{\"type\":\"litteral\",\"value\":\"a\"},{\"type\":\"orthogonal\",\"value\":{\"type\":\"litteral\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\",\"formulaPositions\":[0]},\"premises\":[]}}" in
     let response_as_string = call_api_post "is_proof_complete" body_as_string 200 in
     let expected_response_as_string = "{\"is_complete\":true}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string

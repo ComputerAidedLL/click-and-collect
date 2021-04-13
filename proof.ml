@@ -1,27 +1,7 @@
 open Sequent
 open Rule_request
 
-(* PERMUTATIONS *)
-
-let is_valid_permutation l =
-    let sorted_l = List.sort Int.compare l in
-    let identity = List.init (List.length l) (fun n -> n) in
-    sorted_l = identity;;
-
-let permute l =
-    List.map (List.nth l);;
-
-let rec position_in_list a = function
-    | [] -> raise (Failure "Not found")
-    | h :: tl -> if a = h then 0 else 1 + position_in_list a tl
-
-let permutation_inverse perm =
-    let identity = List.init (List.length perm) (fun n -> n) in
-    List.map (fun x -> position_in_list x perm) identity
-
-
 (* PROOF *)
-
 
 type proof =
     | Axiom_proof of formula
@@ -39,6 +19,25 @@ type proof =
     | Contraction_proof of formula list * formula * formula list * proof
     | Exchange_proof of sequent * int list * proof
     | Hypothesis_proof of sequent;;
+
+
+(* PERMUTATIONS *)
+
+let is_valid_permutation l =
+    let sorted_l = List.sort Int.compare l in
+    let identity = List.init (List.length l) (fun n -> n) in
+    sorted_l = identity;;
+
+let permute l =
+    List.map (List.nth l);;
+
+let rec position_in_list a = function
+    | [] -> raise (Failure "Not found")
+    | h :: tl -> if a = h then 0 else 1 + position_in_list a tl
+
+let permutation_inverse perm =
+    let identity = List.init (List.length perm) (fun n -> n) in
+    List.map (fun x -> position_in_list x perm) identity
 
 
 (* GETTERS & SETTERS *)
@@ -237,7 +236,7 @@ let get_json_list json key =
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"));;
 
 let rec from_json json =
-    let sequent_as_json = required_field json "sequentAsJson" in
+    let sequent_as_json = required_field json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
     let applied_ruled_as_json = optional_field json "appliedRule" in
     match applied_ruled_as_json with
@@ -258,6 +257,7 @@ let rec is_complete = function
 
 
 (* PROOF -> COQ *)
+
 let coq_apply coq_rule =
     Printf.sprintf "apply %s.\n" coq_rule;;
 
@@ -322,7 +322,9 @@ let rec to_coq_with_hyps_increment i = function
 
 let to_coq_with_hyps = to_coq_with_hyps_increment 0
 
+
 (* PROOF -> LATEX *)
+
 let latex_apply latex_rule conclusion =
     Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
 
