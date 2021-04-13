@@ -16,7 +16,8 @@ const RULES = {
     'promotion': '!',
     'dereliction': '?<span class="italic">d</span>',
     'contraction': '?<span class="italic">c</span>',
-    'weakening': '?<span class="italic">w</span>'
+    'weakening': '?<span class="italic">w</span>',
+    'exchange': '<span class="italic">ech</span>'
 };
 
 // *************
