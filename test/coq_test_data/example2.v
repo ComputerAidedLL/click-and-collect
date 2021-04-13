@@ -13,12 +13,12 @@ apply tens_r_ext.
   apply oc_r_ext; cbn.
   apply de_r.
   apply plus_r1.
-  apply ax_r1_ext.
+  ax_expansion.
 - change (ll (oc B :: map wn [aplus (dual A) (dual B)])).
   apply oc_r.
   apply (de_r_ext [_]).
   apply (plus_r2_ext [_]); cbn.
-  apply ax_r2_ext.
+  ax_expansion.
 Qed.
 
 End TheProof.

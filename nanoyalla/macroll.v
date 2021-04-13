@@ -48,7 +48,7 @@ Proof. induction l; cbn; auto. Defined.
 Definition permL_of_perm : list nat -> list (option nat).
 Proof.
 intros p.
-remember (length p) as n.
+remember (length p) as n eqn:Heqn.
 revert p Heqn; induction n as [|n IHn]; intros p Heqn.
 - exact nil.
 - destruct p as [|x p]; inversion Heqn as [Hn].
@@ -64,7 +64,7 @@ Defined.
 Lemma transpS_lt {A} n (l : list A) : S n < length l ->
  {'(l1,l2,a,b) | (l = l1 ++ a :: b :: l2 /\ length l1 = n) & transpS n l = l1 ++ b :: a :: l2}.
 Proof.
-revert l; induction n; cbn; intros l Hl.
+revert l; induction n as [|n IHn]; cbn; intros l Hl.
 - destruct l as [|a [|b l]]; try (cbn in Hl; exfalso; lia).
   now exists ([],l,a,b).
 - destruct l as [|a l]; cbn in Hl; try (exfalso; lia).
@@ -75,7 +75,7 @@ Defined.
 Lemma transpS_overflow {A} n (l : list A) :
   length l <= S n -> transpS n l = l.
 Proof.
-revert l; induction n; cbn; intros l Hl.
+revert l; induction n as [|n IHn]; cbn; intros l Hl.
 - destruct l as [|a [|b l]]; auto.
   cbn in Hl; lia.
 - destruct l as [|a l]; auto.
@@ -88,7 +88,7 @@ Proof.
 destruct (transpS_lt (length l1) (l1 ++ a :: b :: l2)) as [[[[l1' l2'] c] d] [H Hl] ->].
 - rewrite app_length; cbn; lia.
 - assert (l1 = l1') as ->.
-  { revert l1' H Hl; induction l1; cbn; intros.
+  { revert l1' H Hl; induction l1 as [|h l1 IHl1]; cbn; intros l1' H Hl.
     - now apply length_zero_iff_nil in Hl.
     - destruct l1'; inversion Hl; subst.
       inversion H; subst; f_equal.
@@ -101,7 +101,7 @@ Defined.
 Lemma transp_cons {A} a b x (l : list A) :
   transp (S a) b (x :: l) = x :: transp a b l.
 Proof.
-revert a l; induction b; intros a l; auto.
+revert a l; induction b as [|b IHb]; intros a l; auto.
 now cbn; rewrite (IHb (S a)).
 Defined.
 
@@ -117,15 +117,15 @@ Defined.
 Lemma ex_transpS n l : ll l -> ll (transpS n l).
 Proof.
 intros pi.
-destruct (Compare_dec.le_lt_dec (length l) (S n)).
+destruct (Compare_dec.le_lt_dec (length l) (S n)) as [Hle|Hlt].
 - now rewrite transpS_overflow.
-- apply transpS_lt in l0 as [[[[l1 l2] b] c] [-> _] ->].
+- apply transpS_lt in Hlt as [[[[l1 l2] b] c] [-> _] ->].
   now apply ex_t_r.
 Defined.
 
 Lemma ex_transp n m l : ll l -> ll (transp n m l).
 Proof.
-revert n l; induction m; intros n l pi.
+revert n l; induction m as [|m IHm]; intros n l pi.
 - now apply ex_transpS.
 - now apply ex_transpS, IHm, ex_transpS.
 Defined.
@@ -133,7 +133,7 @@ Defined.
 Lemma ex_transp_middle1 l1 l2 l3 A :
   ll (l1 ++ A :: l2 ++ l3) -> ll (l1 ++ l2 ++ A :: l3).
 Proof.
-revert l1; induction l2; cbn; intros l1; auto.
+revert l1; induction l2 as [|a l2 IHl2]; cbn; intros l1; auto.
 intros pi.
 replace (l1 ++ a :: l2 ++ A :: l3)
    with ((l1 ++ [a]) ++ l2 ++ A :: l3)
@@ -146,7 +146,7 @@ Defined.
 Lemma ex_transp_middle2 l1 l2 l3 A :
   ll (l1 ++ l2 ++ A :: l3) -> ll (l1 ++ A :: l2 ++ l3).
 Proof.
-revert l1; induction l2; cbn; intros l1; auto.
+revert l1; induction l2 as [|a l2 IHl2]; cbn; intros l1; auto.
 intros pi.
 replace (l1 ++ a :: l2 ++ A :: l3)
    with ((l1 ++ [a]) ++ l2 ++ A :: l3) in pi
@@ -160,16 +160,16 @@ Lemma ex_transpL s l : ll l -> ll (transpL s l).
 Proof.
 enough (forall l0, ll (l0 ++ l) -> ll (l0 ++ transpL s l)) as Hs
   by now intros pi; apply (Hs []).
-revert l; induction s as [|[|] s IHs]; cbn; intros l l0 pi; auto.
-- remember (transp 0 n l) as lt.
-  destruct lt; auto.
+revert l; induction s as [|[n|] s IHs]; cbn; intros l l0 pi; auto.
+- remember (transp 0 n l) as lt eqn:Heqlt.
+  destruct lt as [|f lt]; auto.
   replace (l0 ++ f :: transpL s lt) with ((l0 ++ f :: nil) ++ transpL s lt)
     by now rewrite <- app_assoc.
   apply IHs.
   rewrite <- app_assoc; cbn.
   rewrite Heqlt, <- transp_app_tl.
   now apply ex_transp.
-- destruct l; auto.
+- destruct l as [|f l]; auto.
   replace (l0 ++ f :: transpL s l) with ((l0 ++ f :: nil) ++ transpL s l)
     by now rewrite <- app_assoc.
   apply IHs.
@@ -195,9 +195,21 @@ match A with
 | wn A      => oc (dual A)
 end.
 
-Lemma ax_r1_ext A : ll [dual A; A].
+Lemma bidual A : dual (dual A) = A.
 Proof.
-induction A; cbn.
+induction A as [ X | X
+               | | | A1 IHA1 A2 IHA2|A1 IHA1 A2 IHA2
+               | | | A1 IHA1 A2 IHA2|A1 IHA1 A2 IHA2
+               | A1 IHA1 | A1 IHA1 ];
+cbn; rewrite ?IHA1, ?IHA2; reflexivity.
+Defined.
+
+Lemma ax_r_ext A : ll [dual A; A].
+Proof.
+induction A as [ X | X
+               | | | A1 IHA1 A2 IHA2|A1 IHA1 A2 IHA2
+               | | | A1 IHA1 A2 IHA2|A1 IHA1 A2 IHA2
+               | A1 IHA1 | A1 IHA1 ]; cbn.
 - apply ax_r.
 - apply (ex_t_r [] []), ax_r.
 - apply bot_r, one_r.
@@ -222,19 +234,23 @@ induction A; cbn.
   + now apply plus_r1.
   + now apply plus_r2.
 - apply (ex_t_r [] []).
-  change (ll (oc A :: map wn [dual A])).
+  change (ll (oc A1 :: map wn [dual A1])).
   apply oc_r; cbn.
   apply (ex_t_r [] []).
   now apply de_r.
-- change (ll (oc (dual A) :: map wn [A])).
+- change (ll (oc (dual A1) :: map wn [A1])).
   apply oc_r; cbn.
   now apply (ex_t_r [] []), de_r, (ex_t_r [] []).
 Defined.
 
-Lemma ax_r2_ext A : ll [A; dual A].
-Proof.
-apply (ex_t_r [] []), ax_r1_ext.
-Defined.
+Ltac ax_expansion :=
+  now cbn;
+  let Hd := fresh "Hd" in
+  match goal with
+  | |- ll (?A :: ?B :: nil) =>
+         assert (A = dual B) as Hd by (now cbn; rewrite ?bidual);
+         (try rewrite Hd at 1); apply ax_r_ext
+  end.
 
 Lemma ex_perm_r p l : ll l -> ll (transpL (permL_of_perm p) l).
 Proof. now apply ex_transpL. Defined.
