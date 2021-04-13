@@ -38,7 +38,7 @@ let rec to_formula raw_formula = match raw_formula with
     | Whynot e -> Sequent.Whynot (to_formula e);;
 
 let to_sequent raw_sequent =
-    List.map to_formula raw_sequent.cons @ List.map orthogonal (List.map to_formula raw_sequent.hyp);;
+    List.map orthogonal (List.map to_formula raw_sequent.hyp) @ List.map to_formula raw_sequent.cons;;
 
 
 (* SEQUENT -> RAW_SEQUENT *)
