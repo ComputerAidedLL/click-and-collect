@@ -19,4 +19,4 @@ type token =
   | WHYNOT
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Sequent.sequent
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Raw_sequent.raw_sequent
