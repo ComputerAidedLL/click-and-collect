@@ -32,7 +32,7 @@ let proof_to_latex proof =
         ^ "\\newcommand*{\\wkv}[1]{\\infer{1}[\\ensuremath{?\\mathit{w}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\cov}[1]{\\infer{1}[\\ensuremath{?\\mathit{c}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n\n" in
-    let start_proof = "\\begin{document}\n\n%\scriptsize\n\\begin{prooftree}\n" in
+    let start_proof = "\\begin{document}\n\n%\\scriptsize\n\\begin{prooftree}\n" in
     let proof_lines = Proof.to_latex proof in
     let end_proof = "\\end{prooftree}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
