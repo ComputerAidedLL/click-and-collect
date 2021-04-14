@@ -29,7 +29,7 @@
     },
     {
       "sequent_as_string": "top",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"neutral","value":"top"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"top"}]}
     },
     {
       "sequent_as_string": "",
@@ -51,7 +51,7 @@
       "sequent_as_string": "S,T,U",
       "expected_sequent_as_json": {"hyp":[],"cons":[
         {"type":"litteral","value":"S"},
-        {"type":"neutral","value":"top"},
+        {"type":"top"},
         {"type":"litteral","value":"U"}
       ]}
     },
@@ -83,7 +83,7 @@
       "expected_sequent_as_json": {"hyp":[],"cons":[
         {
           "type": "par",
-          "value1": {"type":"neutral","value":"bottom"},
+          "value1": {"type":"bottom"},
           "value2": {"type":"litteral","value":"b"}
         }
       ]}
@@ -114,7 +114,7 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"}
+            {"type":"one"}
           ]
         }
       },
@@ -129,14 +129,14 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"bottom"},
+            {"type":"one"},
+            {"type":"bottom"},
             {"type":"litteral","value":"a"}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp": [], "cons": [
-        {"type":"neutral","value":"one"},
+        {"type":"one"},
         {"type":"litteral","value":"a"}
       ]
       }]
@@ -150,9 +150,9 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"bottom"},
-            {"type":"neutral","value":"top"}
+            {"type":"one"},
+            {"type":"bottom"},
+            {"type":"top"}
           ]
         }
       },
@@ -183,8 +183,8 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"bottom"}
+            {"type":"one"},
+            {"type":"bottom"}
           ]
         }
       },
@@ -201,8 +201,8 @@
           "cons": [
             {"type":"litteral","value":"a"},
             {"type": "tensor",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
+              "value1":{"type": "top"},
+              "value2":{"type": "one"}
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
@@ -212,11 +212,11 @@
         "hyp":[],
         "cons":[
           {"type":"litteral","value":"a"},
-          {"type": "neutral", "value":"top"}
+          {"type": "top"}
         ]}, {
         "hyp":[],
         "cons":[
-          {"type": "neutral", "value":"one"},
+          {"type": "one"},
           {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
         ]
       }]
@@ -232,8 +232,8 @@
           "cons": [
             {"type":"litteral","value":"a"},
             {"type": "par",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
+              "value1":{"type": "top"},
+              "value2":{"type": "one"}
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
@@ -243,8 +243,8 @@
         "hyp":[],
         "cons":[
           {"type":"litteral","value":"a"},
-          {"type": "neutral", "value":"top"},
-          {"type": "neutral", "value":"one"},
+          {"type": "top"},
+          {"type": "one"},
           {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
         ]
       }]
@@ -260,8 +260,8 @@
           "cons": [
             {"type":"litteral","value":"a"},
             {"type": "with",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
+              "value1":{"type": "top"},
+              "value2":{"type": "one"}
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
@@ -269,11 +269,11 @@
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
-        {"type": "neutral", "value":"top"},
+        {"type": "top"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]},{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
-        {"type": "neutral", "value":"one"},
+        {"type": "one"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}]
     },
@@ -288,8 +288,8 @@
           "cons": [
             {"type":"litteral","value":"a"},
             {"type": "plus",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
+              "value1":{"type": "top"},
+              "value2":{"type": "one"}
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
@@ -297,7 +297,7 @@
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
-        {"type": "neutral", "value":"top"},
+        {"type": "top"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}]
     },
@@ -312,8 +312,8 @@
           "cons": [
             {"type":"litteral","value":"a"},
             {"type": "plus",
-              "value1":{"type": "neutral", "value":"top"},
-              "value2":{"type": "neutral", "value":"one"}
+              "value1":{"type": "top"},
+              "value2":{"type": "one"}
             },
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
@@ -321,7 +321,7 @@
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
         {"type":"litteral","value":"a"},
-        {"type": "neutral", "value":"one"},
+        {"type": "one"},
         {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
       ]}]
     },
@@ -477,8 +477,8 @@
       "sequent": {
         "hyp": [],
         "cons": [
-          {"type":"neutral","value":"one"},
-          {"type":"neutral","value":"bottom"},
+          {"type":"one"},
+          {"type":"bottom"},
           {"type":"litteral","value":"a"}
         ]
       },
@@ -489,8 +489,8 @@
       "sequent": {
         "hyp": [],
         "cons": [
-          {"type":"neutral","value":"top"},
-          {"type":"neutral","value":"one"}
+          {"type":"top"},
+          {"type":"one"}
         ]
       },
       "formulaPosition":1
@@ -520,8 +520,8 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"one"}
+            {"type":"one"},
+            {"type":"one"}
           ]
         }
       },
@@ -536,8 +536,8 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"zero"}
+            {"type":"one"},
+            {"type":"zero"}
           ]
         }
       },
@@ -552,9 +552,9 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"one"},
-            {"type":"neutral","value":"bottom"},
-            {"type":"neutral","value":"top"}
+            {"type":"one"},
+            {"type":"bottom"},
+            {"type":"top"}
           ]
         }
       },
@@ -569,7 +569,7 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"zero"}
+            {"type":"zero"}
           ]
         }
       },
@@ -584,7 +584,7 @@
         "sequent": {
           "hyp": [],
           "cons": [
-            {"type":"neutral","value":"zero"},
+            {"type":"zero"},
             {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
           ]
         }
@@ -683,8 +683,7 @@
                       "value1": {
                         "type": "plus",
                         "value1": {
-                          "type": "neutral",
-                          "value": "one"
+                          "type":  "one"
                         },
                         "value2": {
                           "type": "litteral",
@@ -760,8 +759,7 @@
                           "value1": {
                             "type": "plus",
                             "value1": {
-                              "type": "neutral",
-                              "value": "one"
+                              "type":  "one"
                             },
                             "value2": {
                               "type": "litteral",
@@ -830,8 +828,7 @@
                               "value1": {
                                 "type": "plus",
                                 "value1": {
-                                  "type": "neutral",
-                                  "value": "one"
+                                  "type":  "one"
                                 },
                                 "value2": {
                                   "type": "litteral",
@@ -893,8 +890,7 @@
                                   "value1": {
                                     "type": "plus",
                                     "value1": {
-                                      "type": "neutral",
-                                      "value": "one"
+                                      "type":  "one"
                                     },
                                     "value2": {
                                       "type": "litteral",
@@ -949,8 +945,7 @@
                                       "value1": {
                                         "type": "plus",
                                         "value1": {
-                                          "type": "neutral",
-                                          "value": "one"
+                                          "type":  "one"
                                         },
                                         "value2": {
                                           "type": "litteral",
@@ -998,8 +993,7 @@
                                           "value1": {
                                             "type": "plus",
                                             "value1": {
-                                              "type": "neutral",
-                                              "value": "one"
+                                              "type":  "one"
                                             },
                                             "value2": {
                                               "type": "litteral",
@@ -1040,8 +1034,7 @@
                                               "value1": {
                                                 "type": "plus",
                                                 "value1": {
-                                                  "type": "neutral",
-                                                  "value": "one"
+                                                  "type":  "one"
                                                 },
                                                 "value2": {
                                                   "type": "litteral",
@@ -1075,8 +1068,7 @@
                                                   "value1": {
                                                     "type": "plus",
                                                     "value1": {
-                                                      "type": "neutral",
-                                                      "value": "one"
+                                                      "type":  "one"
                                                     },
                                                     "value2": {
                                                       "type": "litteral",
@@ -1103,8 +1095,7 @@
                                                       {
                                                         "type": "plus",
                                                         "value1": {
-                                                          "type": "neutral",
-                                                          "value": "one"
+                                                          "type":  "one"
                                                         },
                                                         "value2": {
                                                           "type": "litteral",
@@ -1124,8 +1115,7 @@
                                                           "hyp": [],
                                                           "cons": [
                                                             {
-                                                              "type": "neutral",
-                                                              "value": "one"
+                                                              "type":  "one"
                                                             }
                                                           ]
                                                         },

@@ -95,8 +95,11 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
         case 'litteral':
             return formulaAsJson.value.replace(/\d+/, digits => `<sub>${digits}</sub>`);
 
-        case 'neutral':
-            let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.value];
+        case 'one':
+        case 'bottom':
+        case 'top':
+        case 'zero':
+            let neutralElement = NEUTRAL_ELEMENTS[formulaAsJson.type];
             if (isMainFormula) {
                 return `<span class="primaryConnector">${neutralElement}</span>`;
             }
@@ -173,19 +176,13 @@ function getRules(formulaAsJson) {
                 {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true}]}
             ];
 
-        case 'neutral':
-            switch (formulaAsJson.value) {
-                case 'one':
-                case 'zero': // click on zero will display a pedagogic error
-                    return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.value, 'needPosition': false}]}];
+        case 'one':
+        case 'zero': // click on zero will display a pedagogic error
+            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': false}]}];
 
-                case 'top':
-                case 'bottom':
-                    return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.value, 'needPosition': true}]}];
-
-                default:
-                    return [];
-            }
+        case 'top':
+        case 'bottom':
+            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
 
         case 'ofcourse':
             return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true}]}];

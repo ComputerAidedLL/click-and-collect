@@ -65,10 +65,10 @@ let to_raw_sequent sequent =
 
 let rec raw_formula_to_json =
   function
-  | One -> `Assoc ([("type", `String "neutral") ; ("value", `String "one")])
-  | Bottom -> `Assoc ([("type", `String "neutral") ; ("value", `String "bottom")])
-  | Top -> `Assoc ([("type", `String "neutral") ; ("value", `String "top")])
-  | Zero -> `Assoc ([("type", `String "neutral") ; ("value", `String "zero")])
+  | One -> `Assoc ([("type", `String "one")])
+  | Bottom -> `Assoc ([("type", `String "bottom")])
+  | Top -> `Assoc ([("type", `String "top")])
+  | Zero -> `Assoc ([("type", `String "zero")])
   | Litt x -> `Assoc ([("type", `String "litteral") ; ("value", `String x)])
   | Orth e -> `Assoc ([("type", `String "orthogonal") ; ("value", raw_formula_to_json e)])
   | Tensor (e1, e2) -> `Assoc ([("type", `String "tensor") ; ("value1", raw_formula_to_json e1) ; ("value2", raw_formula_to_json e2)])
@@ -111,13 +111,10 @@ let get_json_list json key =
 let rec json_to_raw_formula json =
   let formula_type = get_json_string json "type" in
   match formula_type with
-  "neutral" -> ( let neutral_value = get_json_string json "value" in
-     match neutral_value with
-       "one" -> One
-       | "bottom" -> Bottom
-       | "top" -> Top
-       | "zero" -> Zero
-       | _ -> raise (Json_exception ("unknown neutral value " ^ neutral_value)) )
+  | "one" -> One
+  | "bottom" -> Bottom
+  | "top" -> Top
+  | "zero" -> Zero
   | "litteral" -> Litt (get_json_string json "value")
   | "orthogonal" -> Orth (json_to_raw_formula (required_field json "value"))
   | "tensor" -> Tensor ( json_to_raw_formula (required_field json "value1") , json_to_raw_formula (required_field json "value2"))

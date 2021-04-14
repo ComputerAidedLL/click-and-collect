@@ -134,7 +134,7 @@
                     <p>
                         If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply the axiom rule on a two-formulas sequent.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"neutral","value":"one"},{"type":"neutral","value":"bottom"}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"type":"one"},{"type":"bottom"}]}</div>
                     <p>
                         Click on <span class="bold">connectives</span> to apply the associated rules.
                     </p>
@@ -181,9 +181,9 @@
                     <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"neutral","value":"one"}]},"appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"bottom"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"bottom","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"neutral","value":"top"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"top","formulaPosition":1},"premises":[]}}</div>
+                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"one"}]},"appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}</div>
+                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"bottom"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"bottom","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"top"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"top","formulaPosition":1},"premises":[]}}</div>
                 </div>
                 <div class="row">
                     <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"tensor","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"}]},"appliedRule":null},{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>

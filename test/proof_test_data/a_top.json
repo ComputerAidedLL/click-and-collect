@@ -1,1 +1,1 @@
-{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"a"},{"type":"neutral","value":"top"}]},"appliedRule":{"ruleRequest":{"rule":"top","formulaPosition":1},"premises":[]}}
+{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"a"},{"type":"top"}]},"appliedRule":{"ruleRequest":{"rule":"top","formulaPosition":1},"premises":[]}}
