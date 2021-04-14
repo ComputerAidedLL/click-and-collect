@@ -403,7 +403,12 @@ function onAjaxError(jqXHR, textStatus, errorThrown) {
     console.log(jqXHR.responseText);
     console.log(textStatus);
     console.log(errorThrown);
-    alert('Technical error, check browser console for more details.');
+
+    let alertText = 'Technical error, check browser console for more details.';
+    if (jqXHR.responseText === 'Body content is too big') {
+        alertText = 'Sorry, your proof exceeds the limit.';
+    }
+    alert(alertText);
 }
 
 function compressJson(json) {

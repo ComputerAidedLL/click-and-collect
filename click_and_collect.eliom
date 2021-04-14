@@ -26,7 +26,7 @@ let send_file ~code file_as_string =
 let read_raw_content raw_content =
   let content_stream = Ocsigen_stream.get raw_content in
   (* Servers POST body size limit is usually 2MB *)
-  Ocsigen_stream.string_of_stream 65536 content_stream
+  Ocsigen_stream.string_of_stream 524288 content_stream
 
 let uncompress_json request_as_string =
     let abbreviations = [("\"s\":", "\"sequent\":");
