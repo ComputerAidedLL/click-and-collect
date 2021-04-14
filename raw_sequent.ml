@@ -8,7 +8,7 @@ type raw_formula =
   | Top
   | Zero
   | Litt of string
-  | Orth of raw_formula
+  | Dual of raw_formula
   | Tensor of raw_formula * raw_formula
   | Par of raw_formula * raw_formula
   | With of raw_formula * raw_formula
@@ -28,17 +28,17 @@ let rec to_formula raw_formula = match raw_formula with
     | Top -> Sequent.Top
     | Zero -> Sequent.Zero
     | Litt x -> Sequent.Litt x
-    | Orth e -> orthogonal (to_formula e)
+    | Dual e -> dual (to_formula e)
     | Tensor (e1, e2) -> Sequent.Tensor (to_formula e1, to_formula e2)
     | Par (e1, e2) -> Sequent.Par (to_formula e1, to_formula e2)
     | With (e1, e2) -> Sequent.With (to_formula e1, to_formula e2)
     | Plus (e1, e2) -> Sequent.Plus (to_formula e1, to_formula e2)
-    | Lollipop (e1, e2) -> Sequent.Par (to_formula (Orth e1), to_formula e2)
+    | Lollipop (e1, e2) -> Sequent.Par (to_formula (Dual e1), to_formula e2)
     | Ofcourse e -> Sequent.Ofcourse (to_formula e)
     | Whynot e -> Sequent.Whynot (to_formula e);;
 
 let to_sequent raw_sequent =
-    List.map orthogonal (List.map to_formula raw_sequent.hyp) @ List.map to_formula raw_sequent.cons;;
+    List.map dual (List.map to_formula raw_sequent.hyp) @ List.map to_formula raw_sequent.cons;;
 
 
 (* SEQUENT -> RAW_SEQUENT *)
@@ -50,7 +50,7 @@ let rec to_raw_formula =
     | Sequent.Top -> Top
     | Sequent.Zero -> Zero
     | Sequent.Litt x -> Litt x
-    | Sequent.Orth x -> Orth (Litt x)
+    | Sequent.Dual x -> Dual (Litt x)
     | Sequent.Tensor (e1, e2) -> Tensor (to_raw_formula e1, to_raw_formula e2)
     | Sequent.Par (e1, e2) -> Par (to_raw_formula e1, to_raw_formula e2)
     | Sequent.With (e1, e2) -> With (to_raw_formula e1, to_raw_formula e2)
@@ -69,8 +69,8 @@ let rec raw_formula_to_json =
   | Bottom -> `Assoc ([("type", `String "bottom")])
   | Top -> `Assoc ([("type", `String "top")])
   | Zero -> `Assoc ([("type", `String "zero")])
-  | Litt x -> `Assoc ([("type", `String "litteral") ; ("value", `String x)])
-  | Orth e -> `Assoc ([("type", `String "orthogonal") ; ("value", raw_formula_to_json e)])
+  | Litt x -> `Assoc ([("type", `String "litt") ; ("value", `String x)])
+  | Dual e -> `Assoc ([("type", `String "dual") ; ("value", raw_formula_to_json e)])
   | Tensor (e1, e2) -> `Assoc ([("type", `String "tensor") ; ("value1", raw_formula_to_json e1) ; ("value2", raw_formula_to_json e2)])
   | Par (e1, e2) -> `Assoc ([("type", `String "par") ; ("value1", raw_formula_to_json e1) ; ("value2", raw_formula_to_json e2)])
   | With (e1, e2) -> `Assoc ([("type", `String "with") ; ("value1", raw_formula_to_json e1) ; ("value2", raw_formula_to_json e2)])
@@ -115,8 +115,8 @@ let rec json_to_raw_formula json =
   | "bottom" -> Bottom
   | "top" -> Top
   | "zero" -> Zero
-  | "litteral" -> Litt (get_json_string json "value")
-  | "orthogonal" -> Orth (json_to_raw_formula (required_field json "value"))
+  | "litt" -> Litt (get_json_string json "value")
+  | "dual" -> Dual (json_to_raw_formula (required_field json "value"))
   | "tensor" -> Tensor ( json_to_raw_formula (required_field json "value1") , json_to_raw_formula (required_field json "value2"))
   | "par" -> Par ( json_to_raw_formula (required_field json "value1") , json_to_raw_formula (required_field json "value2"))
   | "with" -> With ( json_to_raw_formula (required_field json "value1") , json_to_raw_formula (required_field json "value2"))

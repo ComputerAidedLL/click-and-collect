@@ -8,7 +8,7 @@ open Raw_sequent
 %token LPAREN RPAREN
 %token EOL
 
-%token ORTH
+%token DUAL
 %token TENSOR PAR WITH PLUS
 %token ONE BOTTOM TOP ZERO
 %token LOLLIPOP
@@ -19,7 +19,7 @@ open Raw_sequent
 %right LOLLIPOP             /* medium precedence */
 %left TENSOR PAR WITH PLUS  /* high precedence */
 %nonassoc OFCOURSE WHYNOT   /* very high precedence */
-%nonassoc ORTH              /* highest precedence */
+%nonassoc DUAL              /* highest precedence */
 
 %start main                 /* the entry point */
 %type <Raw_sequent.raw_sequent> main
@@ -45,7 +45,7 @@ formula:
   | ZERO                        { Zero }
   | LITT                        { Litt $1 }
   | LPAREN formula RPAREN       { $2 }
-  | formula ORTH                { Orth ($1) }
+  | formula DUAL                { Dual ($1) }
   | formula TENSOR formula      { Tensor ($1, $3) }
   | formula PAR formula         { Par ($1, $3) }
   | formula WITH formula        { With ($1, $3) }

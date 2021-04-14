@@ -1,1 +1,1 @@
-{"s":{"hyp":[],"cons":[{"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"one"}}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"A"}]},"ar":null},{"s":{"hyp":[],"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one","fp":0},"p":[]}}]}}
+{"s":{"hyp":[],"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"one"}}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"ar":null},{"s":{"hyp":[],"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one","fp":0},"p":[]}}]}}

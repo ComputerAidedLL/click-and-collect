@@ -5,7 +5,7 @@ type token =
   | LPAREN
   | RPAREN
   | EOL
-  | ORTH
+  | DUAL
   | TENSOR
   | PAR
   | WITH
@@ -29,7 +29,7 @@ let yytransl_const = [|
   260 (* LPAREN *);
   261 (* RPAREN *);
   262 (* EOL *);
-  263 (* ORTH *);
+  263 (* DUAL *);
   264 (* TENSOR *);
   265 (* PAR *);
   266 (* WITH *);
@@ -141,7 +141,7 @@ let yynames_const = "\
   LPAREN\000\
   RPAREN\000\
   EOL\000\
-  ORTH\000\
+  DUAL\000\
   TENSOR\000\
   PAR\000\
   WITH\000\
@@ -259,7 +259,7 @@ let yyact = [|
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'formula) in
     Obj.repr(
 # 48 "ll_parser.mly"
-                                ( Orth (_1) )
+                                ( Dual (_1) )
 # 264 "ll_parser.ml"
                : 'formula))
 ; (fun __caml_parser_env ->

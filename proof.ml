@@ -79,7 +79,7 @@ let set_premises proof premises = match proof, premises with
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
 let get_conclusion = function
-    | Axiom_proof e -> [e; orthogonal e]
+    | Axiom_proof e -> [e; dual e]
     | One_proof -> [Sequent.One]
     | Top_proof (head, tail) -> head @ [Sequent.Top] @ tail
     | Bottom_proof (head, tail, _) -> head @ [Sequent.Bottom] @ tail
@@ -114,7 +114,7 @@ let from_sequent_and_rule_request sequent rule_request =
     match rule_request with
         | Axiom -> (
             match sequent with
-            | e1 :: e2 :: [] -> (if orthogonal e1 <> e2
+            | e1 :: e2 :: [] -> (if dual e1 <> e2
                 then raise (Pedagogic_exception ("Can not apply 'axiom' rule: the two formulas are not orthogonal."))
                 else Axiom_proof e1)
             | _ -> raise (Pedagogic_exception ("Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))

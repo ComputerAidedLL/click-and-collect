@@ -2,29 +2,29 @@
   "call_api_parse_sequent": [
     {
       "sequent_as_string": "a",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"a"}]}
     },
     {
       "sequent_as_string": "a'",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a'"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"a'"}]}
     },
     {
       "sequent_as_string": "Δ′",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"Δ′"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"Δ′"}]}
     },
     {
       "sequent_as_string": "a1",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a1"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"a1"}]}
     },
     {
       "sequent_as_string": "hEll0",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"hEll0"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"hEll0"}]}
     },
     {
       "sequent_as_string": "A,Γ",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"litteral","value":"A"},
-        {"type":"litteral","value":"Γ"}
+        {"type":"litt","value":"A"},
+        {"type":"litt","value":"Γ"}
       ]}
     },
     {
@@ -42,41 +42,41 @@
     {
       "sequent_as_string": "a,b,c",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"litteral","value":"a"},
-        {"type":"litteral","value":"b"},
-        {"type":"litteral","value":"c"}
+        {"type":"litt","value":"a"},
+        {"type":"litt","value":"b"},
+        {"type":"litt","value":"c"}
       ]}
     },
     {
       "sequent_as_string": "S,T,U",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"litteral","value":"S"},
+        {"type":"litt","value":"S"},
         {"type":"top"},
-        {"type":"litteral","value":"U"}
+        {"type":"litt","value":"U"}
       ]}
     },
     {
       "sequent_as_string": "a|-b,c",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"orthogonal","value":{"type":"litteral","value":"a"}},
-        {"type":"litteral","value":"b"},
-        {"type":"litteral","value":"c"}
+        {"type":"dual","value":{"type":"litt","value":"a"}},
+        {"type":"litt","value":"b"},
+        {"type":"litt","value":"c"}
       ]}
     },
     {
       "sequent_as_string": "a,!a",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"litteral","value":"a"},
-        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        {"type":"litt","value":"a"},
+        {"type":"ofcourse","value":{"type":"litt","value":"a"}}
       ]}
     },
     {
       "sequent_as_string": "a^|-",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litteral","value":"a"}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"litt","value":"a"}]}
     },
     {
       "sequent_as_string": "a^^|-",
-      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"a"}}]}
+      "expected_sequent_as_json": {"hyp":[],"cons":[{"type":"dual","value":{"type":"litt","value":"a"}}]}
     },
     {
       "sequent_as_string": "1-ob",
@@ -84,14 +84,14 @@
         {
           "type": "par",
           "value1": {"type":"bottom"},
-          "value2": {"type":"litteral","value":"b"}
+          "value2": {"type":"litt","value":"b"}
         }
       ]}
     },
     {
       "sequent_as_string": "?A^",
       "expected_sequent_as_json": {"hyp":[],"cons":[
-        {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
+        {"type":"whynot","value":{"type":"dual","value":{"type":"litt","value":"A"}}}
       ]}
     },
     {
@@ -99,8 +99,8 @@
       "expected_sequent_as_json": {"hyp":[],"cons":[
         {
           "type":"par",
-          "value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-          "value2":{"type":"par","value1":{"type":"orthogonal","value":{"type":"litteral","value":"B"}},"value2":{"type":"litteral","value":"C"}}
+          "value1":{"type":"dual","value":{"type":"litt","value":"A"}},
+          "value2":{"type":"par","value1":{"type":"dual","value":{"type":"litt","value":"B"}},"value2":{"type":"litt","value":"C"}}
         }]}
     }
   ],
@@ -131,13 +131,13 @@
           "cons": [
             {"t":"one"},
             {"t":"bottom"},
-            {"t":"litteral","v":"a"}
+            {"t":"litt","v":"a"}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp": [], "cons": [
         {"type":"one"},
-        {"type":"litteral","value":"a"}
+        {"type":"litt","value":"a"}
       ]
       }]
     },
@@ -167,8 +167,8 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
-            {"t":"orthogonal","v":{"t":"litteral","v":"a"}}
+            {"t":"litt","v":"a"},
+            {"t":"dual","v":{"t":"litt","v":"a"}}
           ]
         }
       },
@@ -199,25 +199,25 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
+            {"t":"litt","v":"a"},
             {"t": "tensor",
               "v1":{"t": "top"},
               "v2":{"t": "one"}
             },
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
         "cons":[
-          {"type":"litteral","value":"a"},
+          {"type":"litt","value":"a"},
           {"type": "top"}
         ]}, {
         "hyp":[],
         "cons":[
           {"type": "one"},
-          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          {"type":"ofcourse","value":{"type":"litt","value":"a"}}
         ]
       }]
     },
@@ -230,22 +230,22 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
+            {"t":"litt","v":"a"},
             {"t": "par",
               "v1":{"t": "top"},
               "v2":{"t": "one"}
             },
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{
         "hyp":[],
         "cons":[
-          {"type":"litteral","value":"a"},
+          {"type":"litt","value":"a"},
           {"type": "top"},
           {"type": "one"},
-          {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+          {"type":"ofcourse","value":{"type":"litt","value":"a"}}
         ]
       }]
     },
@@ -258,23 +258,23 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
+            {"t":"litt","v":"a"},
             {"t": "with",
               "v1":{"t": "top"},
               "v2":{"t": "one"}
             },
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"litteral","value":"a"},
+        {"type":"litt","value":"a"},
         {"type": "top"},
-        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        {"type":"ofcourse","value":{"type":"litt","value":"a"}}
       ]},{"hyp":[], "cons":[
-        {"type":"litteral","value":"a"},
+        {"type":"litt","value":"a"},
         {"type": "one"},
-        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        {"type":"ofcourse","value":{"type":"litt","value":"a"}}
       ]}]
     },
     {
@@ -286,19 +286,19 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
+            {"t":"litt","v":"a"},
             {"t": "plus",
               "v1":{"t": "top"},
               "v2":{"t": "one"}
             },
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"litteral","value":"a"},
+        {"type":"litt","value":"a"},
         {"type": "top"},
-        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        {"type":"ofcourse","value":{"type":"litt","value":"a"}}
       ]}]
     },
     {
@@ -310,19 +310,19 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"litteral","v":"a"},
+            {"t":"litt","v":"a"},
             {"t": "plus",
               "v1":{"t": "top"},
               "v2":{"t": "one"}
             },
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"litteral","value":"a"},
+        {"type":"litt","value":"a"},
         {"type": "one"},
-        {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+        {"type":"ofcourse","value":{"type":"litt","value":"a"}}
       ]}]
     },
     {
@@ -333,11 +333,11 @@
         },
         "s": {
           "hyp": [],
-          "cons": [{"t":"ofcourse","v":{"t":"litteral","v":"a"}}]
+          "cons": [{"t":"ofcourse","v":{"t":"litt","v":"a"}}]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"litteral","value":"a"}
+        {"type":"litt","value":"a"}
       ]}]
     },
     {
@@ -349,14 +349,14 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"whynot","v":{"t":"litteral","v":"b"}},
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"whynot","v":{"t":"litt","v":"b"}},
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"whynot","value":{"type":"litteral","value":"b"}},
-        {"type":"litteral","value":"a"}
+        {"type":"whynot","value":{"type":"litt","value":"b"}},
+        {"type":"litt","value":"a"}
       ]}]
     },
     {
@@ -368,7 +368,7 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"whynot","v":{"t":"litteral","v":"a"}}
+            {"t":"whynot","v":{"t":"litt","v":"a"}}
           ]
         }
       },
@@ -383,11 +383,11 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"whynot","v":{"t":"litteral","v":"a"}}
+            {"t":"whynot","v":{"t":"litt","v":"a"}}
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"hyp":[], "cons":[{"type":"litteral","value":"a"}]}]
+      "expected_sequent_list_as_json": [{"hyp":[], "cons":[{"type":"litt","value":"a"}]}]
     },
     {
       "request": {
@@ -398,13 +398,13 @@
         "s": {
           "hyp": [],
           "cons": [
-            {"t":"whynot","v":{"t":"litteral","v":"a"}}
+            {"t":"whynot","v":{"t":"litt","v":"a"}}
           ]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
-        {"type":"whynot","value":{"type":"litteral","value":"a"}},
-        {"type":"whynot","value":{"type":"litteral","value":"a"}}
+        {"type":"whynot","value":{"type":"litt","value":"a"}},
+        {"type":"whynot","value":{"type":"litt","value":"a"}}
       ]}]
     }
   ],
@@ -417,8 +417,8 @@
       "s": {"hyp": [], "cons": [
         {
           "t": "par",
-          "v1": {"t": "litteral", "v": "a"},
-          "v2": {"t": "litteral", "v": "a"}
+          "v1": {"t": "litt", "v": "a"},
+          "v2": {"t": "litt", "v": "a"}
         }
       ]
       },
@@ -430,7 +430,7 @@
         {
           "t": "par",
           "v1": {"t": "hello", "v": "a"},
-          "v2": {"t": "litteral", "v": "a"}
+          "v2": {"t": "litt", "v": "a"}
         }
       ]
       },
@@ -438,11 +438,11 @@
     },
     {
       "r": "par",
-      "s": {"hyp": [{"t": "litteral", "v": "a"}], "cons": [
+      "s": {"hyp": [{"t": "litt", "v": "a"}], "cons": [
         {
           "t": "par",
-          "v1": {"t": "litteral", "v": "a"},
-          "v2": {"t": "litteral", "v": "a"}
+          "v1": {"t": "litt", "v": "a"},
+          "v2": {"t": "litt", "v": "a"}
         }
       ]
       },
@@ -453,8 +453,8 @@
       "s": {"hyp": [], "cons": [
         {
           "t": "par",
-          "v1": {"t": "litteral", "v": "a"},
-          "v2": {"t": "litteral", "v": "a"}
+          "v1": {"t": "litt", "v": "a"},
+          "v2": {"t": "litt", "v": "a"}
         }
       ]
       },
@@ -465,8 +465,8 @@
       "s": {"hyp": [], "cons": [
         {
           "t": "par",
-          "v1": {"t": "litteral", "v": "a"},
-          "v2": {"t": "litteral", "v": "a"}
+          "v1": {"t": "litt", "v": "a"},
+          "v2": {"t": "litt", "v": "a"}
         }
       ]
       },
@@ -479,7 +479,7 @@
         "cons": [
           {"t":"one"},
           {"t":"bottom"},
-          {"t":"litteral","v":"a"}
+          {"t":"litt","v":"a"}
         ]
       },
       "fp":0
@@ -502,8 +502,8 @@
         "cons": [
           {
             "t": "plus",
-            "v1": {"t": "litteral", "v": "a"},
-            "v2": {"t": "litteral", "v": "a"}
+            "v1": {"t": "litt", "v": "a"},
+            "v2": {"t": "litt", "v": "a"}
           }
         ]
       },
@@ -585,7 +585,7 @@
           "hyp": [],
           "cons": [
             {"t":"zero"},
-            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
+            {"t":"ofcourse","v":{"t":"litt","v":"a"}}
           ]
         }
       },
@@ -596,8 +596,8 @@
     {
       "s":{"hyp":[],"cons":[
         {"t":"par",
-          "v1":{"t":"litteral","v":"A"},
-          "v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}
+          "v1":{"t":"litt","v":"A"},
+          "v2":{"t":"dual","v":{"t":"litt","v":"A"}}}
       ]},
       "ar":{
         "rr":
@@ -606,8 +606,8 @@
         "p":[
           {
             "s":{"hyp":[],"cons":[
-              {"t":"litteral","v":"A"},
-              {"t":"orthogonal","v":{"t":"litteral","v":"A"}}
+              {"t":"litt","v":"A"},
+              {"t":"dual","v":{"t":"litt","v":"A"}}
             ]},"ar":{"rr":
           {"r":"axiom","fp":0},"p":[]}
           }
@@ -616,8 +616,8 @@
     },
     {
       "s":{"hyp":[],"cons":[
-        {"t":"par","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
-        {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+        {"t":"par","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},
+        {"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}}]},
       "ar":{
         "rr":
         {"r":"par",
@@ -625,9 +625,9 @@
         "p":[
           {
             "s":{"hyp":[],"cons":[
-              {"t":"litteral","v":"A"},
-              {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
-              {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+              {"t":"litt","v":"A"},
+              {"t":"dual","v":{"t":"litt","v":"A"}},
+              {"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}}]},
             "ar":{
               "rr":
               {"r":"exchange",
@@ -635,9 +635,9 @@
               "p":[
                 {
                   "s":{"hyp":[],"cons":[
-                    {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
-                    {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
-                    {"t":"litteral","v":"A"}]},
+                    {"t":"dual","v":{"t":"litt","v":"A"}},
+                    {"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},
+                    {"t":"litt","v":"A"}]},
                   "ar":{
                     "rr":
                     {"r":"tensor",
@@ -645,15 +645,15 @@
                     "p":[
                       {
                         "s":{"hyp":[],"cons":[
-                          {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
-                          {"t":"litteral","v":"A"}]},
+                          {"t":"dual","v":{"t":"litt","v":"A"}},
+                          {"t":"litt","v":"A"}]},
                         "ar":{
                           "rr":
                           {"r":"axiom","fp":1},"p":[]}},
                       {
                         "s":{"hyp":[],"cons":[
-                          {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
-                          {"t":"litteral","v":"A"}]},
+                          {"t":"dual","v":{"t":"litt","v":"A"}},
+                          {"t":"litt","v":"A"}]},
                         "ar":{
                           "rr":
                           {"r":"axiom",
@@ -686,47 +686,47 @@
                           "t":  "one"
                         },
                         "v2": {
-                          "t": "litteral",
+                          "t": "litt",
                           "v": "A1"
                         }
                       },
                       "v2": {
-                        "t": "litteral",
+                        "t": "litt",
                         "v": "A2"
                       }
                     },
                     "v2": {
-                      "t": "litteral",
+                      "t": "litt",
                       "v": "A3"
                     }
                   },
                   "v2": {
-                    "t": "litteral",
+                    "t": "litt",
                     "v": "A4"
                   }
                 },
                 "v2": {
-                  "t": "litteral",
+                  "t": "litt",
                   "v": "A5"
                 }
               },
               "v2": {
-                "t": "litteral",
+                "t": "litt",
                 "v": "A6"
               }
             },
             "v2": {
-              "t": "litteral",
+              "t": "litt",
               "v": "A7"
             }
           },
           "v2": {
-            "t": "litteral",
+            "t": "litt",
             "v": "A8"
           }
         },
         "v2": {
-          "t": "litteral",
+          "t": "litt",
           "v": "A9"
         }
       }
@@ -762,42 +762,42 @@
                               "t":  "one"
                             },
                             "v2": {
-                              "t": "litteral",
+                              "t": "litt",
                               "v": "A1"
                             }
                           },
                           "v2": {
-                            "t": "litteral",
+                            "t": "litt",
                             "v": "A2"
                           }
                         },
                         "v2": {
-                          "t": "litteral",
+                          "t": "litt",
                           "v": "A3"
                         }
                       },
                       "v2": {
-                        "t": "litteral",
+                        "t": "litt",
                         "v": "A4"
                       }
                     },
                     "v2": {
-                      "t": "litteral",
+                      "t": "litt",
                       "v": "A5"
                     }
                   },
                   "v2": {
-                    "t": "litteral",
+                    "t": "litt",
                     "v": "A6"
                   }
                 },
                 "v2": {
-                  "t": "litteral",
+                  "t": "litt",
                   "v": "A7"
                 }
               },
               "v2": {
-                "t": "litteral",
+                "t": "litt",
                 "v": "A8"
               }
             }
@@ -831,37 +831,37 @@
                                   "t":  "one"
                                 },
                                 "v2": {
-                                  "t": "litteral",
+                                  "t": "litt",
                                   "v": "A1"
                                 }
                               },
                               "v2": {
-                                "t": "litteral",
+                                "t": "litt",
                                 "v": "A2"
                               }
                             },
                             "v2": {
-                              "t": "litteral",
+                              "t": "litt",
                               "v": "A3"
                             }
                           },
                           "v2": {
-                            "t": "litteral",
+                            "t": "litt",
                             "v": "A4"
                           }
                         },
                         "v2": {
-                          "t": "litteral",
+                          "t": "litt",
                           "v": "A5"
                         }
                       },
                       "v2": {
-                        "t": "litteral",
+                        "t": "litt",
                         "v": "A6"
                       }
                     },
                     "v2": {
-                      "t": "litteral",
+                      "t": "litt",
                       "v": "A7"
                     }
                   }
@@ -893,32 +893,32 @@
                                       "t":  "one"
                                     },
                                     "v2": {
-                                      "t": "litteral",
+                                      "t": "litt",
                                       "v": "A1"
                                     }
                                   },
                                   "v2": {
-                                    "t": "litteral",
+                                    "t": "litt",
                                     "v": "A2"
                                   }
                                 },
                                 "v2": {
-                                  "t": "litteral",
+                                  "t": "litt",
                                   "v": "A3"
                                 }
                               },
                               "v2": {
-                                "t": "litteral",
+                                "t": "litt",
                                 "v": "A4"
                               }
                             },
                             "v2": {
-                              "t": "litteral",
+                              "t": "litt",
                               "v": "A5"
                             }
                           },
                           "v2": {
-                            "t": "litteral",
+                            "t": "litt",
                             "v": "A6"
                           }
                         }
@@ -948,27 +948,27 @@
                                           "t":  "one"
                                         },
                                         "v2": {
-                                          "t": "litteral",
+                                          "t": "litt",
                                           "v": "A1"
                                         }
                                       },
                                       "v2": {
-                                        "t": "litteral",
+                                        "t": "litt",
                                         "v": "A2"
                                       }
                                     },
                                     "v2": {
-                                      "t": "litteral",
+                                      "t": "litt",
                                       "v": "A3"
                                     }
                                   },
                                   "v2": {
-                                    "t": "litteral",
+                                    "t": "litt",
                                     "v": "A4"
                                   }
                                 },
                                 "v2": {
-                                  "t": "litteral",
+                                  "t": "litt",
                                   "v": "A5"
                                 }
                               }
@@ -996,22 +996,22 @@
                                               "t":  "one"
                                             },
                                             "v2": {
-                                              "t": "litteral",
+                                              "t": "litt",
                                               "v": "A1"
                                             }
                                           },
                                           "v2": {
-                                            "t": "litteral",
+                                            "t": "litt",
                                             "v": "A2"
                                           }
                                         },
                                         "v2": {
-                                          "t": "litteral",
+                                          "t": "litt",
                                           "v": "A3"
                                         }
                                       },
                                       "v2": {
-                                        "t": "litteral",
+                                        "t": "litt",
                                         "v": "A4"
                                       }
                                     }
@@ -1037,17 +1037,17 @@
                                                   "t":  "one"
                                                 },
                                                 "v2": {
-                                                  "t": "litteral",
+                                                  "t": "litt",
                                                   "v": "A1"
                                                 }
                                               },
                                               "v2": {
-                                                "t": "litteral",
+                                                "t": "litt",
                                                 "v": "A2"
                                               }
                                             },
                                             "v2": {
-                                              "t": "litteral",
+                                              "t": "litt",
                                               "v": "A3"
                                             }
                                           }
@@ -1071,12 +1071,12 @@
                                                       "t":  "one"
                                                     },
                                                     "v2": {
-                                                      "t": "litteral",
+                                                      "t": "litt",
                                                       "v": "A1"
                                                     }
                                                   },
                                                   "v2": {
-                                                    "t": "litteral",
+                                                    "t": "litt",
                                                     "v": "A2"
                                                   }
                                                 }
@@ -1098,7 +1098,7 @@
                                                           "t":  "one"
                                                         },
                                                         "v2": {
-                                                          "t": "litteral",
+                                                          "t": "litt",
                                                           "v": "A1"
                                                         }
                                                       }
@@ -1156,30 +1156,30 @@
 },
     {
       "s":{"hyp":[],"cons":[
-        {"t":"whynot","v":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
+        {"t":"whynot","v":{"t":"dual","v":{"t":"litt","v":"A"}}},
         {"t":"tensor",
-          "v1":{"t":"ofcourse","v":{"t":"litteral","v":"A"}},
-          "v2":{"t":"orthogonal","v":{"t":"litteral","v":"B"}}},
-        {"t":"litteral","v":"B"}]},
+          "v1":{"t":"ofcourse","v":{"t":"litt","v":"A"}},
+          "v2":{"t":"dual","v":{"t":"litt","v":"B"}}},
+        {"t":"litt","v":"B"}]},
       "ar":{
         "rr":{"r":"tensor","fp":1},
         "p":[
           {"s":{"hyp":[],"cons":[
-            {"t":"whynot","v":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
-            {"t":"ofcourse","v":{"t":"litteral","v":"A"}}]},
+            {"t":"whynot","v":{"t":"dual","v":{"t":"litt","v":"A"}}},
+            {"t":"ofcourse","v":{"t":"litt","v":"A"}}]},
             "ar":{"rr":{"r":"axiom"},"p":[]}},
           {"s":{"hyp":[],"cons":[
-            {"t":"orthogonal","v":{"t":"litteral","v":"B"}},
-            {"t":"litteral","v":"B"}]},
+            {"t":"dual","v":{"t":"litt","v":"B"}},
+            {"t":"litt","v":"B"}]},
             "ar":{"rr":{"r":"axiom","fp":1},"p":[]}}]}
     }
   ],
   "call_api_is_proof_complete_exception": [
     {
       "s":{"hyp":[],"cons":[
-        {"t":"litteral","v":"A"},
-        {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
-        {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+        {"t":"litt","v":"A"},
+        {"t":"dual","v":{"t":"litt","v":"A"}},
+        {"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}}]},
       "ar":{
         "rr":
         {"r":"exchange",

@@ -6,7 +6,7 @@ type formula =
   | Top
   | Zero
   | Litt of string
-  | Orth of string
+  | Dual of string
   | Tensor of formula * formula
   | Par of formula * formula
   | With of formula * formula
@@ -19,20 +19,20 @@ type sequent = formula list;;
 
 (* OPERATIONS *)
 
-let rec orthogonal =
+let rec dual =
     function
     | One -> Bottom
     | Bottom -> One
     | Top -> Zero
     | Zero -> Top
-    | Litt x -> Orth x
-    | Orth x -> Litt x
-    | Tensor (e1, e2) -> Par (orthogonal e1, orthogonal e2)
-    | Par (e1, e2) -> Tensor (orthogonal e1, orthogonal e2)
-    | With (e1, e2) -> Plus (orthogonal e1, orthogonal e2)
-    | Plus (e1, e2) -> With (orthogonal e1, orthogonal e2)
-    | Ofcourse e -> Whynot (orthogonal e)
-    | Whynot e -> Ofcourse (orthogonal e);;
+    | Litt x -> Dual x
+    | Dual x -> Litt x
+    | Tensor (e1, e2) -> Par (dual e1, dual e2)
+    | Par (e1, e2) -> Tensor (dual e1, dual e2)
+    | With (e1, e2) -> Plus (dual e1, dual e2)
+    | Plus (e1, e2) -> With (dual e1, dual e2)
+    | Ofcourse e -> Whynot (dual e)
+    | Whynot e -> Ofcourse (dual e);;
 
 exception Not_whynot;;
 
@@ -52,7 +52,7 @@ let rec get_variable_names =
     | Top -> []
     | Zero -> []
     | Litt x -> [x]
-    | Orth x -> [x]
+    | Dual x -> [x]
     | Tensor (e1, e2) -> get_variable_names e1 @ get_variable_names e2
     | Par (e1, e2) -> get_variable_names e1 @ get_variable_names e2
     | With (e1, e2) -> get_variable_names e1 @ get_variable_names e2
@@ -73,7 +73,7 @@ let rec formula_to_coq_atomic =
   | Top -> "top", true
   | Zero -> "zero", true
   | Litt x -> x, true
-  | Orth x -> Printf.sprintf "dual %s" x, false
+  | Dual x -> Printf.sprintf "dual %s" x, false
   | Tensor (e1, e2) ->
       let s1, atomic1 = formula_to_coq_atomic e1 in
       let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
@@ -130,7 +130,7 @@ let rec formula_to_latex_atomic =
   | Top -> "\\top", true
   | Zero -> "\\zero", true
   | Litt x -> litteral_to_latex x, true
-  | Orth x -> Printf.sprintf "{%s}\\orth" x, true
+  | Dual x -> Printf.sprintf "{%s}\\Dual" x, true
   | Tensor (e1, e2) ->
       let s1, atomic1 = formula_to_latex_atomic e1 in
       let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in

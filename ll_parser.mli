@@ -5,7 +5,7 @@ type token =
   | LPAREN
   | RPAREN
   | EOL
-  | ORTH
+  | DUAL
   | TENSOR
   | PAR
   | WITH

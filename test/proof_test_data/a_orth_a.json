@@ -1,1 +1,1 @@
-{"s":{"hyp":[],"cons":[{"t":"orthogonal","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"A"}]},"ar":{"rr":{"r":"axiom","fp":0},"p":[]}}
+{"s":{"hyp":[],"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"A"}]},"ar":{"rr":{"r":"axiom","fp":0},"p":[]}}

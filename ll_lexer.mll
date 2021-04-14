@@ -8,7 +8,7 @@ rule token = parse
     | ','               { COMMA }
     | '('               { LPAREN }
     | ')'               { RPAREN }
-    | '^'               { ORTH }
+    | '^'               { DUAL }
     | '*' | "⊗"         { TENSOR }
     | '|' | "⅋"         { PAR }
     | '&'               { WITH }

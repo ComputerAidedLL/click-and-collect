@@ -92,7 +92,7 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
-        case 'litteral':
+        case 'litt':
             return formulaAsJson.value.replace(/\d+/, digits => `<sub>${digits}</sub>`);
 
         case 'one':
@@ -118,7 +118,7 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             }
             return unaryConnector + subFormula;
 
-        case 'orthogonal':
+        case 'dual':
             return createFormulaHTML(formulaAsJson.value, false)
                 + '<sup>⊥</sup>';
 
@@ -161,8 +161,8 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
 
 function getRules(formulaAsJson) {
     switch (formulaAsJson.type) {
-        case 'litteral':
-        case 'orthogonal':
+        case 'litt':
+        case 'dual':
             return [{'element': 'main-formula', 'onclick': [{'rule': 'axiom', 'needPosition': false}]}];
 
         case 'tensor':
