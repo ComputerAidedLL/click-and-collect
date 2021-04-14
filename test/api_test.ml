@@ -26,7 +26,7 @@ let call_api_post path body_as_string expected_code =
 
 (* The tests *)
 let call_api_parse_sequent_full_response () =
-    Alcotest.(check string) "valid" "{\"is_valid\":true,\"sequent_as_json\":{\"hyp\":[],\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]}}" (call_api_get "parse_sequent?sequentAsString=a");
+    Alcotest.(check string) "valid" "{\"is_valid\":true,\"sequent_as_json\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]}}" (call_api_get "parse_sequent?sequentAsString=a");
     Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent?sequentAsString=a*")
 
 let call_api_parse_sequent () =
@@ -61,9 +61,9 @@ let call_api_parse_sequent_syntax_exception () =
     assert_syntax_exception "2"
 
 let call_api_apply_rule_full_response () =
-    let body_as_string = "{\"ruleRequest\":{\"rule\": \"par\", \"formulaPosition\":0}, \"sequent\": {\"hyp\": [],\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litt\", \"value\":\"a\"},\"value2\":{\"type\": \"litt\", \"value\":\"a\"}}]}}" in
+    let body_as_string = "{\"ruleRequest\":{\"rule\": \"par\", \"formulaPosition\":0}, \"sequent\": {\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litt\", \"value\":\"a\"},\"value2\":{\"type\": \"litt\", \"value\":\"a\"}}]}}" in
     let response_as_string = call_api_post "apply_rule" body_as_string 200 in
-    let expected_response_as_string = "{\"success\":true,\"sequentList\":[{\"hyp\":[],\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"litt\",\"value\":\"a\"}]}]}" in
+    let expected_response_as_string = "{\"success\":true,\"sequentList\":[{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"litt\",\"value\":\"a\"}]}]}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
 
 let call_api_apply_rule () =
@@ -106,7 +106,7 @@ let call_api_apply_rule_logic_exception () =
     List.iter run_test test_samples
 
 let call_api_is_proof_complete_full_response () =
-    let body_as_string = "{\"sequent\":{\"hyp\": [],\"cons\": [{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}" in
+    let body_as_string = "{\"sequent\":{\"cons\": [{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}" in
     let response_as_string = call_api_post "is_proof_complete" body_as_string 200 in
     let expected_response_as_string = "{\"is_complete\":true}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string

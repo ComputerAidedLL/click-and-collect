@@ -79,9 +79,12 @@ let rec raw_formula_to_json =
   | Ofcourse e -> `Assoc ([("type", `String "ofcourse") ; ("value", raw_formula_to_json e)])
   | Whynot e -> `Assoc ([("type", `String "whynot") ; ("value", raw_formula_to_json e)]);;
 
-let to_json sequent = `Assoc [
-        ("hyp", `List (List.map raw_formula_to_json sequent.hyp));
-        ("cons", `List (List.map raw_formula_to_json sequent.cons))
+let to_json raw_sequent =
+    if raw_sequent.hyp = []
+    then `Assoc [("cons", `List (List.map raw_formula_to_json raw_sequent.cons))]
+    else `Assoc [
+        ("hyp", `List (List.map raw_formula_to_json raw_sequent.hyp));
+        ("cons", `List (List.map raw_formula_to_json raw_sequent.cons))
     ];;
 
 
@@ -89,11 +92,12 @@ let to_json sequent = `Assoc [
 
 exception Json_exception of string;;
 
+let optional_field json key =
+    try Yojson.Basic.Util.member key json
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("a sequent and a formula (or sub-formula) must be a json object"))
+
 let required_field json key =
-    let value =
-        try Yojson.Basic.Util.member key json
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("a sequent and a formula (or sub-formula) must be a json object"))
-    in
+    let value = optional_field json key in
     if value = `Null
     then raise (Json_exception ("required field '" ^ key ^ "' is missing"))
     else value
@@ -127,7 +131,8 @@ let rec json_to_raw_formula json =
   | _ -> raise (Json_exception ("unknown formula type " ^ formula_type));;
 
 let from_json sequent_as_json =
-    let hyp_formulas = List.map json_to_raw_formula (get_json_list sequent_as_json "hyp") in
+    let hyp_formulas = if (optional_field sequent_as_json "hyp") = `Null then []
+    else List.map json_to_raw_formula (get_json_list sequent_as_json "hyp") in
     let cons_formulas = List.map json_to_raw_formula (get_json_list sequent_as_json "cons") in
     {hyp=hyp_formulas; cons=cons_formulas}
 

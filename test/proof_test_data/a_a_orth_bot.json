@@ -1,1 +1,1 @@
-{"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":2},"p":[{"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"axiom","fp":1},"p":[]}}]}}
+{"s":{"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":2},"p":[{"s":{"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"axiom","fp":1},"p":[]}}]}}
