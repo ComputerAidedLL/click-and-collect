@@ -28,6 +28,35 @@ let read_raw_content raw_content =
   (* Servers POST body size limit is usually 2MB *)
   Ocsigen_stream.string_of_stream 65536 content_stream
 
+let uncompress_json request_as_string =
+    let abbreviations = [("\"s\":", "\"sequent\":");
+                        ("\"ar\":", "\"appliedRule\":");
+                        ("\"rr\":", "\"ruleRequest\":");
+                        ("\"p\":", "\"premises\":");
+                        ("\"r\":", "\"rule\":");
+                        ("\"fp\":", "\"formulaPosition\":");
+                        ("\"t\":", "\"type\":");
+                        ("\"v\":", "\"value\":");
+                        ("\"v1\":", "\"value1\":");
+                        ("\"v2\":", "\"value2\":")] in
+    let s = ref request_as_string in
+    List.iter (function (compressed_field, field) ->
+        s := Str.global_replace (Str.regexp compressed_field) field !s) abbreviations;
+    !s
+
+let post_handler raw_content_opt function_on_json =
+    match raw_content_opt with
+    | None -> send_json ~code:400 "Body content is missing"
+    | Some raw_content -> Lwt.catch (fun () ->
+        read_raw_content raw_content >>= fun request_as_string ->
+        try
+            let request_as_json = Yojson.Basic.from_string (uncompress_json request_as_string) in
+            function_on_json request_as_json
+        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
+        (function
+        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
+        | _ as e -> raise e)
+
 
 (************)
 (* MAIN APP *)
@@ -82,19 +111,10 @@ let apply_rule_service =
 
 (* Service definition *)
 let apply_rule_handler () (content_type, raw_content_opt) =
-    match raw_content_opt with
-    | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> Lwt.catch (fun () ->
-        read_raw_content raw_content >>= fun request_as_string ->
-        try
-            let request_as_json = Yojson.Basic.from_string request_as_string in
-            let technical_success, json_response = apply_rule request_as_json in
-            if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
-            else send_json ~code:400 (Yojson.Basic.to_string json_response)
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
-        (function
-        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
-        | _ as e -> raise e)
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, json_response = apply_rule request_as_json in
+        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+        else send_json ~code:400 (Yojson.Basic.to_string json_response))
 
 let () =
   Eliom_registration.Any.register apply_rule_service apply_rule_handler;
@@ -114,19 +134,10 @@ let is_proof_complete_service =
 
 (* Service definition *)
 let is_proof_complete_handler () (content_type, raw_content_opt) =
-    match raw_content_opt with
-    | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> Lwt.catch (fun () ->
-        read_raw_content raw_content >>= fun request_as_string ->
-        try
-            let request_as_json = Yojson.Basic.from_string request_as_string in
-            let technical_success, json_response = is_proof_complete request_as_json in
-            if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
-            else send_json ~code:400 (Yojson.Basic.to_string json_response)
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
-        (function
-        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
-        | _ as e -> raise e)
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, json_response = is_proof_complete request_as_json in
+        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+        else send_json ~code:400 (Yojson.Basic.to_string json_response))
 
 let () =
   Eliom_registration.Any.register is_proof_complete_service is_proof_complete_handler;
@@ -145,19 +156,10 @@ let export_as_coq_service =
 
 (* Service definition *)
 let export_as_coq_handler () (content_type, raw_content_opt) =
-    match raw_content_opt with
-    | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> Lwt.catch (fun () ->
-        read_raw_content raw_content >>= fun request_as_string ->
-        try
-            let request_as_json = Yojson.Basic.from_string request_as_string in
-            let technical_success, string_response = export_as_coq request_as_json in
-            if technical_success then send_file ~code:200 string_response
-            else send_json ~code:400 string_response
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
-        (function
-        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
-        | _ as e -> raise e)
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, string_response = export_as_coq request_as_json in
+        if technical_success then send_file ~code:200 string_response
+        else send_json ~code:400 string_response)
 
 let () =
   Eliom_registration.Any.register export_as_coq_service export_as_coq_handler;
@@ -176,19 +178,10 @@ let export_as_latex_service =
 
 (* Service definition *)
 let export_as_latex_handler () (content_type, raw_content_opt) =
-    match raw_content_opt with
-    | None -> send_json ~code:400 "Body content is missing"
-    | Some raw_content -> Lwt.catch (fun () ->
-        read_raw_content raw_content >>= fun request_as_string ->
-        try
-            let request_as_json = Yojson.Basic.from_string request_as_string in
-            let technical_success, string_response = export_as_latex request_as_json in
-            if technical_success then send_file ~code:200 string_response
-            else send_json ~code:400 string_response
-        with Yojson.Json_error s -> send_json ~code:400 "Body content is not a valid json")
-        (function
-        | Ocsigen_stream.String_too_large -> send_json ~code:400 "Body content is too big"
-        | _ as e -> raise e)
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, string_response = export_as_latex request_as_json in
+        if technical_success then send_file ~code:200 string_response
+        else send_json ~code:400 string_response)
 
 let () =
   Eliom_registration.Any.register export_as_latex_service export_as_latex_handler;

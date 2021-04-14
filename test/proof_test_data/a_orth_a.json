@@ -1,1 +1,1 @@
-{"sequent":{"hyp":[],"cons":[{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"A"}]},"appliedRule":{"ruleRequest":{"rule":"axiom","formulaPosition":0},"premises":[]}}
+{"s":{"hyp":[],"cons":[{"t":"orthogonal","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"A"}]},"ar":{"rr":{"r":"axiom","fp":0},"p":[]}}

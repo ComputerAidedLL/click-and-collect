@@ -107,14 +107,14 @@
   "call_api_apply_rule": [
     {
       "request": {
-        "ruleRequest": {
-          "rule":"one",
-          "formulaPosition":0
+        "rr": {
+          "r":"one",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"}
+            {"t":"one"}
           ]
         }
       },
@@ -122,16 +122,16 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"bottom",
-          "formulaPosition":1
+        "rr": {
+          "r":"bottom",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"bottom"},
-            {"type":"litteral","value":"a"}
+            {"t":"one"},
+            {"t":"bottom"},
+            {"t":"litteral","v":"a"}
           ]
         }
       },
@@ -143,16 +143,16 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"top",
-          "formulaPosition":2
+        "rr": {
+          "r":"top",
+          "fp":2
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"bottom"},
-            {"type":"top"}
+            {"t":"one"},
+            {"t":"bottom"},
+            {"t":"top"}
           ]
         }
       },
@@ -160,15 +160,15 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"axiom",
-          "formulaPosition":1
+        "rr": {
+          "r":"axiom",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type":"orthogonal","value":{"type":"litteral","value":"a"}}
+            {"t":"litteral","v":"a"},
+            {"t":"orthogonal","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -176,15 +176,15 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"axiom",
-          "formulaPosition":1
+        "rr": {
+          "r":"axiom",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"bottom"}
+            {"t":"one"},
+            {"t":"bottom"}
           ]
         }
       },
@@ -192,19 +192,19 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"tensor",
-          "formulaPosition":1
+        "rr": {
+          "r":"tensor",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "tensor",
-              "value1":{"type": "top"},
-              "value2":{"type": "one"}
+            {"t":"litteral","v":"a"},
+            {"t": "tensor",
+              "v1":{"t": "top"},
+              "v2":{"t": "one"}
             },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -223,19 +223,19 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"par",
-          "formulaPosition":1
+        "rr": {
+          "r":"par",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "par",
-              "value1":{"type": "top"},
-              "value2":{"type": "one"}
+            {"t":"litteral","v":"a"},
+            {"t": "par",
+              "v1":{"t": "top"},
+              "v2":{"t": "one"}
             },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -251,19 +251,19 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"with",
-          "formulaPosition":1
+        "rr": {
+          "r":"with",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "with",
-              "value1":{"type": "top"},
-              "value2":{"type": "one"}
+            {"t":"litteral","v":"a"},
+            {"t": "with",
+              "v1":{"t": "top"},
+              "v2":{"t": "one"}
             },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -279,19 +279,19 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"plus_left",
-          "formulaPosition":1
+        "rr": {
+          "r":"plus_left",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "plus",
-              "value1":{"type": "top"},
-              "value2":{"type": "one"}
+            {"t":"litteral","v":"a"},
+            {"t": "plus",
+              "v1":{"t": "top"},
+              "v2":{"t": "one"}
             },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -303,19 +303,19 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"plus_right",
-          "formulaPosition":1
+        "rr": {
+          "r":"plus_right",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"litteral","value":"a"},
-            {"type": "plus",
-              "value1":{"type": "top"},
-              "value2":{"type": "one"}
+            {"t":"litteral","v":"a"},
+            {"t": "plus",
+              "v1":{"t": "top"},
+              "v2":{"t": "one"}
             },
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -327,13 +327,13 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"promotion",
-          "formulaPosition":0
+        "rr": {
+          "r":"promotion",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
-          "cons": [{"type":"ofcourse","value":{"type":"litteral","value":"a"}}]
+          "cons": [{"t":"ofcourse","v":{"t":"litteral","v":"a"}}]
         }
       },
       "expected_sequent_list_as_json": [{"hyp":[], "cons":[
@@ -342,15 +342,15 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"promotion",
-          "formulaPosition":1
+        "rr": {
+          "r":"promotion",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"whynot","value":{"type":"litteral","value":"b"}},
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"whynot","v":{"t":"litteral","v":"b"}},
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -361,14 +361,14 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"weakening",
-          "formulaPosition":0
+        "rr": {
+          "r":"weakening",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+            {"t":"whynot","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -376,14 +376,14 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"dereliction",
-          "formulaPosition":0
+        "rr": {
+          "r":"dereliction",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+            {"t":"whynot","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -391,14 +391,14 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"contraction",
-          "formulaPosition":0
+        "rr": {
+          "r":"contraction",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"whynot","value":{"type":"litteral","value":"a"}}
+            {"t":"whynot","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -413,115 +413,115 @@
     "",
     "hello",
     {
-      "rule": "hello",
-      "sequent": {"hyp": [], "cons": [
+      "r": "hello",
+      "s": {"hyp": [], "cons": [
         {
-          "type": "par",
-          "value1": {"type": "litteral", "value": "a"},
-          "value2": {"type": "litteral", "value": "a"}
+          "t": "par",
+          "v1": {"t": "litteral", "v": "a"},
+          "v2": {"t": "litteral", "v": "a"}
         }
       ]
       },
-      "formulaPosition":0
+      "fp":0
     },
     {
-      "rule": "par",
-      "sequent": {"hyp": [], "cons": [
+      "r": "par",
+      "s": {"hyp": [], "cons": [
         {
-          "type": "par",
-          "value1": {"type": "hello", "value": "a"},
-          "value2": {"type": "litteral", "value": "a"}
+          "t": "par",
+          "v1": {"t": "hello", "v": "a"},
+          "v2": {"t": "litteral", "v": "a"}
         }
       ]
       },
-      "formulaPosition":0
+      "fp":0
     },
     {
-      "rule": "par",
-      "sequent": {"hyp": [{"type": "litteral", "value": "a"}], "cons": [
+      "r": "par",
+      "s": {"hyp": [{"t": "litteral", "v": "a"}], "cons": [
         {
-          "type": "par",
-          "value1": {"type": "litteral", "value": "a"},
-          "value2": {"type": "litteral", "value": "a"}
+          "t": "par",
+          "v1": {"t": "litteral", "v": "a"},
+          "v2": {"t": "litteral", "v": "a"}
         }
       ]
       },
-      "formulaPosition":0
+      "fp":0
     },
     {
-      "rule": "par",
-      "sequent": {"hyp": [], "cons": [
+      "r": "par",
+      "s": {"hyp": [], "cons": [
         {
-          "type": "par",
-          "value1": {"type": "litteral", "value": "a"},
-          "value2": {"type": "litteral", "value": "a"}
+          "t": "par",
+          "v1": {"t": "litteral", "v": "a"},
+          "v2": {"t": "litteral", "v": "a"}
         }
       ]
       },
-      "formulaPosition":1
+      "fp":1
     },
     {
-      "rule": "par",
-      "sequent": {"hyp": [], "cons": [
+      "r": "par",
+      "s": {"hyp": [], "cons": [
         {
-          "type": "par",
-          "value1": {"type": "litteral", "value": "a"},
-          "value2": {"type": "litteral", "value": "a"}
+          "t": "par",
+          "v1": {"t": "litteral", "v": "a"},
+          "v2": {"t": "litteral", "v": "a"}
         }
       ]
       },
-      "formulaPosition":-1
+      "fp":-1
     },
     {
-      "rule":"bottom",
-      "sequent": {
+      "r":"bottom",
+      "s": {
         "hyp": [],
         "cons": [
-          {"type":"one"},
-          {"type":"bottom"},
-          {"type":"litteral","value":"a"}
+          {"t":"one"},
+          {"t":"bottom"},
+          {"t":"litteral","v":"a"}
         ]
       },
-      "formulaPosition":0
+      "fp":0
     },
     {
-      "rule":"top",
-      "sequent": {
+      "r":"top",
+      "s": {
         "hyp": [],
         "cons": [
-          {"type":"top"},
-          {"type":"one"}
+          {"t":"top"},
+          {"t":"one"}
         ]
       },
-      "formulaPosition":1
+      "fp":1
     },
     {
-      "rule": "plus",
-      "sequent": {
+      "r": "plus",
+      "s": {
         "hyp": [],
         "cons": [
           {
-            "type": "plus",
-            "value1": {"type": "litteral", "value": "a"},
-            "value2": {"type": "litteral", "value": "a"}
+            "t": "plus",
+            "v1": {"t": "litteral", "v": "a"},
+            "v2": {"t": "litteral", "v": "a"}
           }
         ]
       },
-      "formulaPosition":0
+      "fp":0
     }
   ],
   "call_api_apply_rule_logic_exception": [
     {
       "request": {
-        "ruleRequest": {
-          "rule":"one",
-          "formulaPosition":0
+        "rr": {
+          "r":"one",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"one"}
+            {"t":"one"},
+            {"t":"one"}
           ]
         }
       },
@@ -529,15 +529,15 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"axiom",
-          "formulaPosition":1
+        "rr": {
+          "r":"axiom",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"zero"}
+            {"t":"one"},
+            {"t":"zero"}
           ]
         }
       },
@@ -545,16 +545,16 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"axiom",
-          "formulaPosition":1
+        "rr": {
+          "r":"axiom",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"one"},
-            {"type":"bottom"},
-            {"type":"top"}
+            {"t":"one"},
+            {"t":"bottom"},
+            {"t":"top"}
           ]
         }
       },
@@ -562,14 +562,14 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"zero",
-          "formulaPosition":0
+        "rr": {
+          "r":"zero",
+          "fp":0
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"zero"}
+            {"t":"zero"}
           ]
         }
       },
@@ -577,15 +577,15 @@
     },
     {
       "request": {
-        "ruleRequest": {
-          "rule":"promotion",
-          "formulaPosition":1
+        "rr": {
+          "r":"promotion",
+          "fp":1
         },
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
-            {"type":"zero"},
-            {"type":"ofcourse","value":{"type":"litteral","value":"a"}}
+            {"t":"zero"},
+            {"t":"ofcourse","v":{"t":"litteral","v":"a"}}
           ]
         }
       },
@@ -594,537 +594,537 @@
   ],
   "call_api_is_proof_complete": [
     {
-      "sequent":{"hyp":[],"cons":[
-        {"type":"par",
-          "value1":{"type":"litteral","value":"A"},
-          "value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}
+      "s":{"hyp":[],"cons":[
+        {"t":"par",
+          "v1":{"t":"litteral","v":"A"},
+          "v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}
       ]},
-      "appliedRule":{
-        "ruleRequest":
-        {"rule":"par",
-        "formulaPosition":0},
-        "premises":[
+      "ar":{
+        "rr":
+        {"r":"par",
+        "fp":0},
+        "p":[
           {
-            "sequent":{"hyp":[],"cons":[
-              {"type":"litteral","value":"A"},
-              {"type":"orthogonal","value":{"type":"litteral","value":"A"}}
-            ]},"appliedRule":{"ruleRequest":
-          {"rule":"axiom","formulaPosition":0},"premises":[]}
+            "s":{"hyp":[],"cons":[
+              {"t":"litteral","v":"A"},
+              {"t":"orthogonal","v":{"t":"litteral","v":"A"}}
+            ]},"ar":{"rr":
+          {"r":"axiom","fp":0},"p":[]}
           }
         ]
       }
     },
     {
-      "sequent":{"hyp":[],"cons":[
-        {"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
-        {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
-      "appliedRule":{
-        "ruleRequest":
-        {"rule":"par",
-        "formulaPosition":0},
-        "premises":[
+      "s":{"hyp":[],"cons":[
+        {"t":"par","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
+        {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+      "ar":{
+        "rr":
+        {"r":"par",
+        "fp":0},
+        "p":[
           {
-            "sequent":{"hyp":[],"cons":[
-              {"type":"litteral","value":"A"},
-              {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-              {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
-            "appliedRule":{
-              "ruleRequest":
-              {"rule":"exchange",
+            "s":{"hyp":[],"cons":[
+              {"t":"litteral","v":"A"},
+              {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
+              {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+            "ar":{
+              "rr":
+              {"r":"exchange",
               "permutation":[1,2,0]},
-              "premises":[
+              "p":[
                 {
-                  "sequent":{"hyp":[],"cons":[
-                    {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-                    {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
-                    {"type":"litteral","value":"A"}]},
-                  "appliedRule":{
-                    "ruleRequest":
-                    {"rule":"tensor",
-                    "formulaPosition":1},
-                    "premises":[
+                  "s":{"hyp":[],"cons":[
+                    {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
+                    {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
+                    {"t":"litteral","v":"A"}]},
+                  "ar":{
+                    "rr":
+                    {"r":"tensor",
+                    "fp":1},
+                    "p":[
                       {
-                        "sequent":{"hyp":[],"cons":[
-                          {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-                          {"type":"litteral","value":"A"}]},
-                        "appliedRule":{
-                          "ruleRequest":
-                          {"rule":"axiom","formulaPosition":1},"premises":[]}},
+                        "s":{"hyp":[],"cons":[
+                          {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
+                          {"t":"litteral","v":"A"}]},
+                        "ar":{
+                          "rr":
+                          {"r":"axiom","fp":1},"p":[]}},
                       {
-                        "sequent":{"hyp":[],"cons":[
-                          {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-                          {"type":"litteral","value":"A"}]},
-                        "appliedRule":{
-                          "ruleRequest":
-                          {"rule":"axiom",
-                          "formulaPosition":1},
-                          "premises":[]}}]}}]}}]}
+                        "s":{"hyp":[],"cons":[
+                          {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
+                          {"t":"litteral","v":"A"}]},
+                        "ar":{
+                          "rr":
+                          {"r":"axiom",
+                          "fp":1},
+                          "p":[]}}]}}]}}]}
     },
     {
-  "sequent": {
+  "s": {
     "hyp": [],
     "cons": [
       {
-        "type": "plus",
-        "value1": {
-          "type": "plus",
-          "value1": {
-            "type": "plus",
-            "value1": {
-              "type": "plus",
-              "value1": {
-                "type": "plus",
-                "value1": {
-                  "type": "plus",
-                  "value1": {
-                    "type": "plus",
-                    "value1": {
-                      "type": "plus",
-                      "value1": {
-                        "type": "plus",
-                        "value1": {
-                          "type":  "one"
+        "t": "plus",
+        "v1": {
+          "t": "plus",
+          "v1": {
+            "t": "plus",
+            "v1": {
+              "t": "plus",
+              "v1": {
+                "t": "plus",
+                "v1": {
+                  "t": "plus",
+                  "v1": {
+                    "t": "plus",
+                    "v1": {
+                      "t": "plus",
+                      "v1": {
+                        "t": "plus",
+                        "v1": {
+                          "t":  "one"
                         },
-                        "value2": {
-                          "type": "litteral",
-                          "value": "A1"
+                        "v2": {
+                          "t": "litteral",
+                          "v": "A1"
                         }
                       },
-                      "value2": {
-                        "type": "litteral",
-                        "value": "A2"
+                      "v2": {
+                        "t": "litteral",
+                        "v": "A2"
                       }
                     },
-                    "value2": {
-                      "type": "litteral",
-                      "value": "A3"
+                    "v2": {
+                      "t": "litteral",
+                      "v": "A3"
                     }
                   },
-                  "value2": {
-                    "type": "litteral",
-                    "value": "A4"
+                  "v2": {
+                    "t": "litteral",
+                    "v": "A4"
                   }
                 },
-                "value2": {
-                  "type": "litteral",
-                  "value": "A5"
+                "v2": {
+                  "t": "litteral",
+                  "v": "A5"
                 }
               },
-              "value2": {
-                "type": "litteral",
-                "value": "A6"
+              "v2": {
+                "t": "litteral",
+                "v": "A6"
               }
             },
-            "value2": {
-              "type": "litteral",
-              "value": "A7"
+            "v2": {
+              "t": "litteral",
+              "v": "A7"
             }
           },
-          "value2": {
-            "type": "litteral",
-            "value": "A8"
+          "v2": {
+            "t": "litteral",
+            "v": "A8"
           }
         },
-        "value2": {
-          "type": "litteral",
-          "value": "A9"
+        "v2": {
+          "t": "litteral",
+          "v": "A9"
         }
       }
     ]
   },
-  "appliedRule": {
-    "ruleRequest": {
-      "rule": "plus_left",
-      "formulaPosition": 0
+  "ar": {
+    "rr": {
+      "r": "plus_left",
+      "fp": 0
     },
-    "premises": [
+    "p": [
       {
-        "sequent": {
+        "s": {
           "hyp": [],
           "cons": [
             {
-              "type": "plus",
-              "value1": {
-                "type": "plus",
-                "value1": {
-                  "type": "plus",
-                  "value1": {
-                    "type": "plus",
-                    "value1": {
-                      "type": "plus",
-                      "value1": {
-                        "type": "plus",
-                        "value1": {
-                          "type": "plus",
-                          "value1": {
-                            "type": "plus",
-                            "value1": {
-                              "type":  "one"
+              "t": "plus",
+              "v1": {
+                "t": "plus",
+                "v1": {
+                  "t": "plus",
+                  "v1": {
+                    "t": "plus",
+                    "v1": {
+                      "t": "plus",
+                      "v1": {
+                        "t": "plus",
+                        "v1": {
+                          "t": "plus",
+                          "v1": {
+                            "t": "plus",
+                            "v1": {
+                              "t":  "one"
                             },
-                            "value2": {
-                              "type": "litteral",
-                              "value": "A1"
+                            "v2": {
+                              "t": "litteral",
+                              "v": "A1"
                             }
                           },
-                          "value2": {
-                            "type": "litteral",
-                            "value": "A2"
+                          "v2": {
+                            "t": "litteral",
+                            "v": "A2"
                           }
                         },
-                        "value2": {
-                          "type": "litteral",
-                          "value": "A3"
+                        "v2": {
+                          "t": "litteral",
+                          "v": "A3"
                         }
                       },
-                      "value2": {
-                        "type": "litteral",
-                        "value": "A4"
+                      "v2": {
+                        "t": "litteral",
+                        "v": "A4"
                       }
                     },
-                    "value2": {
-                      "type": "litteral",
-                      "value": "A5"
+                    "v2": {
+                      "t": "litteral",
+                      "v": "A5"
                     }
                   },
-                  "value2": {
-                    "type": "litteral",
-                    "value": "A6"
+                  "v2": {
+                    "t": "litteral",
+                    "v": "A6"
                   }
                 },
-                "value2": {
-                  "type": "litteral",
-                  "value": "A7"
+                "v2": {
+                  "t": "litteral",
+                  "v": "A7"
                 }
               },
-              "value2": {
-                "type": "litteral",
-                "value": "A8"
+              "v2": {
+                "t": "litteral",
+                "v": "A8"
               }
             }
           ]
         },
-        "appliedRule": {
-          "ruleRequest": {
-            "rule": "plus_left",
-            "formulaPosition": 0
+        "ar": {
+          "rr": {
+            "r": "plus_left",
+            "fp": 0
           },
-          "premises": [
+          "p": [
             {
-              "sequent": {
+              "s": {
                 "hyp": [],
                 "cons": [
                   {
-                    "type": "plus",
-                    "value1": {
-                      "type": "plus",
-                      "value1": {
-                        "type": "plus",
-                        "value1": {
-                          "type": "plus",
-                          "value1": {
-                            "type": "plus",
-                            "value1": {
-                              "type": "plus",
-                              "value1": {
-                                "type": "plus",
-                                "value1": {
-                                  "type":  "one"
+                    "t": "plus",
+                    "v1": {
+                      "t": "plus",
+                      "v1": {
+                        "t": "plus",
+                        "v1": {
+                          "t": "plus",
+                          "v1": {
+                            "t": "plus",
+                            "v1": {
+                              "t": "plus",
+                              "v1": {
+                                "t": "plus",
+                                "v1": {
+                                  "t":  "one"
                                 },
-                                "value2": {
-                                  "type": "litteral",
-                                  "value": "A1"
+                                "v2": {
+                                  "t": "litteral",
+                                  "v": "A1"
                                 }
                               },
-                              "value2": {
-                                "type": "litteral",
-                                "value": "A2"
+                              "v2": {
+                                "t": "litteral",
+                                "v": "A2"
                               }
                             },
-                            "value2": {
-                              "type": "litteral",
-                              "value": "A3"
+                            "v2": {
+                              "t": "litteral",
+                              "v": "A3"
                             }
                           },
-                          "value2": {
-                            "type": "litteral",
-                            "value": "A4"
+                          "v2": {
+                            "t": "litteral",
+                            "v": "A4"
                           }
                         },
-                        "value2": {
-                          "type": "litteral",
-                          "value": "A5"
+                        "v2": {
+                          "t": "litteral",
+                          "v": "A5"
                         }
                       },
-                      "value2": {
-                        "type": "litteral",
-                        "value": "A6"
+                      "v2": {
+                        "t": "litteral",
+                        "v": "A6"
                       }
                     },
-                    "value2": {
-                      "type": "litteral",
-                      "value": "A7"
+                    "v2": {
+                      "t": "litteral",
+                      "v": "A7"
                     }
                   }
                 ]
               },
-              "appliedRule": {
-                "ruleRequest": {
-                  "rule": "plus_left",
-                  "formulaPosition": 0
+              "ar": {
+                "rr": {
+                  "r": "plus_left",
+                  "fp": 0
                 },
-                "premises": [
+                "p": [
                   {
-                    "sequent": {
+                    "s": {
                       "hyp": [],
                       "cons": [
                         {
-                          "type": "plus",
-                          "value1": {
-                            "type": "plus",
-                            "value1": {
-                              "type": "plus",
-                              "value1": {
-                                "type": "plus",
-                                "value1": {
-                                  "type": "plus",
-                                  "value1": {
-                                    "type": "plus",
-                                    "value1": {
-                                      "type":  "one"
+                          "t": "plus",
+                          "v1": {
+                            "t": "plus",
+                            "v1": {
+                              "t": "plus",
+                              "v1": {
+                                "t": "plus",
+                                "v1": {
+                                  "t": "plus",
+                                  "v1": {
+                                    "t": "plus",
+                                    "v1": {
+                                      "t":  "one"
                                     },
-                                    "value2": {
-                                      "type": "litteral",
-                                      "value": "A1"
+                                    "v2": {
+                                      "t": "litteral",
+                                      "v": "A1"
                                     }
                                   },
-                                  "value2": {
-                                    "type": "litteral",
-                                    "value": "A2"
+                                  "v2": {
+                                    "t": "litteral",
+                                    "v": "A2"
                                   }
                                 },
-                                "value2": {
-                                  "type": "litteral",
-                                  "value": "A3"
+                                "v2": {
+                                  "t": "litteral",
+                                  "v": "A3"
                                 }
                               },
-                              "value2": {
-                                "type": "litteral",
-                                "value": "A4"
+                              "v2": {
+                                "t": "litteral",
+                                "v": "A4"
                               }
                             },
-                            "value2": {
-                              "type": "litteral",
-                              "value": "A5"
+                            "v2": {
+                              "t": "litteral",
+                              "v": "A5"
                             }
                           },
-                          "value2": {
-                            "type": "litteral",
-                            "value": "A6"
+                          "v2": {
+                            "t": "litteral",
+                            "v": "A6"
                           }
                         }
                       ]
                     },
-                    "appliedRule": {
-                      "ruleRequest": {
-                        "rule": "plus_left",
-                        "formulaPosition": 0
+                    "ar": {
+                      "rr": {
+                        "r": "plus_left",
+                        "fp": 0
                       },
-                      "premises": [
+                      "p": [
                         {
-                          "sequent": {
+                          "s": {
                             "hyp": [],
                             "cons": [
                               {
-                                "type": "plus",
-                                "value1": {
-                                  "type": "plus",
-                                  "value1": {
-                                    "type": "plus",
-                                    "value1": {
-                                      "type": "plus",
-                                      "value1": {
-                                        "type": "plus",
-                                        "value1": {
-                                          "type":  "one"
+                                "t": "plus",
+                                "v1": {
+                                  "t": "plus",
+                                  "v1": {
+                                    "t": "plus",
+                                    "v1": {
+                                      "t": "plus",
+                                      "v1": {
+                                        "t": "plus",
+                                        "v1": {
+                                          "t":  "one"
                                         },
-                                        "value2": {
-                                          "type": "litteral",
-                                          "value": "A1"
+                                        "v2": {
+                                          "t": "litteral",
+                                          "v": "A1"
                                         }
                                       },
-                                      "value2": {
-                                        "type": "litteral",
-                                        "value": "A2"
+                                      "v2": {
+                                        "t": "litteral",
+                                        "v": "A2"
                                       }
                                     },
-                                    "value2": {
-                                      "type": "litteral",
-                                      "value": "A3"
+                                    "v2": {
+                                      "t": "litteral",
+                                      "v": "A3"
                                     }
                                   },
-                                  "value2": {
-                                    "type": "litteral",
-                                    "value": "A4"
+                                  "v2": {
+                                    "t": "litteral",
+                                    "v": "A4"
                                   }
                                 },
-                                "value2": {
-                                  "type": "litteral",
-                                  "value": "A5"
+                                "v2": {
+                                  "t": "litteral",
+                                  "v": "A5"
                                 }
                               }
                             ]
                           },
-                          "appliedRule": {
-                            "ruleRequest": {
-                              "rule": "plus_left",
-                              "formulaPosition": 0
+                          "ar": {
+                            "rr": {
+                              "r": "plus_left",
+                              "fp": 0
                             },
-                            "premises": [
+                            "p": [
                               {
-                                "sequent": {
+                                "s": {
                                   "hyp": [],
                                   "cons": [
                                     {
-                                      "type": "plus",
-                                      "value1": {
-                                        "type": "plus",
-                                        "value1": {
-                                          "type": "plus",
-                                          "value1": {
-                                            "type": "plus",
-                                            "value1": {
-                                              "type":  "one"
+                                      "t": "plus",
+                                      "v1": {
+                                        "t": "plus",
+                                        "v1": {
+                                          "t": "plus",
+                                          "v1": {
+                                            "t": "plus",
+                                            "v1": {
+                                              "t":  "one"
                                             },
-                                            "value2": {
-                                              "type": "litteral",
-                                              "value": "A1"
+                                            "v2": {
+                                              "t": "litteral",
+                                              "v": "A1"
                                             }
                                           },
-                                          "value2": {
-                                            "type": "litteral",
-                                            "value": "A2"
+                                          "v2": {
+                                            "t": "litteral",
+                                            "v": "A2"
                                           }
                                         },
-                                        "value2": {
-                                          "type": "litteral",
-                                          "value": "A3"
+                                        "v2": {
+                                          "t": "litteral",
+                                          "v": "A3"
                                         }
                                       },
-                                      "value2": {
-                                        "type": "litteral",
-                                        "value": "A4"
+                                      "v2": {
+                                        "t": "litteral",
+                                        "v": "A4"
                                       }
                                     }
                                   ]
                                 },
-                                "appliedRule": {
-                                  "ruleRequest": {
-                                    "rule": "plus_left",
-                                    "formulaPosition": 0
+                                "ar": {
+                                  "rr": {
+                                    "r": "plus_left",
+                                    "fp": 0
                                   },
-                                  "premises": [
+                                  "p": [
                                     {
-                                      "sequent": {
+                                      "s": {
                                         "hyp": [],
                                         "cons": [
                                           {
-                                            "type": "plus",
-                                            "value1": {
-                                              "type": "plus",
-                                              "value1": {
-                                                "type": "plus",
-                                                "value1": {
-                                                  "type":  "one"
+                                            "t": "plus",
+                                            "v1": {
+                                              "t": "plus",
+                                              "v1": {
+                                                "t": "plus",
+                                                "v1": {
+                                                  "t":  "one"
                                                 },
-                                                "value2": {
-                                                  "type": "litteral",
-                                                  "value": "A1"
+                                                "v2": {
+                                                  "t": "litteral",
+                                                  "v": "A1"
                                                 }
                                               },
-                                              "value2": {
-                                                "type": "litteral",
-                                                "value": "A2"
+                                              "v2": {
+                                                "t": "litteral",
+                                                "v": "A2"
                                               }
                                             },
-                                            "value2": {
-                                              "type": "litteral",
-                                              "value": "A3"
+                                            "v2": {
+                                              "t": "litteral",
+                                              "v": "A3"
                                             }
                                           }
                                         ]
                                       },
-                                      "appliedRule": {
-                                        "ruleRequest": {
-                                          "rule": "plus_left",
-                                          "formulaPosition": 0
+                                      "ar": {
+                                        "rr": {
+                                          "r": "plus_left",
+                                          "fp": 0
                                         },
-                                        "premises": [
+                                        "p": [
                                           {
-                                            "sequent": {
+                                            "s": {
                                               "hyp": [],
                                               "cons": [
                                                 {
-                                                  "type": "plus",
-                                                  "value1": {
-                                                    "type": "plus",
-                                                    "value1": {
-                                                      "type":  "one"
+                                                  "t": "plus",
+                                                  "v1": {
+                                                    "t": "plus",
+                                                    "v1": {
+                                                      "t":  "one"
                                                     },
-                                                    "value2": {
-                                                      "type": "litteral",
-                                                      "value": "A1"
+                                                    "v2": {
+                                                      "t": "litteral",
+                                                      "v": "A1"
                                                     }
                                                   },
-                                                  "value2": {
-                                                    "type": "litteral",
-                                                    "value": "A2"
+                                                  "v2": {
+                                                    "t": "litteral",
+                                                    "v": "A2"
                                                   }
                                                 }
                                               ]
                                             },
-                                            "appliedRule": {
-                                              "ruleRequest": {
-                                                "rule": "plus_left",
-                                                "formulaPosition": 0
+                                            "ar": {
+                                              "rr": {
+                                                "r": "plus_left",
+                                                "fp": 0
                                               },
-                                              "premises": [
+                                              "p": [
                                                 {
-                                                  "sequent": {
+                                                  "s": {
                                                     "hyp": [],
                                                     "cons": [
                                                       {
-                                                        "type": "plus",
-                                                        "value1": {
-                                                          "type":  "one"
+                                                        "t": "plus",
+                                                        "v1": {
+                                                          "t":  "one"
                                                         },
-                                                        "value2": {
-                                                          "type": "litteral",
-                                                          "value": "A1"
+                                                        "v2": {
+                                                          "t": "litteral",
+                                                          "v": "A1"
                                                         }
                                                       }
                                                     ]
                                                   },
-                                                  "appliedRule": {
-                                                    "ruleRequest": {
-                                                      "rule": "plus_left",
-                                                      "formulaPosition": 0
+                                                  "ar": {
+                                                    "rr": {
+                                                      "r": "plus_left",
+                                                      "fp": 0
                                                     },
-                                                    "premises": [
+                                                    "p": [
                                                       {
-                                                        "sequent": {
+                                                        "s": {
                                                           "hyp": [],
                                                           "cons": [
                                                             {
-                                                              "type":  "one"
+                                                              "t":  "one"
                                                             }
                                                           ]
                                                         },
-                                                        "appliedRule": {
-                                                          "ruleRequest": {
-                                                            "rule": "one",
-                                                            "formulaPosition": 0
+                                                        "ar": {
+                                                          "rr": {
+                                                            "r": "one",
+                                                            "fp": 0
                                                           },
-                                                          "premises": []
+                                                          "p": []
                                                         }
                                                       }
                                                     ]
@@ -1155,36 +1155,36 @@
   }
 },
     {
-      "sequent":{"hyp":[],"cons":[
-        {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
-        {"type":"tensor",
-          "value1":{"type":"ofcourse","value":{"type":"litteral","value":"A"}},
-          "value2":{"type":"orthogonal","value":{"type":"litteral","value":"B"}}},
-        {"type":"litteral","value":"B"}]},
-      "appliedRule":{
-        "ruleRequest":{"rule":"tensor","formulaPosition":1},
-        "premises":[
-          {"sequent":{"hyp":[],"cons":[
-            {"type":"whynot","value":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}},
-            {"type":"ofcourse","value":{"type":"litteral","value":"A"}}]},
-            "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}},
-          {"sequent":{"hyp":[],"cons":[
-            {"type":"orthogonal","value":{"type":"litteral","value":"B"}},
-            {"type":"litteral","value":"B"}]},
-            "appliedRule":{"ruleRequest":{"rule":"axiom","formulaPosition":1},"premises":[]}}]}
+      "s":{"hyp":[],"cons":[
+        {"t":"whynot","v":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
+        {"t":"tensor",
+          "v1":{"t":"ofcourse","v":{"t":"litteral","v":"A"}},
+          "v2":{"t":"orthogonal","v":{"t":"litteral","v":"B"}}},
+        {"t":"litteral","v":"B"}]},
+      "ar":{
+        "rr":{"r":"tensor","fp":1},
+        "p":[
+          {"s":{"hyp":[],"cons":[
+            {"t":"whynot","v":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}},
+            {"t":"ofcourse","v":{"t":"litteral","v":"A"}}]},
+            "ar":{"rr":{"r":"axiom"},"p":[]}},
+          {"s":{"hyp":[],"cons":[
+            {"t":"orthogonal","v":{"t":"litteral","v":"B"}},
+            {"t":"litteral","v":"B"}]},
+            "ar":{"rr":{"r":"axiom","fp":1},"p":[]}}]}
     }
   ],
   "call_api_is_proof_complete_exception": [
     {
-      "sequent":{"hyp":[],"cons":[
-        {"type":"litteral","value":"A"},
-        {"type":"orthogonal","value":{"type":"litteral","value":"A"}},
-        {"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]},
-      "appliedRule":{
-        "ruleRequest":
-        {"rule":"exchange",
+      "s":{"hyp":[],"cons":[
+        {"t":"litteral","v":"A"},
+        {"t":"orthogonal","v":{"t":"litteral","v":"A"}},
+        {"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]},
+      "ar":{
+        "rr":
+        {"r":"exchange",
         "permutation":[1,1,0]},
-        "premises":[]}
+        "p":[]}
     }
   ]
 }

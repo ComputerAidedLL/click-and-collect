@@ -20,6 +20,19 @@ const RULES = {
     'exchange': '<span class="italic">ech</span>'
 };
 
+const ABBREVIATIONS = {
+    '"sequent":': '"s":',
+    '"appliedRule":': '"ar":',
+    '"ruleRequest":': '"rr":',
+    '"premises":': '"p":',
+    '"rule":': '"r":',
+    '"formulaPosition":': '"fp":',
+    '"type":': '"t":',
+    '"value":': '"v":',
+    '"value1":': '"v1":',
+    '"value2":': '"v2":'
+}
+
 // *************
 // PROOF DISPLAY
 // *************
@@ -84,7 +97,7 @@ function applyRule(ruleRequest, $sequentDiv, options) {
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify({ ruleRequest, sequent }),
+        data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
         {
             if (data.success === true) {
@@ -281,31 +294,9 @@ function markAsCompleteIfProofIsComplete($container) {
     let proofAsJson = getProofAsJson($container);
 
     // We check if proof is complete
-    checkProofIsComplete(proofAsJson, function() {
+    checkProofIsCompleteByAPI(proofAsJson, function() {
         markAsComplete($container);
     });
-}
-
-function checkProofIsComplete(proofAsJson, callbackIfComplete) {
-    checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete);
-
-    // if (recCheckIsComplete(proofAsJson)) {
-    //     callbackIfComplete();
-    // }
-}
-
-function recCheckIsComplete(proofAsJson) {
-    if (proofAsJson.appliedRule === null) {
-        return false;
-    }
-
-    let response = true;
-
-    for (let premiss of proofAsJson.appliedRule.premises) {
-        response = response && recCheckIsComplete(premiss);
-    }
-
-    return response;
 }
 
 function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
@@ -313,7 +304,7 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
         type: 'POST',
         url: '/is_proof_complete',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify(proofAsJson),
+        data: compressJson(JSON.stringify(proofAsJson)),
         success: function(data)
         {
             if (data['is_complete'] === true) {
@@ -345,7 +336,7 @@ function exportAsCoq($container) {
         type: 'POST',
         url: '/export_as_coq',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify(proofAsJson),
+        data: compressJson(JSON.stringify(proofAsJson)),
         success: function(data)
         {
             let a = document.createElement('a');
@@ -385,7 +376,7 @@ function exportAsLatex($container) {
         type: 'POST',
         url: '/export_as_latex',
         contentType:'application/json; charset=utf-8',
-        data: JSON.stringify(proofAsJson),
+        data: compressJson(JSON.stringify(proofAsJson)),
         success: function(data)
         {
             let a = document.createElement('a');
@@ -413,4 +404,18 @@ function onAjaxError(jqXHR, textStatus, errorThrown) {
     console.log(textStatus);
     console.log(errorThrown);
     alert('Technical error, check browser console for more details.');
+}
+
+function compressJson(json) {
+    for (let [field, abbreviation] of Object.entries(ABBREVIATIONS)) {
+        json = json.replaceAll(field, abbreviation);
+    }
+    return json;
+}
+
+function uncompressJson(json) {
+    for (let [field, abbreviation] of Object.entries(ABBREVIATIONS)) {
+        json = json.replaceAll(abbreviation, field);
+    }
+    return json;
 }

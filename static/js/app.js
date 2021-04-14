@@ -73,7 +73,7 @@ function showTutorial() {
     // Create tutorial proof
     $('.tutorial .proof-container').each(function (i, container) {
         let $container = $(container);
-        let sequent = JSON.parse($container.html());
+        let sequent = JSON.parse(uncompressJson($container.html()));
         $container.html('');
         initProofWithSequent(sequent, $container, {withInteraction: true, exportButtons: false});
     })
@@ -89,7 +89,7 @@ function showRules() {
     // Create rules proof
     $('.rules .proof-container').each(function (i, container) {
         let $container = $(container);
-        let proofAsJson = JSON.parse($container.html());
+        let proofAsJson = JSON.parse(uncompressJson($container.html()));
         $container.html('');
         initProof(proofAsJson, $container, {withInteraction: false, exportButtons: false});
     })

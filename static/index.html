@@ -130,24 +130,24 @@
                     <p>
                         Click on a formula or its orthogonal to apply the <span class="bold">axiom rule</span>.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"litteral","v":"A"},{"t":"orthogonal","v":{"t":"litteral","v":"A"}}]}</div>
                     <p>
                         If the two formulas are not explicitly orthogonal, you can click on <span class="bold">thesis symbol</span> to attempt to apply the axiom rule on a two-formulas sequent.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"one"},{"type":"bottom"}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"one"},{"t":"bottom"}]}</div>
                     <p>
                         Click on <span class="bold">connectives</span> to apply the associated rules.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"par","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]}</div>
                     <p>
                         <span class="bold">Move formulas</span> within the list before applying <span class="bold">tensor rule</span>.
                             Formulas on the left of the tensor formula will move to the left premise, and formulas on the right of the tensor formula will move to the right premise.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"litteral","v":"A"},{"t":"orthogonal","v":{"t":"litteral","v":"A"}},{"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]}</div>
                     <p>
                         As for <span class="bold">plus rules</span>, just click on the left or right sub-formula.
                     </p>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"plus","value1":{"type":"litteral","value":"B"},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"litteral","v":"A"},{"t":"plus","v1":{"t":"litteral","v":"B"},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]}</div>
                     <p>
                         For the <span class="bold">whynot</span> connective, you have three possibilities:
                     </p>
@@ -155,7 +155,7 @@
                         <li>single click on the sub-formula applies <span class="bold">dereliction</span></li>
                         <li>double click applies <span class="bold">contraction</span>.</li>
                     </ul>
-                    <div class="proof-container">{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"B"}},{"type":"tensor","value1":{"type":"orthogonal","value":{"type":"litteral","value":"A"}},"value2":{"type":"orthogonal","value":{"type":"litteral","value":"A"}}}]}</div>
+                    <div class="proof-container">{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"whynot","v":{"t":"litteral","v":"B"}},{"t":"tensor","v1":{"t":"orthogonal","v":{"t":"litteral","v":"A"}},"v2":{"t":"orthogonal","v":{"t":"litteral","v":"A"}}}]}</div>
                     <p>
                         <span class="bold">That's it!</span> Here are some extra examples for you to prove. Have fun!
                     </p>
@@ -178,31 +178,31 @@
             <div class="section rules hidden">
                 <h3>Derivation rules</h3>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"A"},{"type":"orthogonal","value":{"type":"litteral","value":"A"}}]},"appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"A"},{"t":"orthogonal","v":{"t":"litteral","v":"A"}}]},"ar":{"rr":{"r":"axiom"},"p":[]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"one"}]},"appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"bottom"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"bottom","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"top"},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"top","formulaPosition":1},"premises":[]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"bottom"},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"bottom","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"top"},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"top","fp":1},"p":[]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"tensor","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"tensor","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"}]},"appliedRule":null},{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"par","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"par","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"tensor","v1":{"t":"litteral","v":"A"},"v2":{"t":"litteral","v":"B"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"tensor","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"A"}]},"ar":null},{"s":{"hyp":[],"cons":[{"t":"litteral","v":"B"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"par","v1":{"t":"litteral","v":"A"},"v2":{"t":"litteral","v":"B"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"par","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"A"},{"t":"litteral","v":"B"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"with","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"with","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null},{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"with","v1":{"t":"litteral","v":"A"},"v2":{"t":"litteral","v":"B"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"with","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"A"},{"t":"litteral","v":"Δ"}]},"ar":null},{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"B"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"plus_left","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"plus","value1":{"type":"litteral","value":"A"},"value2":{"type":"litteral","value":"B"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"plus_right","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"B"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"plus","v1":{"t":"litteral","v":"A"},"v2":{"t":"litteral","v":"B"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"plus_left","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"A"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"plus","v1":{"t":"litteral","v":"A"},"v2":{"t":"litteral","v":"B"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"plus_right","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"B"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"ofcourse","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":{"ruleRequest":{"rule":"promotion","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"whynot","value":{"type":"litteral","value":"Γ"}},{"type":"litteral","value":"A"},{"type":"whynot","value":{"type":"litteral","value":"Δ"}}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litteral","v":"Γ"}},{"t":"ofcourse","v":{"t":"litteral","v":"A"}},{"t":"whynot","v":{"t":"litteral","v":"Δ"}}]},"ar":{"rr":{"r":"promotion","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litteral","v":"Γ"}},{"t":"litteral","v":"A"},{"t":"whynot","v":{"t":"litteral","v":"Δ"}}]},"ar":null}]}}</div>
                 </div>
                 <div class="row">
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"weakening","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"litteral","value":"A"},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
-                    <div class="proof-container">{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":{"ruleRequest":{"rule":"contraction","formulaPosition":1},"premises":[{"sequent":{"hyp":[],"cons":[{"type":"litteral","value":"Γ"},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"whynot","value":{"type":"litteral","value":"A"}},{"type":"litteral","value":"Δ"}]},"appliedRule":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"weakening","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"dereliction","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"litteral","v":"A"},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
+                    <div class="proof-container">{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"Δ"}]},"ar":{"rr":{"r":"contraction","fp":1},"p":[{"s":{"hyp":[],"cons":[{"t":"litteral","v":"Γ"},{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"whynot","v":{"t":"litteral","v":"A"}},{"t":"litteral","v":"Δ"}]},"ar":null}]}}</div>
                 </div>
             </div>
         </div>

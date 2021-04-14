@@ -1,1 +1,1 @@
-{"sequent":{"hyp":[],"cons":[{"type":"one"},{"type":"bottom"}]},"appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}
+{"s":{"hyp":[],"cons":[{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"axiom"},"p":[]}}
