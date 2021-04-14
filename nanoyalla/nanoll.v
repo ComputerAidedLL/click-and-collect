@@ -10,9 +10,7 @@ Definition map (A B : Type) (f : A -> B) :=
                end.
 Arguments map [A B] f l.
 
-
 (* Adapted from yalla/formulas.v *)
-
 (** A set of atoms for building formulas *)
 Definition Atom := nat.
 
@@ -31,9 +29,7 @@ Inductive formula : Set :=
 | oc : formula -> formula
 | wn : formula -> formula.
 
-
 (* Adapted from yalla/ll_def.v *)
-
 (** Rules *)
 Inductive ll : list formula -> Type :=
 | ax_r : forall X, ll (covar X :: var X :: nil)
