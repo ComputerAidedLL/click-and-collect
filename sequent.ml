@@ -130,7 +130,7 @@ let rec formula_to_latex_atomic =
   | Top -> "\\top", true
   | Zero -> "\\zero", true
   | Litt x -> litteral_to_latex x, true
-  | Dual x -> Printf.sprintf "{%s}\\Dual" x, true
+  | Dual x -> Printf.sprintf "{%s}\\orth" x, true
   | Tensor (e1, e2) ->
       let s1, atomic1 = formula_to_latex_atomic e1 in
       let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
