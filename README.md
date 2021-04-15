@@ -75,6 +75,14 @@ To execute tests (you need to have `make test.byte` running):
 test/coq_test.sh
 ```
 
+## Test LaTeX
+To check that LaTeX files returned by API actually compile, we have some examples of proof as json object in `test/proof_test_data`.
+
+To execute tests (you need to have `make test.byte` running):
+```
+test/latex_test.sh
+```
+
 
 ## Tribute
 This tool design was mainly inspired by [Logitext](http://logitext.mit.edu/main) ([GitHub](https://github.com/ezyang/logitext)).
