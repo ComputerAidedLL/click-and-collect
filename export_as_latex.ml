@@ -41,11 +41,49 @@ let export_as_latex_with_exceptions request_as_json =
     let proof = Proof.from_json request_as_json in
     proof_to_latex proof;;
 
-let export_as_latex request_as_json =
+let is_failure = function
+    | Unix.WEXITED 0 -> false
+    | _ -> true
+
+let convert_to_pdf proof_as_latex =
+    let temp_directory = "local/var/temp" in
+    (if not (Sys.is_directory temp_directory) then Unix.mkdir temp_directory 0o666);
+
+    let now = Unix.localtime (Unix.time ()) in
+    let date_as_string = Printf.sprintf "%04d%02d%02d%d%d%d" (1900 + now.tm_year) (1 + now.tm_mon) now.tm_mday now.tm_hour now.tm_min now.tm_sec in
+    let random_suffix = string_of_int (Random.int 1000000) in
+    let name = Printf.sprintf "export_as_latex_%s_%s" date_as_string random_suffix in
+    let tex_file_name = Printf.sprintf "%s/%s.tex" temp_directory name in
+
+    let tex_file = Unix.openfile tex_file_name [Unix.O_CREAT; Unix.O_WRONLY] 0o666 in
+    let _ = Unix.write_substring tex_file proof_as_latex 0 (String.length proof_as_latex) in
+    Unix.close tex_file;
+
+    let log_file = "local/var/log/click_and_collect/latex.log" in
+    let process_status = Unix.system (Printf.sprintf "pdflatex -interaction=nonstopmode -halt-on-error -output-directory %s %s >> %s" temp_directory tex_file_name log_file) in
+    (if is_failure process_status then raise (Failure (Printf.sprintf "An error occured during pdflatex. Check logs in %s." log_file)));
+
+    let pdf_file_name = Printf.sprintf "%s/%s.pdf" temp_directory name in
+    let channel = open_in pdf_file_name in
+    let pdf_file_as_string = really_input_string channel (in_channel_length channel) in
+    close_in channel;
+
+    Sys.remove tex_file_name;
+    Sys.remove pdf_file_name;
+    let aux_file_name_to_remove = Printf.sprintf "%s/%s.aux" temp_directory name in
+    Sys.remove aux_file_name_to_remove;
+    let log_file_name_to_remove = Printf.sprintf "%s/%s.log" temp_directory name in
+    Sys.remove log_file_name_to_remove;
+    pdf_file_as_string
+
+
+let export_as_latex request_as_json format =
     try let proof_as_latex = export_as_latex_with_exceptions request_as_json in
-        true, proof_as_latex
-    with Proof.Json_exception m -> false, "Bad proof json: " ^ m
-        | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m
-        | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m
-        | Proof.Technical_exception m -> false, "Invalid proof: " ^ m
-        | Cannot_export_proof_as_latex_exception m -> false, "Cannot export proof as LaTeX: " ^ m;;
+        if format = "tex" then true, proof_as_latex, "text/plain"
+        else if format = "pdf" then true, convert_to_pdf proof_as_latex, "application/pdf"
+        else false, "Unknown format: " ^ format, ""
+    with Proof.Json_exception m -> false, "Bad proof json: " ^ m, ""
+        | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m, ""
+        | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m, ""
+        | Proof.Technical_exception m -> false, "Invalid proof: " ^ m, ""
+        | Cannot_export_proof_as_latex_exception m -> false, "Cannot export proof as LaTeX: " ^ m, "";;

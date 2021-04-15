@@ -20,8 +20,8 @@ open Yojson
 let send_json ~code json =
   Eliom_registration.String.send ~code (json, "application/json")
 
-let send_file ~code file_as_string =
-  Eliom_registration.String.send ~code (file_as_string, "text/plain")
+let send_file ~code file_as_string file_type =
+  Eliom_registration.String.send ~code (file_as_string, file_type)
 
 let read_raw_content raw_content =
   let content_stream = Ocsigen_stream.get raw_content in
@@ -158,7 +158,7 @@ let export_as_coq_service =
 let export_as_coq_handler () (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
         let technical_success, string_response = export_as_coq request_as_json in
-        if technical_success then send_file ~code:200 string_response
+        if technical_success then send_file ~code:200 string_response "text/plain"
         else send_json ~code:400 string_response)
 
 let () =
@@ -173,14 +173,14 @@ let () =
 let export_as_latex_service =
   Eliom_service.create
       ~path:(Eliom_service.Path ["export_as_latex"])
-      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ~meth:(Eliom_service.Post (Eliom_parameter.string "format", Eliom_parameter.raw_post_data))
       ()
 
 (* Service definition *)
-let export_as_latex_handler () (content_type, raw_content_opt) =
+let export_as_latex_handler format (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let technical_success, string_response = export_as_latex request_as_json in
-        if technical_success then send_file ~code:200 string_response
+        let technical_success, string_response, file_type = export_as_latex request_as_json format in
+        if technical_success then send_file ~code:200 string_response file_type
         else send_json ~code:400 string_response)
 
 let () =

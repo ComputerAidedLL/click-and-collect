@@ -47,6 +47,7 @@ function initProof(proofAsJson, $container, options) {
     if (options.exportButtons) {
         createExportAsCoqButton($container);
         createExportAsLatexButton($container);
+        createExportAsPdfButton($container);
     }
 }
 
@@ -361,7 +362,7 @@ function exportAsCoq($container) {
 
 function createExportAsLatexButton($container) {
     let latexLogoPath = 'images/LaTeX_logo.png';
-    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as Latex" title="Export as Latex" />')
+    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as LaTeX" title="Export as LaTeX" />')
         .addClass('latex')
         .addClass('export')
         .on('click', function () { exportAsLatex($container); });
@@ -374,15 +375,13 @@ function exportAsLatex($container) {
 
     $.ajax({
         type: 'POST',
-        url: '/export_as_latex',
+        url: '/export_as_latex?format=tex',
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify(proofAsJson)),
         success: function(data)
         {
             let a = document.createElement('a');
-            let binaryData = [];
-            binaryData.push(data);
-            let url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/text"}))
+            let url = window.URL.createObjectURL(new Blob([data], {type: "application/text"}))
             a.href = url;
             a.download = 'ccLLproof.tex';
             document.body.append(a);
@@ -393,6 +392,53 @@ function exportAsLatex($container) {
         error: onAjaxError
     });
 }
+
+
+// *************
+// EXPORT AS PDF
+// *************
+
+function createExportAsPdfButton($container) {
+    let latexLogoPath = 'images/pdf-icon.png';
+    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as PDF" title="Export as PDF" />')
+        .addClass('pdf')
+        .addClass('export')
+        .on('click', function () { exportAsPdf($container); });
+    $container.append(latexButton);
+}
+
+function exportAsPdf($container) {
+    // We get proof stored in HTML
+    let proofAsJson = getProofAsJson($container);
+
+    let httpRequest = new XMLHttpRequest();
+    httpRequest.open('POST', '/export_as_latex?format=pdf', true);
+    httpRequest.responseType = 'blob';
+    httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
+
+    httpRequest.onload = function (event) {
+        if (httpRequest.status !== 200) {
+            onError(httpRequest, event)
+        } else {
+            let blob = httpRequest.response;
+            let a = document.createElement('a');
+            let url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'ccLLproof.pdf';
+            document.body.append(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+    };
+
+    httpRequest.onerror= function(event) {
+        onError(httpRequest, event)
+    };
+
+    httpRequest.send(compressJson(JSON.stringify(proofAsJson)));
+}
+
 
 // *****
 // UTILS
@@ -409,6 +455,14 @@ function onAjaxError(jqXHR, textStatus, errorThrown) {
         alertText = 'Sorry, your proof exceeds the limit.';
     }
     alert(alertText);
+}
+
+function onError(httpRequest, event) {
+    console.log(event);
+    console.log(httpRequest);
+    console.log(httpRequest.statusText);
+
+    alert('Technical error, check browser console for more details.');
 }
 
 function compressJson(json) {
