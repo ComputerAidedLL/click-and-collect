@@ -47,7 +47,7 @@ let is_failure = function
 
 let convert_to_pdf proof_as_latex =
     let temp_directory = "local/var/temp" in
-    (if not (Sys.is_directory temp_directory) then Unix.mkdir temp_directory 0o666);
+    (try let _ = Sys.is_directory temp_directory in () with Sys_error _ -> Unix.mkdir temp_directory 0o777);
 
     let now = Unix.localtime (Unix.time ()) in
     let date_as_string = Printf.sprintf "%04d%02d%02d%d%d%d" (1900 + now.tm_year) (1 + now.tm_mon) now.tm_mday now.tm_hour now.tm_min now.tm_sec in
