@@ -16,6 +16,11 @@ type formula =
 
 type sequent = formula list;;
 
+let rec sequent_to_formula = function
+  | [] -> Bottom
+  | [f] -> f
+  | f1 :: f2 :: context -> sequent_to_formula (Par (f1, f2) :: context)
+
 
 (* OPERATIONS *)
 

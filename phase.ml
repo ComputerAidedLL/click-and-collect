@@ -1,6 +1,5 @@
 open Sequent
 
-
 (* Phase models: give necessary (not sufficient) condition for provability *)
 
 type fact =
@@ -67,14 +66,8 @@ let delta_valuation reference atom =
 
 let zero_valuation atom = 0
 
-let rec sequent_to_formula = function
-  | [] -> Bottom
-  | [f] -> f
-  | f1 :: f2 :: context -> sequent_to_formula (Par (f1, f2) :: context)
-
 let valid_sequent sequent =
   let variables = get_unique_variable_names sequent in
   let formula = sequent_to_formula sequent in
   valid_semantics 1 zero_valuation formula &&
   List.for_all (fun x -> valid_semantics 0 (delta_valuation x) formula) variables
-
