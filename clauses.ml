@@ -17,7 +17,7 @@ let rec formula_to_clauses = function
   | Par (f1, f2) ->
      let c1 = formula_to_clauses f1 in
      let c2 = formula_to_clauses f2 in
-     List.concat_map (fun c -> List.map (List.append c) c2) c1
+     List.concat (List.map (fun c -> List.map (List.append c) c2) c1)
   | With (f1, f2) -> formula_to_clauses (Tensor (f1, f2))
   | Plus (f1, f2) -> formula_to_clauses (Par (f1, f2))
   | Ofcourse f -> formula_to_clauses f
