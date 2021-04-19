@@ -4,7 +4,8 @@ The repository contains
 frontend and backend code
 for an online interactive sequent prover for linear logic.
 
-## Deploy on local dev environment
+## Install
+### Deploy on local dev environment
 - Install dependencies
 ```
 sudo apt-get install opam
@@ -20,7 +21,7 @@ cd click-and-collect
 make test.byte
 ```
 
-## Deploy on server
+### Deploy on server
 Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
 - Add this nginx config (install it with `sudo apt install nginx`)
 ```
@@ -36,20 +37,30 @@ server {
 ```
 - Allow https by adding a certificate `sudo certbot --nginx`
 
-## Modify Coq nanoyalla package
+### Make LaTeX export work
+If you don't have LaTeX environment installed on your machine (or your server), you can proceed as following to make LaTeX export work.
+- Install TexLive (for LaTeX to PDF/PNG export) following guidelines like [this one](https://doc.ubuntu-fr.org/utilisateurs/sssammm/installer_texlive).
+- Install `poppler-utils` (for LaTeX to PNG export)
+```
+sudo apt-get install poppler-utils
+```
+
+## Contribute
+### Modify Coq nanoyalla package
 Whenever a file in `nanoyalla/` directory package is modified, nanoyalla version should be incremented that way:
 
 1. Increment version in `nanoyalla/README.md`.
 2. Increment version in `export_as_coq.ml`, in header printed in generated files.
 3. Zip `nanoyalla/` directory `zip -r static/download/nanoyalla.zip nanoyalla/`.
 
-## Modify parser
+### Modify parser
 Do not modify `ll_parser.mli` or `ll_parser.ml` neither `ll_lexer.mll`, but just `ll_parser.mly` and `ll_lexer.mll` and then run
 ```
 ocamllex ll_lexer.mll && ocamlyacc ll_parser.mly
 ```
 
-## Test API
+## Test
+### Test API
 There are some API tests in `test/api_test.ml`, which uses test data in `api_test_data.json`. It calls API and checks its response.
 
 First time:
@@ -67,7 +78,7 @@ To execute tests (you need to have `make test.byte` running):
 test/api_test
 ```
 
-## Test Coq
+### Test Coq
 To check that Coq files returned by API actually compile, we have some examples of proof as json object in `test/proof_test_data`. Some additional Coq files can be checked to compile in `test/coq_test_data`.
 
 To execute tests (you need to have `make test.byte` running):
@@ -75,7 +86,7 @@ To execute tests (you need to have `make test.byte` running):
 test/coq_test.sh
 ```
 
-## Test LaTeX
+### Test LaTeX
 To check that LaTeX files returned by API actually compile, we have some examples of proof as json object in `test/proof_test_data`.
 
 To execute tests (you need to have `make test.byte` running):
