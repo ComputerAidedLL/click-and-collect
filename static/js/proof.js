@@ -66,6 +66,10 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
             options);
+    } else {
+        if (options.checkProvability) {
+            checkProvability($sequentDiv);
+        }
     }
 }
 
@@ -323,7 +327,7 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
 
 function createExportAsCoqButton($container) {
     let coqLogoPath = 'images/coq.png';
-    let coqButton = $('<img src="' + coqLogoPath + '" alt="Export as Coq" title="Export as Coq" />')
+    let coqButton = $('<img src="' + coqLogoPath + '" title="Export as Coq" />')
         .addClass('coq')
         .addClass('export')
         .on('click', function () { exportAsCoq($container); });
@@ -363,7 +367,7 @@ function exportAsCoq($container) {
 
 function createExportAsLatexButton($container) {
     let latexLogoPath = 'images/LaTeX_logo.png';
-    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as LaTeX" title="Export as LaTeX" />')
+    let latexButton = $('<img src="' + latexLogoPath + '" title="Export as LaTeX" />')
         .addClass('latex')
         .addClass('export')
         .on('click', function () { exportAsLatex($container, 'tex'); });
@@ -372,7 +376,7 @@ function createExportAsLatexButton($container) {
 
 function createExportAsPdfButton($container) {
     let pdfLogoPath = 'images/pdf-icon.png';
-    let latexButton = $('<img src="' + pdfLogoPath + '" alt="Export as PDF" title="Export as PDF" />')
+    let latexButton = $('<img src="' + pdfLogoPath + '" title="Export as PDF" />')
         .addClass('pdf')
         .addClass('export')
         .on('click', function () { exportAsLatex($container, 'pdf'); });
@@ -381,7 +385,7 @@ function createExportAsPdfButton($container) {
 
 function createExportAsPngButton($container) {
     let pngLogoPath = 'images/camera.png';
-    let latexButton = $('<img src="' + pngLogoPath + '" alt="Export as PNG" title="Export as PNG" />')
+    let latexButton = $('<img src="' + pngLogoPath + '" title="Export as PNG" />')
         .addClass('png')
         .addClass('export')
         .on('click', function () { exportAsLatex($container, 'png'); });
@@ -418,6 +422,34 @@ function exportAsLatex($container, format) {
     };
 
     httpRequest.send(compressJson(JSON.stringify(proofAsJson)));
+}
+
+
+// *****************
+// CHECK PROVABILITY
+// *****************
+
+function checkProvability($sequentDiv) {
+    let sequent = $sequentDiv.data('sequentWithoutPermutation');
+
+    $.ajax({
+        type: 'POST',
+        url: '/is_sequent_provable',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify(sequent)),
+        success: function(data)
+        {
+            if (data['is_provable'] === false) {
+                markAsNotProvable($sequentDiv);
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+function markAsNotProvable($sequentDiv) {
+    $sequentDiv.addClass('not-provable');
+    $sequentDiv.find('span.turnstile').attr('title', 'This sequent is not provable');
 }
 
 
