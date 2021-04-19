@@ -75,11 +75,12 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .main-formula.hoverable:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005; }
 .proof .main-formula.hoverable:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005; }
 
-img.export { position: absolute; }
+img.export { position: absolute; bottom: -2em; height: 1em; }
 img.export:hover { cursor:pointer; }
-img.coq { bottom: -1.7em; right: 4.4em; width: 1.2em; }
-img.latex { bottom: -1.7em; right: 1.6em; height: 1em; }
-img.pdf { bottom: -1.7em; right: 0.4em; height: 1em; }
+img.coq { right: 5.4em; }
+img.latex { right: 2.6em; }
+img.pdf { right: 1.6em; }
+img.png { right: 0.4em; }
 
 .pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; text-indent: 0; }
 .pedagogic-error .message { display: inline-block; }

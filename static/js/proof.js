@@ -48,6 +48,7 @@ function initProof(proofAsJson, $container, options) {
         createExportAsCoqButton($container);
         createExportAsLatexButton($container);
         createExportAsPdfButton($container);
+        createExportAsPngButton($container);
     }
 }
 
@@ -365,54 +366,34 @@ function createExportAsLatexButton($container) {
     let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as LaTeX" title="Export as LaTeX" />')
         .addClass('latex')
         .addClass('export')
-        .on('click', function () { exportAsLatex($container); });
+        .on('click', function () { exportAsLatex($container, 'tex'); });
     $container.append(latexButton);
 }
-
-function exportAsLatex($container) {
-    // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
-
-    $.ajax({
-        type: 'POST',
-        url: '/export_as_latex?format=tex',
-        contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
-        success: function(data)
-        {
-            let a = document.createElement('a');
-            let url = window.URL.createObjectURL(new Blob([data], {type: "application/text"}))
-            a.href = url;
-            a.download = 'ccLLproof.tex';
-            document.body.append(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        },
-        error: onAjaxError
-    });
-}
-
-
-// *************
-// EXPORT AS PDF
-// *************
 
 function createExportAsPdfButton($container) {
-    let latexLogoPath = 'images/pdf-icon.png';
-    let latexButton = $('<img src="' + latexLogoPath + '" alt="Export as PDF" title="Export as PDF" />')
+    let pdfLogoPath = 'images/pdf-icon.png';
+    let latexButton = $('<img src="' + pdfLogoPath + '" alt="Export as PDF" title="Export as PDF" />')
         .addClass('pdf')
         .addClass('export')
-        .on('click', function () { exportAsPdf($container); });
+        .on('click', function () { exportAsLatex($container, 'pdf'); });
     $container.append(latexButton);
 }
 
-function exportAsPdf($container) {
+function createExportAsPngButton($container) {
+    let pngLogoPath = 'images/camera.png';
+    let latexButton = $('<img src="' + pngLogoPath + '" alt="Export as PNG" title="Export as PNG" />')
+        .addClass('png')
+        .addClass('export')
+        .on('click', function () { exportAsLatex($container, 'png'); });
+    $container.append(latexButton);
+}
+
+function exportAsLatex($container, format) {
     // We get proof stored in HTML
     let proofAsJson = getProofAsJson($container);
 
     let httpRequest = new XMLHttpRequest();
-    httpRequest.open('POST', '/export_as_latex?format=pdf', true);
+    httpRequest.open('POST', `/export_as_latex?format=${format}`, true);
     httpRequest.responseType = 'blob';
     httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
 
@@ -424,7 +405,7 @@ function exportAsPdf($container) {
             let a = document.createElement('a');
             let url = window.URL.createObjectURL(blob);
             a.href = url;
-            a.download = 'ccLLproof.pdf';
+            a.download = `ccLLproof.${format}`;
             document.body.append(a);
             a.click();
             a.remove();

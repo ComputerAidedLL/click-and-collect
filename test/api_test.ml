@@ -129,6 +129,11 @@ let call_api_is_proof_complete_exception () =
         Alcotest.(check bool) "not empty response" true (response <> "") in
     List.iter run_test test_samples
 
+let call_api_test_png () =
+    let body_as_string = "{\"s\":{\"cons\": [{\"t\":\"litt\",\"v\":\"a\"},{\"t\":\"dual\",\"v\":{\"t\":\"litt\",\"v\":\"a\"}}]},\"ar\":{\"rr\":{\"r\":\"axiom\"},\"p\":[]}}" in
+    let response_as_string = call_api_post "export_as_latex?format=png" body_as_string 200 in
+    Alcotest.(check bool) "not empty response" true (response_as_string <> "")
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -148,10 +153,15 @@ let test_is_proof_complete = [
     "Test proof exception", `Quick, call_api_is_proof_complete_exception;
 ]
 
+let test_export_as_latex = [
+    "Test png", `Quick, call_api_test_png;
+]
+
 (* Run it *)
 let () =
     Alcotest.run "API on localhost:8080" [
         "test_parse_sequent", test_parse_sequent;
         "test_apply_rule", test_apply_rule;
         "test_is_proof_complete", test_is_proof_complete;
+        "test_export_as_latex", test_export_as_latex;
     ]
