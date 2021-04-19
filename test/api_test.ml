@@ -134,6 +134,18 @@ let call_api_test_png () =
     let response_as_string = call_api_post "export_as_latex?format=png" body_as_string 200 in
     Alcotest.(check bool) "not empty response" true (response_as_string <> "")
 
+let call_api_sequent_is_provable () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "call_api_sequent_is_provable" |> to_list in
+    let run_test test_sample =
+        let sequent_as_json = test_sample |> member "sequent_as_json" in
+        let expected_provability = test_sample |> member "expected_provability" |> to_bool in
+        let response_as_string = call_api_post "is_sequent_provable" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let provable = response_as_json |> member "is_provable" |> to_bool in
+        Alcotest.(check bool) "check provability" provable expected_provability in
+    List.iter run_test test_samples
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -157,6 +169,10 @@ let test_export_as_latex = [
     "Test png", `Quick, call_api_test_png;
 ]
 
+let test_sequent_is_provable = [
+    "Test sequent is provable", `Quick, call_api_sequent_is_provable;
+]
+
 (* Run it *)
 let () =
     Alcotest.run "API on localhost:8080" [
@@ -164,4 +180,5 @@ let () =
         "test_apply_rule", test_apply_rule;
         "test_is_proof_complete", test_is_proof_complete;
         "test_export_as_latex", test_export_as_latex;
+        "test_sequent_is_provable", test_sequent_is_provable;
     ]
