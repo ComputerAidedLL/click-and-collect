@@ -39,7 +39,7 @@ server {
 
 ### Make LaTeX export work
 If you don't have LaTeX environment installed on your machine (or your server), you can proceed as following to make LaTeX export work.
-- Install TexLive (for LaTeX to PDF/PNG export) following guidelines like [this one](https://doc.ubuntu-fr.org/utilisateurs/sssammm/installer_texlive).
+- Install TexLive (for LaTeX to PDF/PNG export) following guidelines like [these ones](https://doc.ubuntu-fr.org/utilisateurs/sssammm/installer_texlive).
 - Install `poppler-utils` (for LaTeX to PNG export)
 ```
 sudo apt-get install poppler-utils
