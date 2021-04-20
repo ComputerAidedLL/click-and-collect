@@ -10,6 +10,7 @@ open Apply_rule
 open Is_proof_complete
 open Export_as_coq
 open Export_as_latex
+open Is_sequent_provable
 open Yojson
 
 
@@ -185,4 +186,26 @@ let export_as_latex_handler format (content_type, raw_content_opt) =
 
 let () =
   Eliom_registration.Any.register export_as_latex_service export_as_latex_handler;
+  ()
+
+(***********************)
+(* IS SEQUENT PROVABLE *)
+(***********************)
+
+(* Service declaration *)
+let is_sequent_provable_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["is_sequent_provable"])
+      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ()
+
+(* Service definition *)
+let is_sequent_provable_handler () (content_type, raw_content_opt) =
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, json_response = is_sequent_provable request_as_json in
+        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+        else send_json ~code:400 (Yojson.Basic.to_string json_response))
+
+let () =
+  Eliom_registration.Any.register is_sequent_provable_service is_sequent_provable_handler;
   ()
