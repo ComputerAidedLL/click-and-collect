@@ -63,7 +63,7 @@ let call_api_parse_sequent_syntax_exception () =
 let call_api_apply_rule_full_response () =
     let body_as_string = "{\"ruleRequest\":{\"rule\": \"par\", \"formulaPosition\":0}, \"sequent\": {\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litt\", \"value\":\"a\"},\"value2\":{\"type\": \"litt\", \"value\":\"a\"}}]}}" in
     let response_as_string = call_api_post "apply_rule" body_as_string 200 in
-    let expected_response_as_string = "{\"success\":true,\"sequentList\":[{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"litt\",\"value\":\"a\"}]}]}" in
+    let expected_response_as_string = "{\"success\":true,\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}]}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
 
 let call_api_apply_rule () =
@@ -71,13 +71,13 @@ let call_api_apply_rule () =
     let test_samples = json_file |> member "call_api_apply_rule" |> to_list in
     let run_test test_sample =
         let request_as_json = test_sample |> member "request" in
-        let expected_sequent_list_as_json = test_sample |> member "expected_sequent_list_as_json" in
+        let expected_premises = test_sample |> member "expected_premises" in
         let response_as_string = call_api_post "apply_rule" (Yojson.Basic.to_string request_as_json) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" true success;
-        let sequent_list = response_as_json |> member "sequentList" in
-        Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_sequent_list_as_json) (Yojson.Basic.to_string sequent_list) in
+        let premises = response_as_json |> member "premises" in
+        Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_premises) (Yojson.Basic.to_string premises) in
     List.iter run_test test_samples
 
 let call_api_apply_rule_technical_exception () =

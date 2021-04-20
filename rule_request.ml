@@ -65,3 +65,46 @@ let from_json rule_request_as_json =
         | "contraction" -> Contraction (get_int rule_request_as_json "formulaPosition")
         | "exchange" -> Exchange (get_int_list rule_request_as_json "permutation")
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;
+
+(* RULE -> JSON *)
+
+let to_json = function
+    | Axiom -> `Assoc [("rule", `String "axiom")]
+    | One -> `Assoc [("rule", `String "one")]
+    | Bottom formula_position -> `Assoc [
+        ("rule", `String "bottom");
+        ("formulaPosition", `Int formula_position)]
+    | Top formula_position -> `Assoc [
+        ("rule", `String "top");
+        ("formulaPosition", `Int formula_position)]
+    | Zero -> `Assoc [("rule", `String "zero")]
+    | Tensor formula_position -> `Assoc [
+        ("rule", `String "tensor");
+        ("formulaPosition", `Int formula_position)]
+    | Par formula_position -> `Assoc [
+        ("rule", `String "par");
+        ("formulaPosition", `Int formula_position)]
+    | With formula_position -> `Assoc [
+        ("rule", `String "with");
+        ("formulaPosition", `Int formula_position)]
+    | Plus_left formula_position -> `Assoc [
+        ("rule", `String "plus_left");
+        ("formulaPosition", `Int formula_position)]
+    | Plus_right formula_position -> `Assoc [
+        ("rule", `String "plus_right");
+        ("formulaPosition", `Int formula_position)]
+    | Promotion formula_position -> `Assoc [
+        ("rule", `String "promotion");
+        ("formulaPosition", `Int formula_position)]
+    | Dereliction formula_position -> `Assoc [
+        ("rule", `String "dereliction");
+        ("formulaPosition", `Int formula_position)]
+    | Weakening formula_position -> `Assoc [
+        ("rule", `String "weakening");
+        ("formulaPosition", `Int formula_position)]
+    | Contraction formula_position -> `Assoc [
+        ("rule", `String "contraction");
+        ("formulaPosition", `Int formula_position)]
+    | Exchange permutation -> `Assoc [
+        ("rule", `String "exchange");
+        ("permutation", `List (List.map (fun n -> `Int n) permutation))];;

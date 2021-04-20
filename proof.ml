@@ -213,6 +213,25 @@ let from_sequent_and_rule_request_and_premises sequent rule_request premises =
     else set_premises proof premises;;
 
 
+(* PROOF -> RULE REQUEST *)
+
+let get_rule_request = function
+    | Axiom_proof _ -> Axiom
+    | One_proof -> One
+    | Top_proof (head, _) -> Top (List.length head)
+    | Bottom_proof (head, _, _) -> Bottom (List.length head)
+    | Tensor_proof (head, _, _, _, _, _) -> Tensor (List.length head)
+    | Par_proof (head, _, _, _, _) -> Par (List.length head)
+    | With_proof (head, _, _, _, _, _) -> With (List.length head)
+    | Plus_left_proof (head, _, _, _, _) -> Plus_left (List.length head)
+    | Plus_right_proof (head, _, _, _, _) -> Plus_right (List.length head)
+    | Promotion_proof (head_without_whynot, _, _, _) -> Promotion (List.length head_without_whynot)
+    | Dereliction_proof (head, _, _, _) -> Dereliction (List.length head)
+    | Weakening_proof (head, _, _, _) -> Weakening (List.length head)
+    | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
+    | Exchange_proof (_, permutation, _) -> Exchange (permutation_inverse permutation)
+    | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
+
 (* JSON -> PROOF *)
 
 exception Json_exception of string;;
@@ -247,6 +266,20 @@ let rec from_json json =
             let premises = List.map from_json premises_as_json in
             from_sequent_and_rule_request_and_premises sequent rule_request premises;;
 
+(* PROOF -> JSON *)
+let rec to_json proof =
+    let sequent = get_conclusion proof in
+    let sequent_as_json = Raw_sequent.sequent_to_json sequent in
+    match proof with
+    | Hypothesis_proof _ -> `Assoc [("sequent", sequent_as_json);
+                                    ("appliedRule", `Null)]
+    | _ -> let rule_request = get_rule_request proof in
+        let rule_request_as_json = Rule_request.to_json rule_request in
+        let premises = get_premises proof in
+        let premises_as_json = List.map to_json premises in
+        `Assoc [("sequent", sequent_as_json);
+                ("appliedRule", `Assoc [("ruleRequest", rule_request_as_json);
+                                        ("premises", `List premises_as_json)])];;
 
 (* OPERATIONS *)
 

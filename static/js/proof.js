@@ -108,10 +108,7 @@ function applyRule(ruleRequest, $sequentDiv, options) {
         {
             if (data.success === true) {
                 cleanPedagogicError($container);
-                let premises = data['sequentList'].map(function (sequent) {
-                    return { sequent, appliedRule: null };
-                });
-                addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, options);
+                addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }

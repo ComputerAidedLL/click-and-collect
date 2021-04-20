@@ -117,7 +117,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": []
+      "expected_premises": []
     },
     {
       "request": {
@@ -133,11 +133,11 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons": [
+      "expected_premises": [{"sequent":{"cons": [
         {"type":"one"},
         {"type":"litt","value":"a"}
       ]
-      }]
+      },"appliedRule": null}]
     },
     {
       "request": {
@@ -153,7 +153,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": []
+      "expected_premises": []
     },
     {
       "request": {
@@ -168,7 +168,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": []
+      "expected_premises": []
     },
     {
       "request": {
@@ -183,7 +183,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": []
+      "expected_premises": []
     },
     {
       "request": {
@@ -202,16 +202,16 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{
+      "expected_premises": [{"sequent":{
         "cons":[
           {"type":"litt","value":"a"},
           {"type": "top"}
-        ]}, {
+        ]},"appliedRule": null}, {"sequent":{
         "cons":[
           {"type": "one"},
           {"type":"ofcourse","value":{"type":"litt","value":"a"}}
         ]
-      }]
+      },"appliedRule": null}]
     },
     {
       "request": {
@@ -230,14 +230,14 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{
+      "expected_premises": [{"sequent":{
         "cons":[
           {"type":"litt","value":"a"},
           {"type": "top"},
           {"type": "one"},
           {"type":"ofcourse","value":{"type":"litt","value":"a"}}
         ]
-      }]
+      },"appliedRule": null}]
     },
     {
       "request": {
@@ -256,15 +256,15 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"litt","value":"a"},
         {"type": "top"},
         {"type":"ofcourse","value":{"type":"litt","value":"a"}}
-      ]},{"cons":[
+      ]},"appliedRule": null},{"sequent":{"cons":[
         {"type":"litt","value":"a"},
         {"type": "one"},
         {"type":"ofcourse","value":{"type":"litt","value":"a"}}
-      ]}]
+      ]},"appliedRule":null}]
     },
     {
       "request": {
@@ -283,11 +283,11 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"litt","value":"a"},
         {"type": "top"},
         {"type":"ofcourse","value":{"type":"litt","value":"a"}}
-      ]}]
+      ]},"appliedRule": null}]
     },
     {
       "request": {
@@ -306,11 +306,11 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"litt","value":"a"},
         {"type": "one"},
         {"type":"ofcourse","value":{"type":"litt","value":"a"}}
-      ]}]
+      ]},"appliedRule": null}]
     },
     {
       "request": {
@@ -322,9 +322,9 @@
           "cons": [{"t":"ofcourse","v":{"t":"litt","v":"a"}}]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"litt","value":"a"}
-      ]}]
+      ]},"appliedRule": null}]
     },
     {
       "request": {
@@ -339,10 +339,10 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"whynot","value":{"type":"litt","value":"b"}},
         {"type":"litt","value":"a"}
-      ]}]
+      ]},"appliedRule": null}]
     },
     {
       "request": {
@@ -356,7 +356,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[]}]
+      "expected_premises": [{"sequent":{"cons":[]},"appliedRule": null}]
     },
     {
       "request": {
@@ -370,7 +370,7 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[{"type":"litt","value":"a"}]}]
+      "expected_premises": [{"sequent":{"cons":[{"type":"litt","value":"a"}]},"appliedRule": null}]
     },
     {
       "request": {
@@ -384,10 +384,10 @@
           ]
         }
       },
-      "expected_sequent_list_as_json": [{"cons":[
+      "expected_premises": [{"sequent":{"cons":[
         {"type":"whynot","value":{"type":"litt","value":"a"}},
         {"type":"whynot","value":{"type":"litt","value":"a"}}
-      ]}]
+      ]},"appliedRule": null}]
     }
   ],
   "call_api_apply_rule_technical_exception": [
