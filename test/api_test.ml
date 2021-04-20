@@ -61,7 +61,7 @@ let call_api_parse_sequent_syntax_exception () =
     assert_syntax_exception "2"
 
 let call_api_apply_rule_full_response () =
-    let body_as_string = "{\"ruleRequest\":{\"rule\": \"par\", \"formulaPosition\":0}, \"sequent\": {\"cons\": [{\"type\": \"par\", \"value1\":{\"type\": \"litt\", \"value\":\"a\"},\"value2\":{\"type\": \"litt\", \"value\":\"a\"}}]}}" in
+    let body_as_string = "{\"rr\":{\"r\": \"par\", \"fp\":0}, \"s\": {\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"litt\", \"v\":\"a\"}}]}}" in
     let response_as_string = call_api_post "apply_rule" body_as_string 200 in
     let expected_response_as_string = "{\"success\":true,\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}]}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
@@ -105,8 +105,14 @@ let call_api_apply_rule_logic_exception () =
         Alcotest.(check string) "check errorMessage" expected_error_message error_message in
     List.iter run_test test_samples
 
+let call_api_apply_rule_auto_reverse_mode () =
+    let body_as_string = "{\"rr\":{\"r\": \"par\", \"fp\":0}, \"s\": {\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]}}" in
+    let response_as_string = call_api_post "apply_rule?auto_reverse_mode=true" body_as_string 200 in
+        let expected_response_as_string = "{\"success\":true,\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}]}" in
+    Alcotest.(check string) "valid" expected_response_as_string response_as_string
+
 let call_api_is_proof_complete_full_response () =
-    let body_as_string = "{\"sequent\":{\"cons\": [{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}" in
+    let body_as_string = "{\"s\":{\"cons\": [{\"t\":\"litt\",\"v\":\"a\"},{\"t\":\"dual\",\"v\":{\"t\":\"litt\",\"v\":\"a\"}}]},\"appliedRule\":{\"rr\":{\"r\":\"axiom\"},\"premises\":[]}}" in
     let response_as_string = call_api_post "is_proof_complete" body_as_string 200 in
     let expected_response_as_string = "{\"is_complete\":true}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
@@ -157,6 +163,7 @@ let test_apply_rule = [
     "Test sequent", `Quick, call_api_apply_rule;
     "Test technical exception", `Quick, call_api_apply_rule_technical_exception;
     "Test logic exception", `Quick, call_api_apply_rule_logic_exception;
+    "Test auto reverse mode", `Quick, call_api_apply_rule_auto_reverse_mode;
 ]
 
 let test_is_proof_complete = [
