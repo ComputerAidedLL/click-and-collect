@@ -55,7 +55,8 @@ function parseSequentAsString(sequentAsString, $container) {
                 initProofWithSequent(data['sequent_as_json'], $container, {
                     withInteraction: true,
                     exportButtons: true,
-                    checkProvability: true
+                    checkProvability: true,
+                    autoReverseOption: true
                 });
             } else {
                 displayPedagogicError(data['error_message'], $container);
@@ -82,7 +83,8 @@ function showTutorial() {
         initProofWithSequent(sequent, $container, {
             withInteraction: true,
             exportButtons: false,
-            checkProvability: false
+            checkProvability: false,
+            autoReverseOption: false
         });
     })
 
@@ -102,7 +104,8 @@ function showRules() {
         initProof(proofAsJson, $container, {
             withInteraction: false,
             exportButtons: false,
-            checkProvability: false
+            checkProvability: false,
+            autoReverseOption: false
         });
     })
 
