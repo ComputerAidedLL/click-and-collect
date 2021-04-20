@@ -4,10 +4,7 @@ exception Cannot_export_proof_as_latex_exception of string;;
 
 let proof_to_latex proof =
     let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
-        ^ "% https://click-and-collect.linear-logic.org/\n"
-        ^ "% you can use it to generate pdf or image\n"
-        ^ "% pdflatex ccLLproof.tex\n"
-        ^ "% convert ccLLproof.pdf -colorspace RGB ccLLproof.png\n\n" in
+        ^ "% https://click-and-collect.linear-logic.org/\n\n" in
     let packages = "\\documentclass[preview,border=0.5cm,varwidth]{standalone}\n\n"
         ^ "\\usepackage{cmll}\n"
         ^ "\\usepackage{ebproof}\n\n" in
