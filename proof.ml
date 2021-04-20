@@ -232,6 +232,7 @@ let get_rule_request = function
     | Exchange_proof (_, permutation, _) -> Exchange (permutation_inverse permutation)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
+
 (* JSON -> PROOF *)
 
 exception Json_exception of string;;
@@ -266,7 +267,9 @@ let rec from_json json =
             let premises = List.map from_json premises_as_json in
             from_sequent_and_rule_request_and_premises sequent rule_request premises;;
 
+
 (* PROOF -> JSON *)
+
 let rec to_json proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
@@ -281,12 +284,17 @@ let rec to_json proof =
                 ("appliedRule", `Assoc [("ruleRequest", rule_request_as_json);
                                         ("premises", `List premises_as_json)])];;
 
+
 (* OPERATIONS *)
 
 let rec is_complete = function
     | Hypothesis_proof s -> false
     | proof -> let premises = get_premises proof in
         List.for_all is_complete premises;;
+
+
+let auto_reverse proof =
+    proof;;
 
 
 (* PROOF -> COQ *)
