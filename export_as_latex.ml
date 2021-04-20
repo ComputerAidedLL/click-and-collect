@@ -5,7 +5,7 @@ exception Cannot_export_proof_as_latex_exception of string;;
 let proof_to_latex proof =
     let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
         ^ "% https://click-and-collect.linear-logic.org/\n\n" in
-    let packages = "\\documentclass[preview,border=0.5cm,varwidth]{standalone}\n\n"
+    let packages = "\\documentclass{article}\n\n"
         ^ "\\usepackage{cmll}\n"
         ^ "\\usepackage{ebproof}\n\n" in
     let macros = "\\newcommand*{\\orth}{^\\perp}\n"
@@ -28,10 +28,19 @@ let proof_to_latex proof =
         ^ "\\newcommand*{\\ocv}[1]{\\infer{1}[\\ensuremath{\\oc}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\wkv}[1]{\\infer{1}[\\ensuremath{?\\mathit{w}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\cov}[1]{\\infer{1}[\\ensuremath{?\\mathit{c}}]{\\vdash #1}}\n"
-        ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n\n" in
-    let start_proof = "\\begin{document}\n\n%\\scriptsize\n\\begin{prooftree}\n" in
+        ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n\n"
+        ^ "\\newcommand{\\adaptpage}[1]{\n"
+        ^ "  \\setlength{\\hoffset}{-0.7in}\n"
+        ^ "  \\setlength{\\voffset}{-0.7in}\n"
+        ^ "  \\newsavebox{\\proof}\n"
+        ^ "  \\sbox{\\proof}{#1}\n"
+        ^ "  \\setlength{\\pdfpageheight}{\\dimexpr\\ht\\proof+\\dp\\proof+0.6in\\relax}\n"
+        ^ "  \\setlength{\\pdfpagewidth}{\\dimexpr\\wd\\proof+0.6in\\relax}\n"
+        ^ "  \\shipout\\box\\proof\n"
+        ^ "}\n\n" in
+    let start_proof = "\\begin{document}\n\n%\\adaptpage{\n\\begin{prooftree}\n" in
     let proof_lines = Proof.to_latex proof in
-    let end_proof = "\\end{prooftree}\n\n\\end{document}\n\n" in
+    let end_proof = "\\end{prooftree}\n}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
 
 let export_as_latex_with_exceptions request_as_json =
