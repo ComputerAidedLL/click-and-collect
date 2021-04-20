@@ -65,9 +65,14 @@ let delta_valuation reference atom =
   if atom = reference then 1 else 0
 
 let zero_valuation atom = 0
+let one_valuation atom = 1
 
 let valid_sequent sequent =
   let variables = get_unique_variable_names sequent in
   let formula = sequent_to_formula sequent in
+  valid_semantics 0 zero_valuation formula &&
+  valid_semantics 0 one_valuation formula &&
   valid_semantics 1 zero_valuation formula &&
-  List.for_all (fun x -> valid_semantics 0 (delta_valuation x) formula) variables
+  valid_semantics 1 one_valuation formula &&
+  List.for_all (fun x -> valid_semantics 0 (delta_valuation x) formula) variables &&
+  List.for_all (fun x -> valid_semantics 1 (delta_valuation x) formula) variables
