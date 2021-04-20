@@ -45,6 +45,10 @@ function initProof(proofAsJson, $container, options) {
     if (options.exportButtons) {
         createExportBar($container);
     }
+
+    if (options.autoReverseOption) {
+        createAutoReverseOption($container);
+    }
 }
 
 function initProofWithSequent(sequent, $container, options) {
@@ -94,9 +98,14 @@ function applyRule(ruleRequest, $sequentDiv, options) {
     let permutationBeforeRule = getSequentPermutation($sequentDiv);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
+    let autoReverseMode = false;
+    if (options.autoReverseOption) {
+        autoReverseMode = $container.children('.auto-reverse-bar').find('input').is(":checked");
+    }
+
     $.ajax({
         type: 'POST',
-        url: '/apply_rule',
+        url: `/apply_rule?auto_reverse_mode=${autoReverseMode}`,
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
@@ -104,6 +113,7 @@ function applyRule(ruleRequest, $sequentDiv, options) {
             if (data.success === true) {
                 cleanPedagogicError($container);
                 addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
+                markAsCompleteIfProofIsComplete($container);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -135,22 +145,17 @@ function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, 
 
     // Add premises
     let $table = $td.closest('table');
-    let $container = $table.closest('.proof-container');
-    if (premises.length === 0) {
-        if (options.withInteraction) {
-            markAsCompleteIfProofIsComplete($container);
-        }
-    } else if (premises.length === 1) {
+    if (premises.length === 1) {
         createSubProof(premises[0], $table.parent(), options);
-    } else {
+    } else if (premises.length > 1) {
         let $div = $('<div>');
+        $div.insertBefore($table);
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            createSubProof(premise, $sibling, options)
             $div.append($sibling);
+            createSubProof(premise, $sibling, options)
         }
         $table.addClass('binary-rule');
-        $div.insertBefore($table);
     }
 }
 
@@ -447,6 +452,17 @@ function markAsNotProvable($sequentDiv) {
     $sequentDiv.find('span.turnstile').attr('title', 'This sequent is not provable');
 }
 
+// *******************
+// AUTO-REVERSE OPTION
+// *******************
+function createAutoReverseOption($container) {
+    let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
+        .append($('<span>', {'class': 'auto-reverse-label'})
+            .text('Automatically apply reversible rules'))
+        .append($('<label>', {'class': 'switch'})
+            .html('<input type="checkbox"><span class="slider"></span>'));
+    $container.append($autoReverseBar);
+}
 
 // *****
 // UTILS

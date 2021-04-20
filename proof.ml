@@ -239,7 +239,7 @@ let apply_reversible_rule proof =
         with NotApplicable ->
     try try_rule_request sequent One
         with NotApplicable ->
-    try try_rule_request sequent (Tensor 0)
+    try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
         with NotApplicable ->
     try try_rule_request sequent Axiom
         with NotApplicable ->

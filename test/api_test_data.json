@@ -566,6 +566,12 @@
       "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
   ],
+  "call_apply_rule_auto_reverse": [
+    {
+      "request": {"rr":{"r":"tensor","fp":1},"s":{"hyp":[],"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},{"t":"litt","v":"A"}]}},
+      "expected_premises": [{"sequent":{"cons":[{"type":"dual","value":{"type":"litt","value":"A"}},{"type":"litt","value":"A"}]},"appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}},{"sequent":{"cons":[{"type":"dual","value":{"type":"litt","value":"A"}},{"type":"litt","value":"A"}]},"appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}]
+    }
+  ],
   "call_api_is_proof_complete": [
     {
       "s":{"cons":[

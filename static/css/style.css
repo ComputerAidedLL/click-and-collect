@@ -26,8 +26,6 @@ input[type=text] { border: solid 2px gray; }
 form input[type="submit"]{ border: none; background-color: #005; color: white; font-weight: bold; }
 input[type=text], .code { background-color: #FFF; font-family: "Courier New", sans-serif; }
 
-#main-proof-container { margin-bottom: 2em; }
-
 .code { border-radius: 0.3em; padding: 0.1em 0.2em; white-space: nowrap; box-decoration-break: clone; }
 .example { font-style: italic; margin-right: 1em; }
 
@@ -74,8 +72,10 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .main-formula.hoverable:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005; }
 .proof .main-formula.hoverable:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005; }
 
-.export-bar { margin-top: 1em; margin-left: auto; margin-right: auto; display: table; }
-.export-bar span { color: #777; margin-right: 0.5em; }
+.export-bar, .auto-reverse-bar { margin-left: auto; margin-right: auto; display: table; }
+.export-bar { margin-top: 1em; }
+.auto-reverse-bar { margin-top: 0.5em; }
+.export-bar span, .auto-reverse-label { color: #777; margin-right: 0.5em; }
 img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; }
 img.export:hover { cursor: pointer; }
 
@@ -88,3 +88,13 @@ img.export:hover { cursor: pointer; }
 .rules .proof-container { display: inline-block; vertical-align: bottom; }
 
 .section.footer .subsection { display: table; margin: auto; font-size: 0.8em; }
+
+/* SWITCH BUTTON */
+.switch { position: relative; display: inline-block; width: 2.2em; height: 1em; margin-left: 0.2em; }
+.switch input { opacity: 0; width: 0; height: 1em; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 1em; }
+.slider:before { position: absolute; content: ""; height: 0.8em; width: 0.8em; left: 0.2em; bottom: 0.1em; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #2196F3;  }
+input:focus + .slider { box-shadow: 0 0 1px #2196F3;  }
+input:checked + .slider:before { -webkit-transform: translateX(1em); -ms-transform: translateX(1em); transform: translateX(1em);  }
+
