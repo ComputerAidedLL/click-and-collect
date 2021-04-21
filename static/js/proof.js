@@ -456,8 +456,9 @@ function checkProvability($sequentDiv) {
 }
 
 function markAsNotProvable($sequentDiv) {
-    $sequentDiv.addClass('not-provable');
-    $sequentDiv.find('span.turnstile').attr('title', 'This sequent is not provable');
+    let $turnstile = $sequentDiv.find('span.turnstile');
+    $turnstile.addClass('not-provable');
+    $turnstile.attr('title', 'This sequent is not provable');
 }
 
 
