@@ -51,6 +51,10 @@ function initProof(proofAsJson, $container, options = {}) {
     if (options.autoReverseOption) {
         createAutoReverseOption($container, options.autoReverse, options.onAutoReverseToggle);
     }
+
+    if (options.autoReverse) {
+        autoReverseContainer($container);
+    }
 }
 
 function initProofWithSequent(sequent, $container, options = {}) {
@@ -103,7 +107,7 @@ function applyRule(ruleRequest, $sequentDiv) {
 
     $.ajax({
         type: 'POST',
-        url: `/apply_rule?auto_reverse=${options.autoReverse}`,
+        url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
@@ -111,7 +115,11 @@ function applyRule(ruleRequest, $sequentDiv) {
             if (data.success === true) {
                 cleanPedagogicError($container);
                 addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
-                markAsCompleteIfProofIsComplete($container);
+
+                let isComplete = markAsCompleteIfProofIsComplete($container);
+                if (!isComplete && options.autoReverse) {
+                    autoReverseSequentPremises($sequentDiv);
+                }
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -300,7 +308,11 @@ function markAsCompleteIfProofIsComplete($container) {
     // We check if proof is complete
     if (checkProofIsComplete(proofAsJson)) {
         markAsComplete($container);
+
+        return true;
     }
+
+    return false;
 }
 
 function checkProofIsComplete(proofAsJson) {
@@ -448,9 +460,11 @@ function markAsNotProvable($sequentDiv) {
     $sequentDiv.find('span.turnstile').attr('title', 'This sequent is not provable');
 }
 
+
 // *******************
 // AUTO-REVERSE OPTION
 // *******************
+
 function createAutoReverseOption($container, defaultValue = false, onToggle) {
     let $input = $('<input type="checkbox">');
     $input.prop('checked', defaultValue);
@@ -459,6 +473,9 @@ function createAutoReverseOption($container, defaultValue = false, onToggle) {
         options.autoReverse = this.checked;
         $container.data('options', options);
         onToggle(this.checked);
+        if (this.checked) {
+            autoReverseContainer($container);
+        }
     });
 
     let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
@@ -470,6 +487,70 @@ function createAutoReverseOption($container, defaultValue = false, onToggle) {
 
     $container.append($autoReverseBar);
 }
+
+function autoReverseContainer($container) {
+    let $mainSequentDiv = $container.find('div.sequent').last();
+    autoReverseSequentPremises($mainSequentDiv);
+}
+
+function autoReverseSequentPremises($sequentDiv) {
+    let $premisesSequentDiv = recGetPremisesSequentDiv($sequentDiv.closest('table'));
+    for (let $premiseSequentDiv of $premisesSequentDiv) {
+        autoReverseSequent($premiseSequentDiv);
+    }
+}
+
+function recGetPremisesSequentDiv($table) {
+    let $sequentDiv = $table.find('div.sequent')
+    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
+    if (ruleRequest !== null) {
+        let $table = $sequentDiv.closest('table');
+        let $prev = $table.prev();
+
+        if ($prev.length) {
+            if ($prev.prop('tagName') === 'TABLE') {
+                return recGetPremisesSequentDiv($prev);
+            }
+
+            let $premises = [];
+            $prev.children('div.sibling').each(function (i, sibling) {
+                let $siblingTable = $(sibling).children('table').last();
+                let $siblingPremises = recGetPremisesSequentDiv($siblingTable);
+                $premises = $premises.concat($siblingPremises);
+            })
+
+            return $premises;
+        }
+    }
+
+    return [$sequentDiv];
+}
+
+function autoReverseSequent($sequentDiv) {
+    let $container = $sequentDiv.closest('.proof-container');
+    let options = $container.data('options');
+
+    // Sequent json that was stored in div may have been permuted before rule applying
+    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+
+    $.ajax({
+        type: 'POST',
+        url: '/auto_reverse_sequent',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify(sequent)),
+        success: function(data)
+        {
+            if (data.appliedRule !== null) {
+                addPremises($sequentDiv, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                markAsCompleteIfProofIsComplete($container);
+            }
+        },
+        error: onAjaxError
+    });
+}
+
 
 // *****
 // UTILS

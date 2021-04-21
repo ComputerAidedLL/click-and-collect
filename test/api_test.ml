@@ -108,7 +108,7 @@ let call_api_apply_rule_logic_exception () =
 let call_api_auto_reverse_full_response () =
     let body_as_string = "{\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]}" in
     let response_as_string = call_api_post "auto_reverse_sequent" body_as_string 200 in
-    let expected_response_as_string = "{\"sequent\":{\"cons\":[{\"type\":\"par\",\"value1\":{\"type\":\"litt\",\"value\":\"a\"},\"value2\":{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"par\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":null}]}}" in
+    let expected_response_as_string = "{\"sequent\":{\"cons\":[{\"type\":\"par\",\"value1\":{\"type\":\"litt\",\"value\":\"a\"},\"value2\":{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"par\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}]}}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
 
 let call_api_auto_reverse () =
@@ -169,7 +169,7 @@ let () =
     Alcotest.run "API on localhost:8080" [
         "test_parse_sequent", test_parse_sequent;
         "test_apply_rule", test_apply_rule;
-        (*"test_export_as_latex", test_export_as_latex;*)
+        "test_export_as_latex", test_export_as_latex;
         "test_sequent_is_provable", test_sequent_is_provable;
         "test_auto_reverse_sequent", test_auto_reverse_sequent;
     ]

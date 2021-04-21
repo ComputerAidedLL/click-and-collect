@@ -596,6 +596,22 @@
           "ruleRequest": {"rule": "axiom"},
           "premises": []
         }}
+    },
+    {
+      "request": {"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"}]},
+      "expected_proof": {
+        "sequent":{"cons":[
+          {"type":"litt","value":"A"},
+          {"type":"dual","value":{"type":"litt","value":"A"}},
+          {"type":"bottom"}]},
+        "appliedRule":{
+          "ruleRequest":{"rule":"bottom","formulaPosition":2},
+          "premises":[
+            {"sequent":{"cons":[
+              {"type":"litt","value":"A"},
+              {"type":"dual","value":{"type":"litt","value":"A"}}]},
+              "appliedRule":{"ruleRequest":{"rule":"axiom"},
+                "premises":[]}}]}}
     }
   ]
 }
