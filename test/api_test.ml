@@ -26,7 +26,7 @@ let call_api_post path body_as_string expected_code =
 
 (* The tests *)
 let call_api_parse_sequent_full_response () =
-    Alcotest.(check string) "valid" "{\"is_valid\":true,\"sequent_as_json\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]}}" (call_api_get "parse_sequent?sequentAsString=a");
+    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof\":{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}}" (call_api_get "parse_sequent?sequentAsString=a");
     Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent?sequentAsString=a*")
 
 let call_api_parse_sequent () =
@@ -39,7 +39,7 @@ let call_api_parse_sequent () =
         let data = Yojson.Basic.from_string body in
         let is_valid = data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
-        let sequent_as_json = data |> member "sequent_as_json" in
+        let sequent_as_json = data |> member "proof" |> member "sequent" in
         Alcotest.(check string) ("check sequent returned for " ^ sequent_as_string) (Yojson.Basic.to_string expected_sequent_as_json) (Yojson.Basic.to_string sequent_as_json) in
     List.iter run_test test_samples
 

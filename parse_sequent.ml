@@ -1,8 +1,9 @@
 let ll_parse sequent_as_string =
     let raw_sequent = Ll_parser.main Ll_lexer.token (Lexing.from_string sequent_as_string) in
     let sequent = Raw_sequent.to_sequent raw_sequent in
-    let sequent_as_json = Raw_sequent.sequent_to_json sequent in
-    sequent_as_json;;
+    let proof = Proof.Hypothesis_proof sequent in
+    let proof_as_json = Proof.to_json proof in
+    proof_as_json;;
 
 let safe_parse sequent_as_string =
     try true, ll_parse sequent_as_string

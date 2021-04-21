@@ -57,10 +57,6 @@ function initProof(proofAsJson, $container, options = {}) {
     }
 }
 
-function initProofWithSequent(sequent, $container, options = {}) {
-    initProof({sequent, appliedRule: null}, $container, options);
-}
-
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
     let $sequentTable = createSequentTable(proofAsJson.sequent, options);
     $subProofDivContainer.prepend($sequentTable);

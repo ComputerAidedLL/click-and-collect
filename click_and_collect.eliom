@@ -90,7 +90,7 @@ let _ =
         let response =
             if success then `Assoc [
                 ("is_valid", `Bool true);
-                ("sequent_as_json", result)
+                ("proof", result)
             ] else `Assoc [
                 ("is_valid", `Bool false);
                 ("error_message", result)

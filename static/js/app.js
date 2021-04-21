@@ -51,7 +51,7 @@ function parseSequentAsString(sequentAsString, $container, autoReverse) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProofWithSequent(data['sequent_as_json'], $container, {
+                initProof(data['proof'], $container, {
                     withInteraction: true,
                     exportButtons: true,
                     checkProvability: true,
