@@ -65,10 +65,10 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
             options);
-    } else {
-        if (options.checkProvability) {
-            checkProvability($sequentDiv);
-        }
+    }
+
+    if (options.checkProvability) {
+        checkProvability($sequentDiv);
     }
 }
 
