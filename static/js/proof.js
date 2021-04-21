@@ -481,7 +481,7 @@ function createAutoReverseOption($container, defaultValue = false, onToggle) {
 
     let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
         .append($('<span>', {'class': 'auto-reverse-label'})
-            .text('Automatically apply reversible rules'))
+            .text('Auto-reverse'))
         .append($('<label>', {'class': 'switch'})
             .append($input)
             .append($('<span class="slider"></span>')));
