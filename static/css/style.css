@@ -15,6 +15,7 @@ h4:before { content: '⊢'; }
 .subsection { text-indent: 2em; text-align: justify; }
 .hidden { display: none; }
 
+.section-wrapper {overflow-x: auto; display: block; }
 .section-wrapper.light-gray { background: #f9f9f9; }
 .section-wrapper.darker-gray { background: #ececec; }
 .section-wrapper.dark-gray { background: #dfdfdf; }
@@ -75,7 +76,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .export-bar, .auto-reverse-bar { margin-left: auto; margin-right: auto; display: table; }
 .export-bar { margin-top: 1em; }
 .auto-reverse-bar { margin-top: 0.5em; }
-.export-bar span, .auto-reverse-label { color: #777; margin-right: 0.5em; }
+.export-bar span, .auto-reverse-label { color: #777; margin-right: 0.5em; font-size: 0.9em; }
 img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; }
 img.export:hover { cursor: pointer; }
 
