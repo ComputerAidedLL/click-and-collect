@@ -5,11 +5,10 @@ $( function() {
     });
 
     // Parse URL and auto-complete / auto-submit sequent form
-    let searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.has('s')) {
-        $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
-        let autoReverse = searchParams.has('auto_reverse') && searchParams.get('auto_reverse') === '1';
-        submitSequent($sequentForm, autoReverse);
+    let sequentParam = getQueryParamInUrl('s');
+    if (sequentParam !== null) {
+        $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
+        submitSequent($sequentForm);
     }
     
     // Parse URL hash
@@ -28,7 +27,7 @@ $( function() {
 // SEQUENT FORM
 // ************
 
-function submitSequent(element, autoReverse = false) {
+function submitSequent(element) {
     cleanMainProof();
 
     let form = $(element).closest('form');
@@ -36,6 +35,8 @@ function submitSequent(element, autoReverse = false) {
 
     // We update current URL by adding sequent in query parameters
     addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
+    // We get autoReverse option in URL
+    let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
 
     parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse);
 }
@@ -130,4 +131,13 @@ function addQueryParamInUrl (key, value, title) {
     }
     currentUrl.hash = '';
     window.history.pushState(value, title, currentUrl.toString());
+}
+
+function getQueryParamInUrl (key) {
+    let searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has(key)) {
+        return searchParams.get(key);
+    }
+
+    return null;
 }
