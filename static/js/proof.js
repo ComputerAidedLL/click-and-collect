@@ -38,17 +38,16 @@ const ABBREVIATIONS = {
 // *************
 
 function initProof(proofAsJson, $container, options) {
-    let $div = $('<div>', {'class': 'proofIsIncomplete'});
-    let $div2 = $('<div>', {'class': 'proof'});
-    createSubProof(proofAsJson, $div2, options);
-    $div.append($div2);
+    let $div = $('<div>', {'class': 'proof'});
+    createSubProof(proofAsJson, $div, options);
     $container.append($div);
 
     if (options.exportButtons) {
-        createExportAsCoqButton($container);
-        createExportAsLatexButton($container);
-        createExportAsPdfButton($container);
-        createExportAsPngButton($container);
+        createExportBar($container);
+    }
+
+    if (options.autoReverseOption) {
+        createAutoReverseOption($container);
     }
 }
 
@@ -99,9 +98,14 @@ function applyRule(ruleRequest, $sequentDiv, options) {
     let permutationBeforeRule = getSequentPermutation($sequentDiv);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
+    let autoReverseMode = false;
+    if (options.autoReverseOption) {
+        autoReverseMode = $container.children('.auto-reverse-bar').find('input').is(":checked");
+    }
+
     $.ajax({
         type: 'POST',
-        url: '/apply_rule',
+        url: `/apply_rule?auto_reverse_mode=${autoReverseMode}`,
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
@@ -109,6 +113,7 @@ function applyRule(ruleRequest, $sequentDiv, options) {
             if (data.success === true) {
                 cleanPedagogicError($container);
                 addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
+                markAsCompleteIfProofIsComplete($container);
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
             }
@@ -140,22 +145,17 @@ function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, 
 
     // Add premises
     let $table = $td.closest('table');
-    let $container = $table.closest('.proof-container');
-    if (premises.length === 0) {
-        if (options.withInteraction) {
-            markAsCompleteIfProofIsComplete($container);
-        }
-    } else if (premises.length === 1) {
+    if (premises.length === 1) {
         createSubProof(premises[0], $table.parent(), options);
-    } else {
+    } else if (premises.length > 1) {
         let $div = $('<div>');
+        $div.insertBefore($table);
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
-            createSubProof(premise, $sibling, options)
             $div.append($sibling);
+            createSubProof(premise, $sibling, options)
         }
         $table.addClass('binary-rule');
-        $div.insertBefore($table);
     }
 }
 
@@ -198,7 +198,13 @@ function displayPedagogicError(errorMessage, $container) {
         $close.html('✖');
         $close.on('click', function () {cleanPedagogicError($container);});
         $div.append($close);
-        $container.append($div);
+
+        let $proofDiv = $container.children('div.proof');
+        if ($proofDiv.length) {
+            $div.insertAfter($proofDiv);
+        } else {
+            $container.append($div);
+        }
     }
     $div.children('div.message').text(errorMessage);
 }
@@ -215,7 +221,6 @@ function cleanPedagogicError($container) {
 
 function getProofAsJson($container) {
     let $mainTable = $container
-        .children('div')
         .children('div.proof')
         .children('table')
         .last();
@@ -281,15 +286,13 @@ function isIdentity(permutation) {
 // **********************
 
 function markAsComplete($container) {
-    let $mainDiv = $container.children('div');
-    $mainDiv.removeClass('proofIsIncomplete');
-    $mainDiv.addClass('proofIsDone');
+    let $mainDiv = $container.children('div.proof');
+    $mainDiv.addClass('complete');
 }
 
 function markAsIncomplete($container) {
-    let $mainDiv = $container.children('div');
-    $mainDiv.removeClass('proofIsDone');
-    $mainDiv.addClass('proofIsIncomplete');
+    let $mainDiv = $container.children('div.proof');
+    $mainDiv.removeClass('complete');
 }
 
 function markAsCompleteIfProofIsComplete($container) {
@@ -322,13 +325,46 @@ function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
 // EXPORT AS COQ
 // *************
 
-function createExportAsCoqButton($container) {
-    let coqLogoPath = 'images/coq.png';
-    let coqButton = $('<img src="' + coqLogoPath + '" title="Export as Coq" />')
-        .addClass('coq')
+function createExportBar($container) {
+    let $exportBar = $('<div>', {'class': 'export-bar'})
+        .append($('<span>').text('Export:'));
+
+    let coqButton = createExportButton(
+        'images/coq.png',
+        'Export as Coq',
+        'coq',
+        function () { exportAsCoq($container); });
+    $exportBar.append(coqButton);
+
+    let latexButton = createExportButton(
+        'images/LaTeX_logo.png',
+        'Export as LaTeX',
+        'latex',
+        function () { exportAsLatex($container, 'tex'); });
+    $exportBar.append(latexButton);
+
+    let pdfButton = createExportButton(
+        'images/pdf-icon.png',
+        'Export as PDF',
+        'pdf',
+        function () { exportAsLatex($container, 'pdf'); });
+    $exportBar.append(pdfButton);
+
+    let pngButton = createExportButton(
+        'images/camera.png',
+        'Export as PNG',
+        'png',
+        function () { exportAsLatex($container, 'png'); });
+    $exportBar.append(pngButton);
+
+    $container.append($exportBar);
+}
+
+function createExportButton(logoPath, title, className, onClick) {
+    return $(`<img src="${logoPath}" title="${title}"  alt=""/>`)
+        .addClass(className)
         .addClass('export')
-        .on('click', function () { exportAsCoq($container); });
-    $container.append(coqButton);
+        .on('click', onClick);
 }
 
 function exportAsCoq($container) {
@@ -361,33 +397,6 @@ function exportAsCoq($container) {
 // ***************
 // EXPORT AS LATEX
 // ***************
-
-function createExportAsLatexButton($container) {
-    let latexLogoPath = 'images/LaTeX_logo.png';
-    let latexButton = $('<img src="' + latexLogoPath + '" title="Export as LaTeX" />')
-        .addClass('latex')
-        .addClass('export')
-        .on('click', function () { exportAsLatex($container, 'tex'); });
-    $container.append(latexButton);
-}
-
-function createExportAsPdfButton($container) {
-    let pdfLogoPath = 'images/pdf-icon.png';
-    let latexButton = $('<img src="' + pdfLogoPath + '" title="Export as PDF" />')
-        .addClass('pdf')
-        .addClass('export')
-        .on('click', function () { exportAsLatex($container, 'pdf'); });
-    $container.append(latexButton);
-}
-
-function createExportAsPngButton($container) {
-    let pngLogoPath = 'images/camera.png';
-    let latexButton = $('<img src="' + pngLogoPath + '" title="Export as PNG" />')
-        .addClass('png')
-        .addClass('export')
-        .on('click', function () { exportAsLatex($container, 'png'); });
-    $container.append(latexButton);
-}
 
 function exportAsLatex($container, format) {
     // We get proof stored in HTML
@@ -449,6 +458,17 @@ function markAsNotProvable($sequentDiv) {
     $sequentDiv.find('span.turnstile').attr('title', 'This sequent is not provable');
 }
 
+// *******************
+// AUTO-REVERSE OPTION
+// *******************
+function createAutoReverseOption($container) {
+    let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
+        .append($('<span>', {'class': 'auto-reverse-label'})
+            .text('Automatically apply reversible rules'))
+        .append($('<label>', {'class': 'switch'})
+            .html('<input type="checkbox"><span class="slider"></span>'));
+    $container.append($autoReverseBar);
+}
 
 // *****
 // UTILS

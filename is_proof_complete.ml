@@ -8,4 +8,4 @@ let is_proof_complete request_as_json =
     with Proof.Json_exception m -> false, `String ("Bad proof json: " ^ m)
         | Raw_sequent.Json_exception m -> false, `String ("Bad sequent json: " ^ m)
         | Rule_request.Json_exception m -> false, `String ("Bad rule_request json: " ^ m)
-        | Proof.Technical_exception m -> false, `String ("Invalid proof: " ^ m);;
+        | Proof.Rule_exception (_, m) -> false, `String ("Invalid proof: " ^ m);;

@@ -101,11 +101,10 @@ let get_conclusion = function
 
 (* SEQUENT & RULE_REQUEST -> PROOF *)
 
-exception Technical_exception of string;;
-exception Pedagogic_exception of string;;
+exception Rule_exception of bool * string;;
 
 let rec head_formula_tail n = function
-    | [] -> raise (Technical_exception "Argument formula_positions[0] is greater than the number of given formulas")
+    | [] -> raise (Rule_exception (false, "Argument formula_positions[0] is greater than the number of given formulas"))
     | f :: formula_list -> if n = 0 then [], f, formula_list
         else let head, formula, tail = head_formula_tail (n - 1) formula_list
         in f::head, formula, tail;;
@@ -115,57 +114,57 @@ let from_sequent_and_rule_request sequent rule_request =
         | Axiom -> (
             match sequent with
             | e1 :: e2 :: [] -> (if dual e1 <> e2
-                then raise (Pedagogic_exception ("Can not apply 'axiom' rule: the two formulas are not orthogonal."))
+                then raise (Rule_exception (true, "Can not apply 'axiom' rule: the two formulas are not orthogonal."))
                 else Axiom_proof e1)
-            | _ -> raise (Pedagogic_exception ("Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
+            | _ -> raise (Rule_exception (true, "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
         )
         | One -> (
             match sequent with
             | One :: [] -> One_proof
-            | _ -> raise (Pedagogic_exception ("Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
+            | _ -> raise (Rule_exception (true, "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
         )
         | Bottom n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             | Bottom -> Bottom_proof (head, tail, (Hypothesis_proof (head @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply bottom rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply bottom rule on this formula"))
         )
         | Top n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             | Top -> Top_proof (head, tail)
-            | _ -> raise (Technical_exception ("Cannot apply top rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply top rule on this formula"))
         )
-        | Zero -> raise (Pedagogic_exception ("Can not apply 'zero' rule: there is no rule for introducing '0'."))
+        | Zero -> raise (Rule_exception (true, "Can not apply 'zero' rule: there is no rule for introducing '0'."))
         | Tensor n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Tensor (e1, e2) -> Tensor_proof (head, e1, e2, tail, (Hypothesis_proof (head @ [e1])), (Hypothesis_proof ([e2] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply tensor rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply tensor rule on this formula"))
         )
         | Par n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Par (e1, e2) -> Par_proof (head, e1, e2, tail, (Hypothesis_proof (head @ [e1; e2] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply par rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply par rule on this formula"))
         )
         | With n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             With (e1, e2) -> With_proof (head, e1, e2, tail, (Hypothesis_proof (head @ [e1] @ tail)), (Hypothesis_proof (head @ [e2] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply with rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply with rule on this formula"))
         )
         | Plus_left n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Plus (e1, e2) -> Plus_left_proof (head, e1, e2, tail, (Hypothesis_proof (head @ [e1] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply plus_left rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply plus_left rule on this formula"))
         )
         | Plus_right n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Plus (e1, e2) -> Plus_right_proof (head, e1, e2, tail, (Hypothesis_proof (head @ [e2] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply plus_right rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply plus_right rule on this formula"))
         )
         | Promotion n -> (
             let head, formula, tail = head_formula_tail n sequent in
@@ -174,32 +173,32 @@ let from_sequent_and_rule_request sequent rule_request =
                 let head_without_whynot = Sequent.remove_whynot head in
                 let tail_without_whynot = remove_whynot tail in
                 Promotion_proof (head_without_whynot, e, tail_without_whynot, (Hypothesis_proof (head @ [e] @ tail)))
-                with Sequent.Not_whynot -> raise (Pedagogic_exception ("Can not apply 'promotion' rule: the context must contain formulas starting by '?' only.")))
-            | _ -> raise (Technical_exception ("Cannot apply promotion rule on this formula"))
+                with Sequent.Not_whynot -> raise (Rule_exception (true, "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only.")))
+            | _ -> raise (Rule_exception (false, "Cannot apply promotion rule on this formula"))
         )
         | Dereliction n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Whynot e -> Dereliction_proof (head, e, tail, (Hypothesis_proof (head @ [e] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply dereliction rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply dereliction rule on this formula"))
         )
         | Weakening n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Whynot e -> Weakening_proof (head, e, tail, (Hypothesis_proof (head @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply weakening rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply weakening rule on this formula"))
         )
         | Contraction n -> (
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             Whynot e -> Contraction_proof (head, e, tail, (Hypothesis_proof (head @ [Whynot e; Whynot e] @ tail)))
-            | _ -> raise (Technical_exception ("Cannot apply contraction rule on this formula"))
+            | _ -> raise (Rule_exception (false, "Cannot apply contraction rule on this formula"))
         )
         | Exchange permutation -> (
             if List.length sequent <> List.length permutation
-            then raise (Technical_exception ("When applying exchange rule, formula_positions and sequent must have same size"))
+            then raise (Rule_exception (false, "When applying exchange rule, formula_positions and sequent must have same size"))
             else if not (is_valid_permutation permutation)
-            then raise (Technical_exception ("When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
+            then raise (Rule_exception (false, "When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
             else let permuted_sequent = permute sequent permutation in
             Exchange_proof (permuted_sequent, permutation_inverse permutation, (Hypothesis_proof permuted_sequent))
         );;
@@ -209,9 +208,50 @@ let from_sequent_and_rule_request_and_premises sequent rule_request premises =
     let expected_premises_conclusion = List.map get_conclusion (get_premises proof) in
     let given_premises_conclusion = List.map get_conclusion premises in
     if expected_premises_conclusion <> given_premises_conclusion then
-    raise (Technical_exception ("Premises conclusion do not match expected premises conclusion after applying rule"))
+    raise (Rule_exception (false, "Premises conclusion do not match expected premises conclusion after applying rule"))
     else set_premises proof premises;;
 
+(* AUTO REVERSE MODE *)
+
+exception NotApplicable;;
+
+let rec get_formula_position condition = function
+    | [] -> raise NotApplicable
+    | f :: tail -> if condition f then 0 else 1 + (get_formula_position condition tail);;
+
+let try_rule_request sequent rule_request =
+    try from_sequent_and_rule_request sequent rule_request
+    with Rule_exception _ -> raise NotApplicable;;
+
+let apply_reversible_rule proof =
+    let sequent = get_conclusion proof in
+    try try_rule_request sequent (Top (get_formula_position is_top sequent))
+        with NotApplicable ->
+    try try_rule_request sequent (Bottom (get_formula_position is_bottom sequent))
+        with NotApplicable ->
+    try try_rule_request sequent (Par (get_formula_position is_par sequent))
+        with NotApplicable ->
+    try try_rule_request sequent (Dereliction (get_formula_position is_double_whynot sequent))
+        with NotApplicable ->
+    try try_rule_request sequent (With (get_formula_position is_with sequent))
+        with NotApplicable ->
+    try try_rule_request sequent (Promotion (get_formula_position is_ofcourse sequent))
+        with NotApplicable ->
+    try try_rule_request sequent One
+        with NotApplicable ->
+    try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
+        with NotApplicable ->
+    try try_rule_request sequent Axiom
+        with NotApplicable ->
+    proof;;
+
+let rec rec_apply_reversible_rule proof =
+    let new_proof = apply_reversible_rule proof in
+    match new_proof with
+        | Hypothesis_proof _ -> new_proof
+        | _ -> let premises = get_premises new_proof in
+            let new_premises = List.map rec_apply_reversible_rule premises in
+            set_premises new_proof new_premises;;
 
 (* PROOF -> RULE REQUEST *)
 
@@ -231,6 +271,7 @@ let get_rule_request = function
     | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
     | Exchange_proof (_, permutation, _) -> Exchange (permutation_inverse permutation)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
+
 
 (* JSON -> PROOF *)
 
@@ -266,7 +307,9 @@ let rec from_json json =
             let premises = List.map from_json premises_as_json in
             from_sequent_and_rule_request_and_premises sequent rule_request premises;;
 
+
 (* PROOF -> JSON *)
+
 let rec to_json proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
@@ -280,6 +323,7 @@ let rec to_json proof =
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc [("ruleRequest", rule_request_as_json);
                                         ("premises", `List premises_as_json)])];;
+
 
 (* OPERATIONS *)
 

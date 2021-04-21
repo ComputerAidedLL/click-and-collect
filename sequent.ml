@@ -16,13 +16,13 @@ type formula =
 
 type sequent = formula list;;
 
+
+(* OPERATIONS *)
+
 let rec sequent_to_formula = function
   | [] -> Bottom
   | [f] -> f
   | f1 :: f2 :: context -> sequent_to_formula (Par (f1, f2) :: context)
-
-
-(* OPERATIONS *)
 
 let rec dual =
     function
@@ -66,7 +66,17 @@ let rec get_variable_names =
     | Whynot e -> get_variable_names e;;
 
 let get_unique_variable_names sequent =
-    List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent))
+    List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent));;
+
+
+(* PATTERN MATCHING ON FORMULA *)
+
+let is_top = function | Top -> true | _ -> false;;
+let is_bottom = function | Bottom -> true | _ -> false;;
+let is_par = function | Par _ -> true | _ -> false;;
+let is_double_whynot = function | Whynot (Whynot _) -> true | _ -> false;;
+let is_with = function | With _ -> true | _ -> false;;
+let is_ofcourse = function | Ofcourse _ -> true | _ -> false;;
 
 
 (* SEQUENT -> COQ *)
