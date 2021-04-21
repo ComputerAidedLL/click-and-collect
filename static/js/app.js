@@ -8,7 +8,8 @@ $( function() {
     let searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has('s')) {
         $sequentForm.find($('input[name=sequentAsString]')).val(searchParams.get('s'));
-        submitSequent($sequentForm);
+        let autoReverse = searchParams.has('auto_reverse') && searchParams.get('auto_reverse') === '1';
+        submitSequent($sequentForm, autoReverse);
     }
     
     // Parse URL hash
@@ -27,22 +28,19 @@ $( function() {
 // SEQUENT FORM
 // ************
 
-function submitSequent(element) {
+function submitSequent(element, autoReverse = false) {
     cleanMainProof();
 
     let form = $(element).closest('form');
     let sequentAsString = form.find($('input[name=sequentAsString]')).val();
 
     // We update current URL by adding sequent in query parameters
-    let currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('s', sequentAsString.toString());
-    currentUrl.hash = '';
-    window.history.pushState(sequentAsString, "Linear logic proof start", currentUrl.toString());
+    addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
 
-    parseSequentAsString(sequentAsString, $('#main-proof-container'));
+    parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse);
 }
 
-function parseSequentAsString(sequentAsString, $container) {
+function parseSequentAsString(sequentAsString, $container, autoReverse) {
     let apiUrl = '/parse_sequent';
 
     $.ajax({
@@ -56,7 +54,9 @@ function parseSequentAsString(sequentAsString, $container) {
                     withInteraction: true,
                     exportButtons: true,
                     checkProvability: true,
-                    autoReverseOption: true
+                    autoReverseOption: true,
+                    autoReverse: autoReverse,
+                    onAutoReverseToggle: onAutoReverseToggle
                 });
             } else {
                 displayPedagogicError(data['error_message'], $container);
@@ -81,10 +81,7 @@ function showTutorial() {
         let sequent = JSON.parse(uncompressJson($container.html()));
         $container.html('');
         initProofWithSequent(sequent, $container, {
-            withInteraction: true,
-            exportButtons: false,
-            checkProvability: false,
-            autoReverseOption: false
+            withInteraction: true
         });
     })
 
@@ -101,14 +98,36 @@ function showRules() {
         let $container = $(container);
         let proofAsJson = JSON.parse(uncompressJson($container.html()));
         $container.html('');
-        initProof(proofAsJson, $container, {
-            withInteraction: false,
-            exportButtons: false,
-            checkProvability: false,
-            autoReverseOption: false
-        });
+        initProof(proofAsJson, $container);
     })
 
     $('.rules').removeClass('hidden');
 }
 
+// *******************
+// AUTO-REVERSE OPTION
+// *******************
+
+function onAutoReverseToggle(autoReverse) {
+    if (autoReverse) {
+        addQueryParamInUrl('auto_reverse', '1', 'Auto reverse mode set to true');
+    } else {
+        addQueryParamInUrl('auto_reverse', null, 'Auto reverse mode set to false');
+    }
+}
+
+// *****
+// UTILS
+// *****
+
+function addQueryParamInUrl (key, value, title) {
+    let currentUrl = new URL(window.location.href);
+
+    if (value !== null) {
+        currentUrl.searchParams.set(key, value);
+    } else {
+        currentUrl.searchParams.delete(key);
+    }
+    currentUrl.hash = '';
+    window.history.pushState(value, title, currentUrl.toString());
+}

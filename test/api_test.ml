@@ -105,19 +105,19 @@ let call_api_apply_rule_logic_exception () =
         Alcotest.(check string) "check errorMessage" expected_error_message error_message in
     List.iter run_test test_samples
 
-let call_api_apply_rule_auto_reverse_mode_full_response () =
+let call_api_apply_rule_auto_reverse_full_response () =
     let body_as_string = "{\"rr\":{\"r\": \"par\", \"fp\":0}, \"s\": {\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]}}" in
-    let response_as_string = call_api_post "apply_rule?auto_reverse_mode=true" body_as_string 200 in
+    let response_as_string = call_api_post "apply_rule?auto_reverse=true" body_as_string 200 in
     let expected_response_as_string = "{\"success\":true,\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}]}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
 
-let call_api_apply_rule_auto_reverse_mode () =
+let call_api_apply_rule_auto_reverse () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
     let test_samples = json_file |> member "call_apply_rule_auto_reverse" |> to_list in
     let run_test test_sample =
         let request_as_json = test_sample |> member "request" in
         let expected_premises = test_sample |> member "expected_premises" in
-        let response_as_string = call_api_post "apply_rule?auto_reverse_mode=true" (Yojson.Basic.to_string request_as_json) 200 in
+        let response_as_string = call_api_post "apply_rule?auto_reverse=true" (Yojson.Basic.to_string request_as_json) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" true success;
@@ -153,8 +153,8 @@ let test_apply_rule = [
     "Test sequent", `Quick, call_api_apply_rule;
     "Test technical exception", `Quick, call_api_apply_rule_technical_exception;
     "Test logic exception", `Quick, call_api_apply_rule_logic_exception;
-    "Test auto reverse mode full response", `Quick, call_api_apply_rule_auto_reverse_mode_full_response;
-    "Test auto reverse mode", `Quick, call_api_apply_rule_auto_reverse_mode;
+    "Test auto reverse mode full response", `Quick, call_api_apply_rule_auto_reverse_full_response;
+    "Test auto reverse mode", `Quick, call_api_apply_rule_auto_reverse;
 ]
 
 let test_export_as_latex = [

@@ -37,21 +37,23 @@ const ABBREVIATIONS = {
 // PROOF DISPLAY
 // *************
 
-function initProof(proofAsJson, $container, options) {
+function initProof(proofAsJson, $container, options = {}) {
+    $container.data('options', options);
+
     let $div = $('<div>', {'class': 'proof'});
-    createSubProof(proofAsJson, $div, options);
     $container.append($div);
+    createSubProof(proofAsJson, $div, options);
 
     if (options.exportButtons) {
         createExportBar($container);
     }
 
     if (options.autoReverseOption) {
-        createAutoReverseOption($container);
+        createAutoReverseOption($container, options.autoReverse, options.onAutoReverseToggle);
     }
 }
 
-function initProofWithSequent(sequent, $container, options) {
+function initProofWithSequent(sequent, $container, options = {}) {
     initProof({sequent, appliedRule: null}, $container, options);
 }
 
@@ -90,22 +92,18 @@ function createSequentTable(sequent, options) {
 // APPLY RULE
 // **********
 
-function applyRule(ruleRequest, $sequentDiv, options) {
+function applyRule(ruleRequest, $sequentDiv) {
     let $container = $sequentDiv.closest('.proof-container');
+    let options = $container.data('options');
 
     // Sequent json that was stored in div may have been permuted before rule applying
     let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
     let permutationBeforeRule = getSequentPermutation($sequentDiv);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
-    let autoReverseMode = false;
-    if (options.autoReverseOption) {
-        autoReverseMode = $container.children('.auto-reverse-bar').find('input').is(":checked");
-    }
-
     $.ajax({
         type: 'POST',
-        url: `/apply_rule?auto_reverse_mode=${autoReverseMode}`,
+        url: `/apply_rule?auto_reverse=${options.autoReverse}`,
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
@@ -453,12 +451,23 @@ function markAsNotProvable($sequentDiv) {
 // *******************
 // AUTO-REVERSE OPTION
 // *******************
-function createAutoReverseOption($container) {
+function createAutoReverseOption($container, defaultValue = false, onToggle) {
+    let $input = $('<input type="checkbox">');
+    $input.prop('checked', defaultValue);
+    $input.on('change', function() {
+        let options = $container.data('options');
+        options.autoReverse = this.checked;
+        $container.data('options', options);
+        onToggle(this.checked);
+    });
+
     let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
         .append($('<span>', {'class': 'auto-reverse-label'})
             .text('Automatically apply reversible rules'))
         .append($('<label>', {'class': 'switch'})
-            .html('<input type="checkbox"><span class="slider"></span>'));
+            .append($input)
+            .append($('<span class="slider"></span>')));
+
     $container.append($autoReverseBar);
 }
 

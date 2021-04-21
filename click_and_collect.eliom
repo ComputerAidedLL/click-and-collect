@@ -59,7 +59,7 @@ let post_handler raw_content_opt function_on_json =
 
 let get_bool_param = function
     | None -> false
-    | Some value -> value <> "0" && value <> "false" && value <> ""
+    | Some value -> value = "1" || value = "true"
 
 (************)
 (* MAIN APP *)
@@ -109,14 +109,14 @@ let _ =
 let apply_rule_service =
   Eliom_service.create
       ~path:(Eliom_service.Path ["apply_rule"])
-      ~meth:(Eliom_service.Post (Eliom_parameter.opt (Eliom_parameter.string "auto_reverse_mode"), Eliom_parameter.raw_post_data))
+      ~meth:(Eliom_service.Post (Eliom_parameter.opt (Eliom_parameter.string "auto_reverse"), Eliom_parameter.raw_post_data))
       ()
 
 (* Service definition *)
-let apply_rule_handler auto_reverse_mode_opt (content_type, raw_content_opt) =
+let apply_rule_handler auto_reverse_opt (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let auto_reverse_mode = get_bool_param auto_reverse_mode_opt in
-        let technical_success, json_response = apply_rule request_as_json auto_reverse_mode in
+        let auto_reverse = get_bool_param auto_reverse_opt in
+        let technical_success, json_response = apply_rule request_as_json auto_reverse in
         if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
         else send_json ~code:400 (Yojson.Basic.to_string json_response))
 

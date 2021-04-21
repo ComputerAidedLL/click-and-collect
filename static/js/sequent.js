@@ -44,7 +44,7 @@ function createSequent(sequent, options) {
     if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
         $thesisSpan.on('click', function () {
-            applyRule({rule: 'axiom'}, $sequentDiv, options);
+            applyRule({rule: 'axiom'}, $sequentDiv);
         });
     }
     $sequentDiv.append($thesisSpan);
@@ -81,7 +81,7 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 
         if (options.withInteraction) {
             // Add events (click, double-click), and classes for hover
-            addEventsAndStyle($li, formulaAsJson, options);
+            addEventsAndStyle($li, formulaAsJson);
         }
 
         $ul.append($li);
@@ -204,7 +204,7 @@ function getRules(formulaAsJson) {
     }
 }
 
-function addEventsAndStyle($li, formulaAsJson, options) {
+function addEventsAndStyle($li, formulaAsJson) {
     $li.find('span.' + 'main-formula').first().addClass('hoverable');
 
     let rules = getRules(formulaAsJson);
@@ -226,18 +226,18 @@ function addEventsAndStyle($li, formulaAsJson, options) {
         // Add click and double click events
         if (ruleEvent.onclick.length === 1) {
             // Single click
-            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options));
+            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li));
         } else {
             // Single click AND Double click event
-            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options);
-            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li, options);
+            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li);
+            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li);
 
             addClickAndDoubleClickEvent($spanForEvent, singleClickCallBack, doubleClickCallBack);
         }
     }
 }
 
-function buildApplyRuleCallBack(ruleConfig, $li, options) {
+function buildApplyRuleCallBack(ruleConfig, $li) {
     return function() {
         let $sequentDiv = $li.closest('div.sequent');
         let ruleRequest = {rule: ruleConfig.rule};
@@ -246,7 +246,7 @@ function buildApplyRuleCallBack(ruleConfig, $li, options) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
         }
 
-        applyRule(ruleRequest, $sequentDiv, options);
+        applyRule(ruleRequest, $sequentDiv);
     }
 }
 
