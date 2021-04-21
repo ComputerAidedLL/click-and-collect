@@ -197,8 +197,14 @@ function displayPedagogicError(errorMessage, $container) {
         let $close = $('<div>', {'class': 'close-button'});
         $close.html('✖');
         $close.on('click', function () {cleanPedagogicError($container);});
-        $div.append($close)
-            .insertAfter($container.children('div.proof'));
+        $div.append($close);
+
+        let $proofDiv = $container.children('div.proof');
+        if ($proofDiv.length) {
+            $div.insertAfter($proofDiv);
+        } else {
+            $container.append($div);
+        }
     }
     $div.children('div.message').text(errorMessage);
 }
