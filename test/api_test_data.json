@@ -576,6 +576,18 @@
         {"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"litt","v":"A"}},
         {"t":"par","v1":{"t":"dual","v":{"t":"litt","v":"A"}},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}}]},
       "expected_provability": true
+    },
+    {
+      "sequent_as_json": {"cons":[{"t":"dual","v":{"t":"litt","v":"X"}},{"t":"dual","v":{"t":"litt","v":"Y"}},{"t":"plus","v1":{"t":"litt","v":"X"},"v2":{"t":"litt","v":"Y"}}]},
+      "expected_provability": false
+    },
+    {
+      "sequent_as_json": {"cons":[{"t":"litt","v":"X"},{"t":"litt","v":"Y"},{"t":"plus","v1":{"t":"dual","v":{"t":"litt","v":"X"}},"v2":{"t":"litt","v":"Y"}}]},
+      "expected_provability": false
+    },
+    {
+      "sequent_as_json": {"cons":[{"t":"litt","v":"X"},{"t":"litt","v":"Y"},{"t":"plus","v1":{"t":"dual","v":{"t":"litt","v":"X"}},"v2":{"t":"dual","v":{"t":"litt","v":"Y"}}}]},
+      "expected_provability": false
     }
   ],
   "call_auto_reverse": [
