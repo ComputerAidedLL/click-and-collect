@@ -7,7 +7,6 @@ open Eliom_parameter
 
 open Parse_sequent
 open Apply_rule
-open Is_proof_complete
 open Export_as_coq
 open Export_as_latex
 open Is_sequent_provable
@@ -123,29 +122,6 @@ let apply_rule_handler auto_reverse_mode_opt (content_type, raw_content_opt) =
 
 let () =
   Eliom_registration.Any.register apply_rule_service apply_rule_handler;
-  ()
-
-
-(*********************)
-(* IS PROOF COMPLETE *)
-(*********************)
-
-(* Service declaration *)
-let is_proof_complete_service =
-  Eliom_service.create
-      ~path:(Eliom_service.Path ["is_proof_complete"])
-      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
-      ()
-
-(* Service definition *)
-let is_proof_complete_handler () (content_type, raw_content_opt) =
-    post_handler raw_content_opt (function request_as_json ->
-        let technical_success, json_response = is_proof_complete request_as_json in
-        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
-        else send_json ~code:400 (Yojson.Basic.to_string json_response))
-
-let () =
-  Eliom_registration.Any.register is_proof_complete_service is_proof_complete_handler;
   ()
 
 (*****************)

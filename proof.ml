@@ -325,14 +325,6 @@ let rec to_json proof =
                                         ("premises", `List premises_as_json)])];;
 
 
-(* OPERATIONS *)
-
-let rec is_complete = function
-    | Hypothesis_proof s -> false
-    | proof -> let premises = get_premises proof in
-        List.for_all is_complete premises;;
-
-
 (* PROOF -> COQ *)
 
 let coq_apply coq_rule =

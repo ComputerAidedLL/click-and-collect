@@ -300,25 +300,17 @@ function markAsCompleteIfProofIsComplete($container) {
     let proofAsJson = getProofAsJson($container);
 
     // We check if proof is complete
-    checkProofIsCompleteByAPI(proofAsJson, function() {
+    if (checkProofIsComplete(proofAsJson)) {
         markAsComplete($container);
-    });
+    }
 }
 
-function checkProofIsCompleteByAPI(proofAsJson, callbackIfComplete) {
-    $.ajax({
-        type: 'POST',
-        url: '/is_proof_complete',
-        contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
-        success: function(data)
-        {
-            if (data['is_complete'] === true) {
-                callbackIfComplete();
-            }
-        },
-        error: onAjaxError
-    });
+function checkProofIsComplete(proofAsJson) {
+    if (proofAsJson.appliedRule === null) {
+        return false;
+    }
+
+    return proofAsJson.appliedRule.premises.every(checkProofIsComplete);
 }
 
 // *************
