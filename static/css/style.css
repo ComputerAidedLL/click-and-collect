@@ -22,8 +22,8 @@ h4:before { content: '⊢'; }
 form{ display: flex; flex-flow: wrap; justify-content: center; }
 form input{ padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
 form input:focus { outline: none; box-shadow: none; }
-input[type=text] { border: solid 2px gray; }
-form input[type="submit"]{ border: none; background-color: #005; color: white; font-weight: bold; }
+input[type=text] { border: solid 2px #66a3e0; }
+form input[type="submit"]{ border: none; background-color: #66a3e0; color: white; font-weight: bold; }
 input[type=text], .code { background-color: #FFF; font-family: "Courier New", sans-serif; }
 
 .code { border-radius: 0.3em; padding: 0.1em 0.2em; white-space: nowrap; box-decoration-break: clone; }
@@ -66,11 +66,11 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .commaList li:last-child:after { content: ''; }
 .proof .binary-connector { margin-left: 3px; margin-right: 3px; }
 .proof .clickable:hover { cursor:pointer; }
-.proof .highlightableExpr:hover { background: #DDF; }
-.proof .main-formula.hoverable:hover .primaryConnector { background: #005; color: #FFF; }
+.proof .highlightableExpr:hover { background: #e0ecf8; }
+.proof .main-formula.hoverable:hover .primaryConnector { background: #66a3e0; color: #FFF; }
 .proof .main-formula.hoverable:hover .tensor-left, .proof .main-formula.hoverable:hover .tensor-right { position: relative; }
-.proof .main-formula.hoverable:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #005; }
-.proof .main-formula.hoverable:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #005; }
+.proof .main-formula.hoverable:hover .tensor-left::before { content: '←'; position: absolute; left: -0.5em; top: 50%; color: #66a3e0; }
+.proof .main-formula.hoverable:hover .tensor-right::after { content: '→'; position: absolute; right: -0.5em; top: 50%; color: #66a3e0; }
 
 .export-bar, .auto-reverse-bar { margin-left: auto; margin-right: auto; display: table; }
 .export-bar { margin-top: 1em; }
@@ -94,7 +94,6 @@ img.export:hover { cursor: pointer; }
 .switch input { opacity: 0; width: 0; height: 1em; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 1em; }
 .slider:before { position: absolute; content: ""; height: 0.8em; width: 0.8em; left: 0.2em; bottom: 0.1em; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: #2196F3;  }
-input:focus + .slider { box-shadow: 0 0 1px #2196F3;  }
+input:checked + .slider { background-color: #66a3e0; }
 input:checked + .slider:before { -webkit-transform: translateX(1em); -ms-transform: translateX(1em); transform: translateX(1em);  }
 
