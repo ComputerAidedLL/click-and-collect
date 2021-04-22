@@ -43,8 +43,10 @@ function createSequent(sequent, options) {
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
     if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
-        $thesisSpan.on('click', function () {
+        addClickAndDoubleClickEvent($thesisSpan, function () {
             applyRule({rule: 'axiom'}, $sequentDiv);
+        }, function () {
+            autoProveSequent($sequentDiv);
         });
     }
     $sequentDiv.append($thesisSpan);
@@ -312,4 +314,46 @@ function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
     }
 
     return newFormulas;
+}
+
+// ******************
+// AUTO-PROVE SEQUENT
+// ******************
+
+function autoProveSequent($sequentDiv) {
+    let $container = $sequentDiv.closest('.proof-container');
+    let options = $container.data('options');
+
+    // Sequent json that was stored in div may have been permuted before rule applying
+    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+
+    $.ajax({
+        type: 'POST',
+        url: '/auto_prove_sequent',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify(sequent)),
+        success: function(data)
+        {
+            if (data.success) {
+                let appliedRule = data['proof'].appliedRule;
+                addPremises($sequentDiv, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                markAsCompleteIfProofIsComplete($container);
+            } else {
+                if (data['is_provable']) {
+                    markAsNotAutoProvable($sequentDiv);
+                } else {
+                    markAsNotProvable($sequentDiv);
+                }
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+function markAsNotAutoProvable($sequentDiv) {
+    let $turnstile = $sequentDiv.find('span.turnstile');
+    $turnstile.addClass('not-auto-provable');
+    $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
 }
