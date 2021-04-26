@@ -223,6 +223,25 @@ let try_rule_request sequent rule_request =
     try from_sequent_and_rule_request sequent rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
+let is_atomic_zero_selection_sequent sequent = 
+  let n = get_formula_position is_whynot sequent in
+  let head, _, tail = head_formula_tail n sequent in
+  List.for_all is_atomic_or_zero (head @ tail)
+
+let is_reversible_selection_sequent = function
+  | [f1; f2; Whynot _] when dual f1 = f2 -> false
+  | [f1; Whynot _; f2] when dual f1 = f2 -> false
+  | [Whynot _; f1; f2] when dual f1 = f2 -> false
+  | s -> is_atomic_zero_selection_sequent s
+
+let try_rule_selection sequent n =
+  let head, formula, tail = head_formula_tail n sequent in
+  match formula with
+    Whynot e -> Contraction_proof (head, e, tail,
+                  (Dereliction_proof (head, e, Whynot e :: tail,
+                     (Hypothesis_proof (head @ [e;  Whynot e] @ tail)))))
+  | _ -> raise NotApplicable
+
 let apply_reversible_rule proof =
     let sequent = get_conclusion proof in
     try try_rule_request sequent (Top (get_formula_position is_top sequent))
@@ -242,6 +261,10 @@ let apply_reversible_rule proof =
     try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
         with NotApplicable ->
     try try_rule_request sequent Axiom
+        with NotApplicable ->
+    try if is_reversible_selection_sequent sequent
+        then try_rule_selection sequent (get_formula_position is_whynot sequent)
+        else raise NotApplicable
         with NotApplicable ->
     proof;;
 
