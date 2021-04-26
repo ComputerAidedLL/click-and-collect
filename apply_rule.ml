@@ -9,17 +9,17 @@ let get_key d k =
     then raise (Bad_request_exception ("required argument '" ^ k ^ "' is missing"))
     else value
 
-let apply_rule_with_exceptions request_as_json =
+let apply_rule_with_exceptions auto_weak request_as_json =
     let rule_request_as_json = get_key request_as_json "ruleRequest" in
     let rule_request = Rule_request.from_json rule_request_as_json in
     let sequent_as_json = get_key request_as_json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
-    let proof = Proof.from_sequent_and_rule_request sequent rule_request in
+    let proof = Proof.from_sequent_and_rule_request auto_weak sequent rule_request in
     let premises = Proof.get_premises proof in
     premises
 
-let apply_rule request_as_json =
-    try let premises = apply_rule_with_exceptions request_as_json in
+let apply_rule auto_weak request_as_json =
+    try let premises = apply_rule_with_exceptions auto_weak request_as_json in
         let premises_as_json = List.map Proof.to_json premises in
         true, `Assoc [
             ("success", `Bool true);

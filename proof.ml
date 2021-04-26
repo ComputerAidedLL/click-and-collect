@@ -109,19 +109,40 @@ let rec head_formula_tail n = function
         else let head, formula, tail = head_formula_tail (n - 1) formula_list
         in f::head, formula, tail;;
 
-let from_sequent_and_rule_request sequent rule_request =
+let rec from_sequent_and_rule_request auto_weak sequent rule_request =
     match rule_request with
         | Axiom -> (
             match sequent with
-            | e1 :: e2 :: [] -> (if dual e1 <> e2
-                then raise (Rule_exception (true, "Can not apply 'axiom' rule: the two formulas are not orthogonal."))
+            | [e1; e2] -> (if dual e1 <> e2
+                then (if auto_weak
+                      then raise (Rule_exception (true, "Can not apply 'axiom' rule in whynot context: not found two orthogonal formulas."))
+                      else raise (Rule_exception (true, "Can not apply 'axiom' rule: the two formulas are not orthogonal.")))
                 else Axiom_proof e1)
-            | _ -> raise (Rule_exception (true, "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
+            | Whynot f :: tail when auto_weak ->
+               let proof = from_sequent_and_rule_request true tail Axiom in
+               Weakening_proof ([], f, tail, proof)
+            | e :: Whynot f :: tail when auto_weak ->
+               let proof = from_sequent_and_rule_request true (e :: tail) Axiom in
+               Weakening_proof ([e], f, tail, proof)
+            | e1 :: e2 :: Whynot f :: tail when auto_weak ->
+               let proof = from_sequent_and_rule_request true (e1 :: e2 :: tail) Axiom in
+               Weakening_proof ([e1; e2], f, tail, proof)
+            | _ -> if auto_weak
+                   then raise (Rule_exception (true, "Can not apply 'axiom' rule in whynot context: the sequent must contain exactly two non-whynot formulas."))
+                   else raise (Rule_exception (true, "Can not apply 'axiom' rule: the sequent must contain exactly two formulas."))
         )
         | One -> (
             match sequent with
-            | One :: [] -> One_proof
-            | _ -> raise (Rule_exception (true, "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
+            | [One] -> One_proof
+            | Whynot f :: tail when auto_weak ->
+               let proof = from_sequent_and_rule_request true tail One in
+               Weakening_proof ([], f, tail, proof)
+            | One :: Whynot f :: tail when auto_weak ->
+               let proof = from_sequent_and_rule_request true (One :: tail) One in
+               Weakening_proof ([One], f, tail, proof)
+            | _ -> if auto_weak
+                   then raise (Rule_exception (true, "Can not apply 'one' rule in whynot context: the only non-whynot formula must be '1'."))
+                   else raise (Rule_exception (true, "Can not apply 'one' rule: the sequent must be reduced to the single formula '1'."))
         )
         | Bottom n -> (
             let head, formula, tail = head_formula_tail n sequent in
@@ -203,8 +224,8 @@ let from_sequent_and_rule_request sequent rule_request =
             Exchange_proof (permuted_sequent, permutation_inverse permutation, (Hypothesis_proof permuted_sequent))
         );;
 
-let from_sequent_and_rule_request_and_premises sequent rule_request premises =
-    let proof = from_sequent_and_rule_request sequent rule_request in
+let from_sequent_and_rule_request_and_premises auto_weak sequent rule_request premises =
+    let proof = from_sequent_and_rule_request auto_weak sequent rule_request in
     let expected_premises_conclusion = List.map get_conclusion (get_premises proof) in
     let given_premises_conclusion = List.map get_conclusion premises in
     if expected_premises_conclusion <> given_premises_conclusion then
@@ -220,7 +241,7 @@ let rec get_formula_position condition = function
     | f :: tail -> if condition f then 0 else 1 + (get_formula_position condition tail);;
 
 let try_rule_request sequent rule_request =
-    try from_sequent_and_rule_request sequent rule_request
+    try from_sequent_and_rule_request false sequent rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
 let apply_reversible_rule proof =
@@ -295,7 +316,7 @@ let get_json_list json key =
     try Yojson.Basic.Util.to_list value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"));;
 
-let rec from_json json =
+let rec from_json auto_weak json =
     let sequent_as_json = required_field json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
     let applied_ruled_as_json = optional_field json "appliedRule" in
@@ -305,7 +326,7 @@ let rec from_json json =
             let rule_request = Rule_request.from_json rule_request_as_json in
             let premises_as_json = get_json_list applied_ruled_as_json "premises" in
             let premises = List.map from_json premises_as_json in
-            from_sequent_and_rule_request_and_premises sequent rule_request premises;;
+            from_sequent_and_rule_request_and_premises auto_weak sequent rule_request premises;;
 
 
 (* PROOF -> JSON *)
