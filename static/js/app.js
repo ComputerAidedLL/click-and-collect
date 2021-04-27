@@ -76,17 +76,27 @@ function cleanMainProof() {
 // ********
 
 function showTutorial() {
-    // Create tutorial proof
-    $('.tutorial .proof-container').each(function (i, container) {
-        let $container = $(container);
-        let proof = JSON.parse(uncompressJson($container.html()));
-        $container.html('');
-        initProof(proof, $container, {
-            withInteraction: true
-        });
-    })
+    let $tutorial = $('.tutorial');
+    if ($tutorial.data('init') !== true) {
+        // Create tutorial proof
+        $('.tutorial .proof-container').each(function (i, container) {
+            let $container = $(container);
+            let proof = JSON.parse(uncompressJson($container.html()));
+            $container.html('');
+            initProof(proof, $container, {
+                withInteraction: true
+            });
+        })
 
-    $('.tutorial').removeClass('hidden');
+        $tutorial.data('init', true);
+    }
+
+    $tutorial.removeClass('hidden');
+}
+
+function hideTutorial() {
+    $('.tutorial').addClass('hidden');
+    cleanUrlHash('Hide tutorial');
 }
 
 // *****
@@ -94,15 +104,24 @@ function showTutorial() {
 // *****
 
 function showRules() {
-    // Create rules proof
-    $('.rules .proof-container').each(function (i, container) {
-        let $container = $(container);
-        let proofAsJson = JSON.parse(uncompressJson($container.html()));
-        $container.html('');
-        initProof(proofAsJson, $container);
-    })
+    let $rules = $('.rules');
+    if ($rules.data('init') !== true) {
+        // Create rules proof
+        $('.rules .proof-container').each(function (i, container) {
+            let $container = $(container);
+            let proofAsJson = JSON.parse(uncompressJson($container.html()));
+            $container.html('');
+            initProof(proofAsJson, $container);
+        })
 
-    $('.rules').removeClass('hidden');
+        $rules.data('init', true);
+    }
+    $rules.removeClass('hidden');
+}
+
+function hideRules() {
+    $('.rules').addClass('hidden');
+    cleanUrlHash('Hide rules');
 }
 
 // *******************
@@ -140,4 +159,11 @@ function getQueryParamInUrl (key) {
     }
 
     return null;
+}
+
+function cleanUrlHash (title) {
+    let currentUrl = new URL(window.location.href);
+
+    currentUrl.hash = '';
+    window.history.pushState(null, title, currentUrl.toString());
 }
