@@ -3,7 +3,7 @@ open Sequent
 (* Balanced additive slices: provability check *)
 
 let prod_map f l1 l2 =
-  List.concat_map (fun x1 -> List.map (f x1) l2) l1
+  List.concat (List.map (fun x1 -> List.map (f x1) l2) l1)
 
 let rec slices = function
   | One -> [[[]]]
