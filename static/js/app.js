@@ -79,9 +79,9 @@ function showTutorial() {
     // Create tutorial proof
     $('.tutorial .proof-container').each(function (i, container) {
         let $container = $(container);
-        let sequent = JSON.parse(uncompressJson($container.html()));
+        let proof = JSON.parse(uncompressJson($container.html()));
         $container.html('');
-        initProofWithSequent(sequent, $container, {
+        initProof(proof, $container, {
             withInteraction: true
         });
     })
