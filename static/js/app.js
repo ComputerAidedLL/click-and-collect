@@ -76,6 +76,8 @@ function cleanMainProof() {
 // ********
 
 function showTutorial() {
+    cleanUrlParams('Show tutorial');
+
     let $tutorial = $('.tutorial');
     if ($tutorial.data('init') !== true) {
         // Create tutorial proof
@@ -104,6 +106,8 @@ function hideTutorial() {
 // *****
 
 function showRules() {
+    cleanUrlParams('Show rules');
+
     let $rules = $('.rules');
     if ($rules.data('init') !== true) {
         // Create rules proof
@@ -165,5 +169,15 @@ function cleanUrlHash (title) {
     let currentUrl = new URL(window.location.href);
 
     currentUrl.hash = '';
+    window.history.pushState(null, title, currentUrl.toString());
+}
+
+function cleanUrlParams (title) {
+    let currentUrl = new URL(window.location.href);
+
+    currentUrl.searchParams.forEach(function (value, key) {
+        currentUrl.searchParams.delete(key);
+    })
+
     window.history.pushState(null, title, currentUrl.toString());
 }
