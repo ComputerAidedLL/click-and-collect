@@ -111,9 +111,9 @@ function applyRule(ruleRequest, $sequentDiv) {
             if (data.success === true) {
                 cleanPedagogicError($container);
                 addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
+                markAsCompleteIfProofIsComplete($container);
 
-                let isComplete = markAsCompleteIfProofIsComplete($container);
-                if (!isComplete && options.autoReverse) {
+                if (!isSequentComplete($sequentDiv) && options.autoReverse) {
                     autoReverseSequentPremises($sequentDiv);
                 }
             } else {
@@ -309,6 +309,13 @@ function markAsCompleteIfProofIsComplete($container) {
     }
 
     return false;
+}
+
+function isSequentComplete($sequentDiv) {
+    let $sequentTable = $sequentDiv.closest('table');
+    let proofAsJson = recGetProofAsJson($sequentTable);
+
+    return checkProofIsComplete(proofAsJson);
 }
 
 function checkProofIsComplete(proofAsJson) {
