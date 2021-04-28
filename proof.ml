@@ -23,10 +23,11 @@ type proof =
 
 (* PERMUTATIONS *)
 
+let identity n = List.init n (fun k -> k)
+
 let is_valid_permutation l =
     let sorted_l = List.sort Int.compare l in
-    let identity = List.init (List.length l) (fun n -> n) in
-    sorted_l = identity;;
+    sorted_l = identity (List.length l);;
 
 let permute l =
     List.map (List.nth l);;
@@ -36,8 +37,7 @@ let rec position_in_list a = function
     | h :: tl -> if a = h then 0 else 1 + position_in_list a tl
 
 let permutation_inverse perm =
-    let identity = List.init (List.length perm) (fun n -> n) in
-    List.map (fun x -> position_in_list x perm) identity
+    List.map (fun x -> position_in_list x perm) (identity (List.length perm))
 
 
 (* GETTERS & SETTERS *)
@@ -208,7 +208,7 @@ let from_sequent_and_rule_request_and_premises sequent rule_request premises =
     let expected_premises_conclusion = List.map get_conclusion (get_premises proof) in
     let given_premises_conclusion = List.map get_conclusion premises in
     if expected_premises_conclusion <> given_premises_conclusion then
-    raise (Rule_exception (false, "Premises conclusion do not match expected premises conclusion after applying rule"))
+    raise (Rule_exception (false, Printf.sprintf "Premises conclusion do not match expected premises conclusion after applying rule %s}" (Yojson.Basic.to_string (Rule_request.to_json rule_request))))
     else set_premises proof premises;;
 
 (* AUTO REVERSE MODE *)
@@ -415,3 +415,49 @@ let rec to_latex proof =
     | Contraction_proof (_, _, _, p) -> to_latex p ^ (latex_apply "cov" conclusion)
     | Exchange_proof (_, _, p) -> to_latex p ^ (latex_apply "exv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
+
+
+(* SIMPLIFY *)
+
+let rec commute_permutations proof current_permutation =
+    let n = List.length (get_conclusion proof) in
+    let perm = if current_permutation = [] then identity n else current_permutation in
+    let is_identity = perm = identity n in
+    match proof with
+    | Axiom_proof _ when is_identity -> proof
+    | Axiom_proof e -> Axiom_proof (dual e)
+    | One_proof -> proof
+    | Top_proof (_, _) when is_identity -> proof
+    | Top_proof (_, _) -> Exchange_proof (get_conclusion proof, perm, proof)
+    | Bottom_proof (_, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Tensor_proof (head, _, _, tail, p1, p2) ->
+        let new_proof = set_premises proof [commute_permutations p1 []; commute_permutations p2 []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Par_proof (_, _, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | With_proof (_, _, _, _, p1, p2) ->
+        let new_proof = set_premises proof [commute_permutations p1 []; commute_permutations p2 []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Plus_left_proof (_, _, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Plus_right_proof (_, _, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Promotion_proof (_, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Dereliction_proof (_, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Weakening_proof (_, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Contraction_proof (_, _, _, p) ->
+        let new_proof = set_premises proof [commute_permutations p []] in
+        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Exchange_proof (_, permutation, p) -> commute_permutations p (permute permutation perm)
+    | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;

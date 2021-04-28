@@ -11,6 +11,7 @@ open Export_as_coq
 open Export_as_latex
 open Is_sequent_provable
 open Auto_reverse_sequent
+open Auto_prove_sequent
 open Yojson
 
 
@@ -206,4 +207,26 @@ let auto_reverse_sequent_handler () (content_type, raw_content_opt) =
 
 let () =
   Eliom_registration.Any.register auto_reverse_sequent_service auto_reverse_sequent_handler;
+  ()
+
+(**********************)
+(* AUTO PROVE SEQUENT *)
+(**********************)
+
+(* Service declaration *)
+let auto_prove_sequent_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["auto_prove_sequent"])
+      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ()
+
+(* Service definition *)
+let auto_prove_sequent_handler () (content_type, raw_content_opt) =
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, json_response = auto_prove_sequent request_as_json in
+        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+        else send_json ~code:400 (Yojson.Basic.to_string json_response))
+
+let () =
+  Eliom_registration.Any.register auto_prove_sequent_service auto_prove_sequent_handler;
   ()

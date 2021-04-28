@@ -631,5 +631,24 @@
               "appliedRule":{"ruleRequest":{"rule":"axiom"},
                 "premises":[]}}]}}
     }
+  ],
+  "parse_auto_prove_and_verify": [
+    "A^,A*B^,B",
+    "A^,A*A^,A",
+    "A,T*T,B",
+    "A,top*1,bot",
+    "(1*top)|A",
+    "(1*top|B)&1",
+    "?A,A^*1",
+    "A+(1+B)",
+    "?A,?!A^",
+    "A,B+?A^",
+    "A,?A^,?B",
+    "A,?B,?A^,?C",
+    "A*A^,A|A^",
+    "?A,?B,1*1"
+  ],
+  "parse_auto_prove_non_provable": [
+    "1+_,1,1"
   ]
 }
