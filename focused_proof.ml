@@ -16,8 +16,8 @@ type llf_rule =
   | Whynot_intro
   | Axiom_central
   | Axiom_exponential
-  | Focalization_central of formula * formula list
-  | Focalization_exponential of formula
+  | Focusing_central of formula * formula list
+  | Focusing_exponential of formula
   | Async_on_pos
   | Sync_on_neg
 
@@ -151,7 +151,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
               else
                 try
                   let p = get_op (prove (Sync (theta, gamma', f)) select_d2 max_d2) in
-                  Some (Node (sequent, Focalization_central (f, gamma'), [p]))
+                  Some (Node (sequent, Focusing_central (f, gamma'), [p]))
                 with NoValue -> apply_d1 (k + 1) in
           begin try
             Some (get_op (apply_d1 0))
@@ -162,7 +162,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
                 let p =
                   get_op (prove (Sync (theta, gamma, f))
                     (List.tl select_d2) max_d2) in
-                Some (Node (sequent, Focalization_exponential f, [p]))
+                Some (Node (sequent, Focusing_exponential f, [p]))
               with NoValue ->
                 apply_d2' (List.tl select_d2) max_d2
             and apply_d2' select_d2 max_d2 =
@@ -205,7 +205,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
               with NoValue -> None end
           | Par (f, g) ->
               begin try
-                let p = get_op (prove (Async (theta, gamma, g :: f :: tl)) select_d2 max_d2) in
+                let p = get_op (prove (Async (theta, gamma, f :: g :: tl)) select_d2 max_d2) in
                 Some (Node (sequent, Par_intro, [p]))
               with NoValue -> None end
           | Whynot g ->
@@ -343,57 +343,52 @@ let rec get_mixed_permutation indexed1 indexed2 = function
         with NotFound -> let head2, i2, tail2 = head_index_tail e indexed2 in
             i2 :: (get_mixed_permutation indexed1 (head2 @ tail2) tail)
 
-let rec weaken proof l = function
+let rec weaken proof l1 l2 = function
     | [] -> proof
-    | e :: tail -> Weakening_proof ([], e, map_wn tail @ l, weaken proof l tail)
+    | e :: tail -> Weakening_proof (l1, e, map_wn tail @ l2, weaken proof l1 l2 tail)
 
 let rec contract proof head tail = function
     | [] -> proof
     | e :: l -> Contraction_proof (map_wn head, e, (map_wn l) @ tail, contract proof (head @ [e; e]) tail l)
 
-let rec unfocalize_proof theta = function
+let rec unfocus_proof = function
     | Null -> raise (Failure "Focused proof is null")
     | Node (focused_sequent, rule, focused_premises) ->
         match rule with
             | One_intro -> begin match focused_sequent with
-                | Sync (_, [], One) ->
-                    weaken One_proof [One] theta
+                | Sync (theta, [], One) ->
+                    weaken One_proof [] [One] (map_wn (Set_formula.elements theta))
                 | _ -> raise (Failure "sync formula with only one expected") end
             | Top_intro -> begin match focused_sequent with
-                | Async (_, gamma, Top :: tail) ->
-                    Top_proof (map_wn theta @ gamma, tail)
+                | Async (theta, gamma, Top :: tail) ->
+                    Top_proof (map_wn (Set_formula.elements theta) @ gamma, tail)
                 | _ -> raise (Failure "async with top expected") end
             | Bottom_intro -> begin match focused_sequent with
-                | Async (_, gamma, Bottom :: tail) ->
-                    Bottom_proof (map_wn theta @ gamma, tail, unfocalize_proof theta (List.hd focused_premises))
+                | Async (theta, gamma, Bottom :: tail) ->
+                    Bottom_proof (map_wn (Set_formula.elements theta) @ gamma, tail, unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "async with bottom expected") end
             | Par_intro -> begin match focused_sequent with
-                | Async (_, gamma, Par (e1, e2) :: tail) ->
-                    let premise = unfocalize_proof theta (List.hd focused_premises) in
-                    let theta_gamma_length = List.length theta + List.length gamma in
-                    let permutation = List.init theta_gamma_length (fun k -> k)
-                        @ [theta_gamma_length + 1; theta_gamma_length]
-                        @ List.init (List.length tail) (fun k -> theta_gamma_length + 2 + k) in
-                    let exchanged_premise = Exchange_proof (map_wn theta @ gamma @ [e2; e1] @ tail, permutation, premise) in
-                    Par_proof (map_wn theta @ gamma, e1, e2, tail, exchanged_premise)
+                | Async (theta, gamma, Par (e1, e2) :: tail) ->
+                    Par_proof (map_wn (Set_formula.elements theta) @ gamma, e1, e2, tail, unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "async with par expected") end
             | With_intro -> begin match focused_sequent with
-                | Async (_, gamma, With (e1, e2) :: tail) ->
-                    let premise1 = unfocalize_proof theta (List.hd focused_premises) in
-                    let premise2 = unfocalize_proof theta (List.nth focused_premises 1) in
-                    With_proof (map_wn theta @ gamma, e1, e2, tail, premise1, premise2)
+                | Async (theta, gamma, With (e1, e2) :: tail) ->
+                    let premise1 = unfocus_proof (List.hd focused_premises) in
+                    let premise2 = unfocus_proof (List.nth focused_premises 1) in
+                    With_proof (map_wn (Set_formula.elements theta) @ gamma, e1, e2, tail, premise1, premise2)
                 | _ -> raise (Failure "async with with expected") end
             | Tensor_intro (gamma1, gamma2) -> begin match focused_sequent with
-                | Sync (_, gamma, Tensor (e1,e2)) ->
-                    let premise1 = unfocalize_proof theta (List.hd focused_premises) in
-                    let premise2 = unfocalize_proof theta (List.nth focused_premises 1) in
-                    let n_theta = List.length theta in
+                | Sync (theta, gamma, Tensor (e1,e2)) ->
+                    let premise1 = unfocus_proof (List.hd focused_premises) in
+                    let premise2 = unfocus_proof (List.nth focused_premises 1) in
+                    let theta_elements = Set_formula.elements theta in
+                    let n_theta = List.length theta_elements in
                     let n1 = List.length gamma1 in
                     let n2 = List.length gamma2 in
-                    let permutation = [n_theta + n2] @ List.init n_theta (fun k -> k) @ List.init n2 (fun k -> n_theta + k) in
-                    let exchanged_premise2 = Exchange_proof (map_wn theta @ gamma2 @ [e2], permutation, premise2) in
-                    let tensor_proof = Tensor_proof (map_wn theta @ gamma1, e1, e2, map_wn theta @ gamma2, premise1, exchanged_premise2) in
-                    let new_sequent = map_wn theta @ gamma1 @ [Tensor (e1,e2)] @ map_wn theta @ gamma2 in
+                    let permutation = [n_theta + n2] @ List.init (n_theta + n2) (fun k -> k) in
+                    let exchanged_premise2 = Exchange_proof (map_wn theta_elements @ gamma2 @ [e2], permutation, premise2) in
+                    let tensor_proof = Tensor_proof (map_wn theta_elements @ gamma1, e1, e2, map_wn theta_elements @ gamma2, premise1, exchanged_premise2) in
+                    let new_sequent = map_wn theta_elements @ gamma1 @ [Tensor (e1,e2)] @ map_wn theta_elements @ gamma2 in
                     let indexed_gamma1 = index_list n_theta gamma1 in
                     let indexed_gamma2 = index_list (n_theta + n1 + 1 + n_theta) gamma2 in
                     let gamma_permutation = get_mixed_permutation indexed_gamma1 indexed_gamma2 gamma in
@@ -402,64 +397,63 @@ let rec unfocalize_proof theta = function
                         @ gamma_permutation
                         @ [n_theta + n1] in
                     let exchanged_tensor = Exchange_proof (new_sequent, permutation, tensor_proof) in
-                    let new_sequent = map_wn theta @ map_wn theta @ gamma @ [Tensor (e1,e2)] in
-                    let indexed_theta1 = index_list 0 theta in
-                    let indexed_theta2 = index_list n_theta theta in
-                    let theta_permutation = get_mixed_permutation indexed_theta1 indexed_theta2 (double_list theta) in
+                    let new_sequent = map_wn theta_elements @ map_wn theta_elements @ gamma @ [Tensor (e1,e2)] in
+                    let indexed_theta1 = index_list 0 theta_elements in
+                    let indexed_theta2 = index_list n_theta theta_elements in
+                    let theta_permutation = get_mixed_permutation indexed_theta1 indexed_theta2 (double_list theta_elements) in
                     let permutation = theta_permutation
                         @ List.init (n1 + n2 + 1) (fun k -> 2 * n_theta + k) in
                     let exponentials_together = Exchange_proof (new_sequent, permutation, exchanged_tensor) in
-                    contract exponentials_together [] (gamma @ [Tensor (e1,e2)]) theta
+                    contract exponentials_together [] (gamma @ [Tensor (e1,e2)]) theta_elements
                 | _ -> raise (Failure "sync tensor expected") end
             | Plus_left_intro -> begin match focused_sequent with
-                | Sync (_, gamma, Plus (e1, e2)) ->
-                   Plus_left_proof (map_wn theta @ gamma, e1, e2, [], unfocalize_proof theta (List.hd focused_premises))
-               | _ -> raise (Failure "async with plus expected") end
-          | Plus_right_intro -> begin match focused_sequent with
-               | Sync (_, gamma, Plus (e1, e2)) ->
-                   Plus_right_proof (map_wn theta @ gamma, e1, e2, [], unfocalize_proof theta (List.hd focused_premises))
-               | _ -> raise (Failure "async with plus expected") end
-          | Ofcourse_intro -> begin match focused_sequent with
-               | Sync (_, [], Ofcourse e) ->
-                   Promotion_proof (theta, e, [], unfocalize_proof theta (List.hd focused_premises))
+                | Sync (theta, gamma, Plus (e1, e2)) ->
+                    Plus_left_proof (map_wn (Set_formula.elements theta) @ gamma, e1, e2, [], unfocus_proof (List.hd focused_premises))
+                | _ -> raise (Failure "async with plus expected") end
+            | Plus_right_intro -> begin match focused_sequent with
+                | Sync (theta, gamma, Plus (e1, e2)) ->
+                    Plus_right_proof (map_wn (Set_formula.elements theta) @ gamma, e1, e2, [], unfocus_proof (List.hd focused_premises))
+                | _ -> raise (Failure "async with plus expected") end
+            | Ofcourse_intro -> begin match focused_sequent with
+                | Sync (theta, [], Ofcourse e) ->
+                   Promotion_proof (Set_formula.elements theta, e, [], unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "sync with ofcourse expected") end
             | Whynot_intro -> begin match focused_sequent with
-                | Async (_, gamma, (Whynot e) :: tail) ->
-                    let premise = unfocalize_proof (e::theta) (List.hd focused_premises) in
-                    let new_sequent = map_wn (e::theta) @ gamma @ tail in
-                    let n_theta = List.length theta in
-                    let n_gamma = List.length gamma in
-                    let permutation = List.init n_theta (fun k -> 1 + k)
-                        @ List.init n_gamma (fun k -> 1 + n_theta + k)
-                        @ [0]
-                        @ List.init (List.length tail) (fun k -> 1 + n_theta + n_gamma + k) in
-                    Exchange_proof (new_sequent, permutation, premise)
+                | Async (theta, gamma, (Whynot e) :: tail) ->
+                    if Set_formula.mem e theta then
+                      Weakening_proof (map_wn (Set_formula.elements theta) @ gamma, e, tail, unfocus_proof (List.hd focused_premises))
+                    else 
+                      let premise = unfocus_proof (List.hd focused_premises) in
+                      let theta_head, theta_tail = head_tail e (Set_formula.elements theta) in
+                      let new_sequent = map_wn theta_head @ map_wn theta_tail @ gamma @ [Whynot e] @ tail in
+                      let n_theta_head = List.length theta_head in
+                      let n_theta_tail = List.length theta_tail in
+                      let n_gamma = List.length gamma in
+                      let n_tail = List.length tail in
+                      let permutation = List.init n_theta_head (fun k -> k)
+                        @ List.init (n_theta_tail + n_gamma) (fun k -> n_theta_head + 1 + k)
+                        @ [n_theta_head]
+                        @ List.init n_tail (fun k -> n_theta_head + n_theta_tail + n_gamma + 1 + k) in
+                      Exchange_proof (new_sequent, permutation, premise)
                 | _ -> raise (Failure "async formula with whynot expected") end
             | Axiom_central -> begin match focused_sequent with
-                | Sync (_, [Dual s], Litt t) when s = t ->
-                    weaken (Axiom_proof (Dual s)) [Dual s; Litt s] theta
+                | Sync (theta, [Dual s], Litt t) when s = t ->
+                    weaken (Axiom_proof (Dual s)) [] [Dual s; Litt s] (Set_formula.elements theta)
                 | _ -> raise (Failure "sync formula expected") end
             | Axiom_exponential -> begin match focused_sequent with
-                | Sync (_, [], Litt s) ->
+                | Sync (theta, [], Litt s) ->
                     let axiom_proof = Axiom_proof (Dual s) in
-                    let dereliction = Dereliction_proof ([], Dual s, [Litt s], axiom_proof) in
-                    let head, tail = head_tail (Dual s) theta in
-                    let weakening_proofs = weaken dereliction [Whynot (Dual s); Litt s] (head @ tail) in
-                    let new_sequent = map_wn head @ map_wn tail @ [Whynot (Dual s); Litt s] in
-                    let n_head = List.length head in
-                    let n_tail = List.length tail in
-                    let permutation = List.init n_head (fun k -> k)
-                        @ [n_head + n_tail]
-                        @ List.init n_tail (fun k -> n_head + k)
-                        @ [n_head + n_tail + 1] in
-                    Exchange_proof (new_sequent, permutation, weakening_proofs)
+                    let dereliction_proof = Dereliction_proof ([], Dual s, [Litt s], axiom_proof) in
+                    let head, tail = head_tail (Dual s) (Set_formula.elements theta) in
+                    let weakening_tail_proof = weaken dereliction_proof [Whynot (Dual s)] [Litt s] tail in
+                      weaken weakening_tail_proof [] ([Whynot (Dual s)] @ map_wn tail @ [Litt s]) head
                 | _ -> raise (Failure "sync formula with empty gamma expected") end
-            | Focalization_central (formula, _) -> begin match focused_sequent with
-                | Async (_, gamma, []) ->
-                    let premise = unfocalize_proof theta (List.hd focused_premises) in
+            | Focusing_central (formula, _) -> begin match focused_sequent with
+                | Async (theta, gamma, []) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
                     let head, tail = head_tail formula gamma in
-                    let new_sequent = map_wn theta @ head @ tail @ [formula] in
-                    let n_theta = List.length theta in
+                    let new_sequent = map_wn (Set_formula.elements theta) @ head @ tail @ [formula] in
+                    let n_theta = Set_formula.cardinal theta in
                     let n_head = List.length head in
                     let n_tail = List.length tail in
                     let permutation = List.init (n_theta + n_head) (fun k -> k)
@@ -467,12 +461,13 @@ let rec unfocalize_proof theta = function
                         @ List.init n_tail (fun k -> n_theta + n_head + k) in
                     Exchange_proof (new_sequent, permutation, premise)
                 | _ -> raise (Failure "async empty expected") end
-            | Focalization_exponential formula -> begin match focused_sequent with
-                | Async (_, gamma, []) ->
-                    let premise = unfocalize_proof theta (List.hd focused_premises) in
-                    let dereliction = Dereliction_proof (map_wn theta @ gamma, formula, [], premise) in
-                    let head, tail = head_tail (Whynot formula) (map_wn theta) in
-                    let new_sequent = map_wn theta @ gamma @ [Whynot formula] in
+            | Focusing_exponential formula -> begin match focused_sequent with
+                | Async (theta, gamma, []) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    let wn_theta_elements = map_wn (Set_formula.elements theta) in
+                    let dereliction = Dereliction_proof (wn_theta_elements @ gamma, formula, [], premise) in
+                    let head, tail = head_tail (Whynot formula) wn_theta_elements in
+                    let new_sequent = wn_theta_elements @ gamma @ [Whynot formula] in
                     let n_head = List.length head in
                     let n_tail = List.length tail in
                     let n_gamma = List.length gamma in
@@ -485,10 +480,10 @@ let rec unfocalize_proof theta = function
                     Contraction_proof (head, formula, tail @ gamma, exchange)
                 | _ -> raise (Failure "async empty expected") end
             | Async_on_pos -> begin match focused_sequent with
-                | Async (_, gamma, e :: tail) ->
-                    let premise = unfocalize_proof theta (List.hd focused_premises) in
-                    let new_sequent = map_wn theta @ (e :: gamma) @ tail in
-                    let n_theta = List.length theta in
+                | Async (theta, gamma, e :: tail) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    let new_sequent = map_wn (Set_formula.elements theta) @ (e :: gamma) @ tail in
+                    let n_theta = Set_formula.cardinal theta in
                     let n_gamma = List.length gamma in
                     let permutation = List.init n_theta (fun k -> k)
                         @ List.init n_gamma (fun k -> n_theta + 1 + k)
@@ -496,13 +491,13 @@ let rec unfocalize_proof theta = function
                         @ List.init (List.length tail) (fun k -> n_theta + n_gamma + 1 + k) in
                     Exchange_proof (new_sequent, permutation, premise)
                 | _ -> raise (Failure "async formula expected") end
-            | Sync_on_neg -> unfocalize_proof theta (List.hd focused_premises)
+            | Sync_on_neg -> unfocus_proof (List.hd focused_premises)
 
 let sequent_to_focused_sequent sequent =
     Async (Set_formula.empty, [], sequent)
 
 let proof_from_focused_proof focused_proof =
-    let proof = unfocalize_proof [] focused_proof in
+    let proof = unfocus_proof focused_proof in
     commute_permutations proof []
 
 exception NonProvableSequent
