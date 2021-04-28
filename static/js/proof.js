@@ -500,7 +500,9 @@ function autoReverseContainer($container) {
 function autoReverseSequentPremises($sequentDiv) {
     let $premisesSequentDiv = recGetPremisesSequentDiv($sequentDiv.closest('table'));
     for (let $premiseSequentDiv of $premisesSequentDiv) {
-        autoReverseSequent($premiseSequentDiv);
+        if (!isSequentComplete($premiseSequentDiv)) {
+            autoReverseSequent($premiseSequentDiv);
+        }
     }
 }
 
