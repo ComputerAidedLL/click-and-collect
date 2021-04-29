@@ -345,9 +345,9 @@ let permute_proof proof sequent_below =
     let permutation = get_permutation indexed_sequent sequent_below in
     Exchange_proof (sequent, permutation, proof)
 
-let rec weaken proof l = function
+let rec weaken proof head tail = function
     | [] -> proof
-    | e :: tail -> Weakening_proof ([], e, map_wn tail @ l, weaken proof l tail)
+    | e :: l -> Weakening_proof (head, e, map_wn l @ tail, weaken proof head tail l)
 
 let rec contract proof head tail = function
     | [] -> proof
@@ -377,7 +377,7 @@ let rec unfocus_proof theta = function
         match rule with
             | One_intro -> begin match focused_sequent with
                 | Sync (_, [], One) ->
-                    weaken One_proof [One] theta
+                    weaken One_proof [] [One] theta
                 | _ -> raise (Failure "sync formula with only one expected") end
             | Top_intro -> begin match focused_sequent with
                 | Async (_, gamma, Top :: tail) ->
@@ -426,15 +426,15 @@ let rec unfocus_proof theta = function
                 | _ -> raise (Failure "async formula with whynot expected") end
             | Axiom_central -> begin match focused_sequent with
                 | Sync (_, [Dual s], Litt t) when s = t ->
-                    weaken (Axiom_proof (Dual s)) [Dual s; Litt s] theta
+                    weaken (Axiom_proof (Dual s)) [] [Dual s; Litt s] theta
                 | _ -> raise (Failure "sync formula expected") end
             | Axiom_exponential -> begin match focused_sequent with
                 | Sync (_, [], Litt s) ->
                     let axiom_proof = Axiom_proof (Dual s) in
                     let dereliction = Dereliction_proof ([], Dual s, [Litt s], axiom_proof) in
                     let head, tail = head_tail (Dual s) theta in
-                    let weakening_proofs = weaken dereliction [Whynot (Dual s); Litt s] (head @ tail) in
-                    move_left (List.length head) 1 weakening_proofs
+                    let weakening_tail_proof = weaken dereliction [Whynot (Dual s)] [Litt s] tail in
+                    weaken weakening_tail_proof [] ([Whynot (Dual s)] @ map_wn tail @ [Litt s]) head
                 | _ -> raise (Failure "sync formula with empty gamma expected") end
             | Focusing_central (formula, _) -> begin match focused_sequent with
                 | Async (_, gamma, []) ->
