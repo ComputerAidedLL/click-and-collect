@@ -83,6 +83,7 @@ let rec whynot_height = function
 (** Functions for manipulating LLF sequents **)
 
 let map_wn = List.map (fun x -> Whynot x)
+let map_wn_set theta_set = map_wn (Set_formula.elements theta_set)
 
 (** Manipulation of the type ['a option] **)
 
@@ -371,65 +372,75 @@ let move_right left_offset right_offset proof =
         @ List.init right_offset (fun k -> n - right_offset + k) in
     Exchange_proof (sequent, permutation, proof)
 
-let rec unfocus_proof theta = function
+let rec unfocus_proof = function
     | Null -> raise (Failure "Focused proof is null")
     | Node (focused_sequent, rule, focused_premises) ->
         match rule with
             | One_intro -> begin match focused_sequent with
-                | Sync (_, [], One) ->
+                | Sync (theta_set, [], One) ->
+                    let theta = Set_formula.elements theta_set in
                     weaken One_proof [] [One] theta
                 | _ -> raise (Failure "sync formula with only one expected") end
             | Top_intro -> begin match focused_sequent with
-                | Async (_, gamma, Top :: tail) ->
-                    Top_proof (map_wn theta @ gamma, tail)
+                | Async (theta_set, gamma, Top :: tail) ->
+                    Top_proof (map_wn_set theta_set @ gamma, tail)
                 | _ -> raise (Failure "async with top expected") end
             | Bottom_intro -> begin match focused_sequent with
-                | Async (_, gamma, Bottom :: tail) ->
-                    Bottom_proof (map_wn theta @ gamma, tail, unfocus_proof theta (List.hd focused_premises))
+                | Async (theta_set, gamma, Bottom :: tail) ->
+                    Bottom_proof (map_wn_set theta_set @ gamma, tail, unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "async with bottom expected") end
             | Par_intro -> begin match focused_sequent with
-                | Async (_, gamma, Par (e1, e2) :: tail) ->
-                    let premise = unfocus_proof theta (List.hd focused_premises) in
-                    Par_proof (map_wn theta @ gamma, e1, e2, tail, premise)
+                | Async (theta_set, gamma, Par (e1, e2) :: tail) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    Par_proof (map_wn_set theta_set @ gamma, e1, e2, tail, premise)
                 | _ -> raise (Failure "async with par expected") end
             | With_intro -> begin match focused_sequent with
-                | Async (_, gamma, With (e1, e2) :: tail) ->
-                    let premise1 = unfocus_proof theta (List.hd focused_premises) in
-                    let premise2 = unfocus_proof theta (List.nth focused_premises 1) in
-                    With_proof (map_wn theta @ gamma, e1, e2, tail, premise1, premise2)
+                | Async (theta_set, gamma, With (e1, e2) :: tail) ->
+                    let premise1 = unfocus_proof (List.hd focused_premises) in
+                    let premise2 = unfocus_proof (List.nth focused_premises 1) in
+                    With_proof (map_wn_set theta_set @ gamma, e1, e2, tail, premise1, premise2)
                 | _ -> raise (Failure "async with with expected") end
             | Tensor_intro (gamma1, gamma2) -> begin match focused_sequent with
-                | Sync (_, gamma, Tensor (e1,e2)) ->
-                    let premise1 = unfocus_proof theta (List.hd focused_premises) in
-                    let premise2 = unfocus_proof theta (List.nth focused_premises 1) in
+                | Sync (theta_set, gamma, Tensor (e1,e2)) ->
+                    let theta = Set_formula.elements theta_set in
+                    let premise1 = unfocus_proof (List.hd focused_premises) in
+                    let premise2 = unfocus_proof (List.nth focused_premises 1) in
                     let exchanged_premise2 = move_left 0 0 premise2 in
                     let tensor_proof = Tensor_proof (map_wn theta @ gamma1, e1, e2, map_wn theta @ gamma2, premise1, exchanged_premise2) in
                     let theta_by_pair = permute_proof tensor_proof ((map_wn (double_list theta)) @ gamma @ [Tensor (e1,e2)]) in
                     contract theta_by_pair [] (gamma @ [Tensor (e1,e2)]) theta
                 | _ -> raise (Failure "sync tensor expected") end
             | Plus_left_intro -> begin match focused_sequent with
-                | Sync (_, gamma, Plus (e1, e2)) ->
-                    Plus_left_proof (map_wn theta @ gamma, e1, e2, [], unfocus_proof theta (List.hd focused_premises))
+                | Sync (theta_set, gamma, Plus (e1, e2)) ->
+                    Plus_left_proof (map_wn_set theta_set @ gamma, e1, e2, [], unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "async with plus expected") end
             | Plus_right_intro -> begin match focused_sequent with
-                | Sync (_, gamma, Plus (e1, e2)) ->
-                    Plus_right_proof (map_wn theta @ gamma, e1, e2, [], unfocus_proof theta (List.hd focused_premises))
+                | Sync (theta_set, gamma, Plus (e1, e2)) ->
+                    Plus_right_proof (map_wn_set theta_set @ gamma, e1, e2, [], unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "async with plus expected") end
             | Ofcourse_intro -> begin match focused_sequent with
-                | Sync (_, [], Ofcourse e) ->
-                    Promotion_proof (theta, e, [], unfocus_proof theta (List.hd focused_premises))
+                | Sync (theta_set, [], Ofcourse e) ->
+                    let theta = Set_formula.elements theta_set in
+                    Promotion_proof (theta, e, [], unfocus_proof (List.hd focused_premises))
                 | _ -> raise (Failure "sync with ofcourse expected") end
             | Whynot_intro -> begin match focused_sequent with
-                | Async (_, gamma, (Whynot e) :: tail) ->
-                    let premise = unfocus_proof (e::theta) (List.hd focused_premises) in
-                    move_right 0 (List.length tail) premise
+                | Async (theta_set, gamma, (Whynot e) :: tail) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    if Set_formula.mem e theta_set then
+                        Weakening_proof (map_wn_set theta_set @ gamma, e, tail, premise)
+                    else
+                        let premise_theta = Set_formula.elements (Set_formula.add e theta_set) in
+                        let theta_head, theta_tail = head_tail e premise_theta in
+                        move_right (List.length theta_head) (List.length tail) premise
                 | _ -> raise (Failure "async formula with whynot expected") end
             | Axiom_central -> begin match focused_sequent with
-                | Sync (_, [Dual s], Litt t) when s = t ->
+                | Sync (theta_set, [Dual s], Litt t) when s = t ->
+                    let theta = Set_formula.elements theta_set in
                     weaken (Axiom_proof (Dual s)) [] [Dual s; Litt s] theta
                 | _ -> raise (Failure "sync formula expected") end
             | Axiom_exponential -> begin match focused_sequent with
-                | Sync (_, [], Litt s) ->
+                | Sync (theta_set, [], Litt s) ->
+                    let theta = Set_formula.elements theta_set in
                     let axiom_proof = Axiom_proof (Dual s) in
                     let dereliction = Dereliction_proof ([], Dual s, [Litt s], axiom_proof) in
                     let head, tail = head_tail (Dual s) theta in
@@ -437,31 +448,31 @@ let rec unfocus_proof theta = function
                     weaken weakening_tail_proof [] ([Whynot (Dual s)] @ map_wn tail @ [Litt s]) head
                 | _ -> raise (Failure "sync formula with empty gamma expected") end
             | Focusing_central (formula, _) -> begin match focused_sequent with
-                | Async (_, gamma, []) ->
-                    let premise = unfocus_proof theta (List.hd focused_premises) in
+                | Async (theta_set, gamma, []) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
                     let head, tail = head_tail formula gamma in
-                    move_left (List.length theta + List.length head) 0 premise
+                    move_left (Set_formula.cardinal theta_set + List.length head) 0 premise
                 | _ -> raise (Failure "async empty expected") end
             | Focusing_exponential formula -> begin match focused_sequent with
-                | Async (_, gamma, []) ->
-                    let premise = unfocus_proof theta (List.hd focused_premises) in
-                    let dereliction = Dereliction_proof (map_wn theta @ gamma, formula, [], premise) in
-                    let head, tail = head_tail (Whynot formula) (map_wn theta) in
+                | Async (theta_set, gamma, []) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    let dereliction = Dereliction_proof (map_wn_set theta_set @ gamma, formula, [], premise) in
+                    let head, tail = head_tail (Whynot formula) (map_wn_set theta_set) in
                     let exchange = move_left (List.length head + 1) 0 dereliction in
                     Contraction_proof (head, formula, tail @ gamma, exchange)
                 | _ -> raise (Failure "async empty expected") end
             | Async_on_pos -> begin match focused_sequent with
-                | Async (_, gamma, e :: tail) ->
-                    let premise = unfocus_proof theta (List.hd focused_premises) in
-                    move_right (List.length theta) (List.length tail) premise
+                | Async (theta_set, gamma, e :: tail) ->
+                    let premise = unfocus_proof (List.hd focused_premises) in
+                    move_right (Set_formula.cardinal theta_set) (List.length tail) premise
                 | _ -> raise (Failure "async formula expected") end
-            | Sync_on_neg -> unfocus_proof theta (List.hd focused_premises)
+            | Sync_on_neg -> unfocus_proof (List.hd focused_premises)
 
 let sequent_to_focused_sequent sequent =
     Async (Set_formula.empty, [], sequent)
 
 let proof_from_focused_proof focused_proof =
-    let proof = unfocus_proof [] focused_proof in
+    let proof = unfocus_proof focused_proof in
     commute_permutations proof []
 
 exception NonProvableSequent
