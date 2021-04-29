@@ -418,46 +418,64 @@ let rec to_latex proof =
 
 
 (* SIMPLIFY *)
+let rec head_tail element = function
+    | [] -> raise (Failure "element not found")
+    | e :: l -> if e = element then [], l else let head, tail = head_tail element l in e :: head, tail
 
-let rec commute_permutations proof current_permutation =
-    let n = List.length (get_conclusion proof) in
-    let perm = if current_permutation = [] then identity n else current_permutation in
-    let is_identity = perm = identity n in
+let head_tail_perm head perm =
+    let n_head = List.length head in
+    head_tail n_head perm
+
+let perm_minus_element head perm =
+    let n_head = List.length head in
+    List.map (fun k -> if k > n_head then k - 1 else k) (List.filter (fun k -> k <> n_head) perm)
+
+let perm_plus_element head perm =
+    let n_head = List.length head in
+    List.concat (List.map (fun k -> if k = n_head then [n_head; n_head + 1] else if k > n_head then [k + 1] else [k]) perm)
+
+let rec commute_permutations proof perm =
+    let conclusion = get_conclusion proof in
     match proof with
-    | Axiom_proof _ when is_identity -> proof
-    | Axiom_proof e -> Axiom_proof (dual e)
+    | Axiom_proof e -> if perm = [0; 1] then proof else Axiom_proof (dual e)
     | One_proof -> proof
-    | Top_proof (_, _) when is_identity -> proof
-    | Top_proof (_, _) -> Exchange_proof (get_conclusion proof, perm, proof)
-    | Bottom_proof (_, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+    | Top_proof (head, tail) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Top_proof (permute conclusion head_perm, permute conclusion tail_perm)
+    | Bottom_proof (head, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        let new_perm = perm_minus_element head perm in
+        Bottom_proof (permute conclusion head_perm, permute conclusion tail_perm, commute_permutations p new_perm)
     | Tensor_proof (head, _, _, tail, p1, p2) ->
-        let new_proof = set_premises proof [commute_permutations p1 []; commute_permutations p2 []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Par_proof (_, _, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | With_proof (_, _, _, _, p1, p2) ->
-        let new_proof = set_premises proof [commute_permutations p1 []; commute_permutations p2 []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Plus_left_proof (_, _, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Plus_right_proof (_, _, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Promotion_proof (_, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Dereliction_proof (_, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Weakening_proof (_, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
-    | Contraction_proof (_, _, _, p) ->
-        let new_proof = set_premises proof [commute_permutations p []] in
-        if is_identity then new_proof else Exchange_proof (get_conclusion proof, perm, new_proof)
+        let new_proof = set_premises proof [commute_permutations p1 (identity (List.length head + 1)); commute_permutations p2 (identity (1 + List.length tail))] in
+        if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, new_proof)
+    | Par_proof (head, e1, e2, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        let new_perm = perm_plus_element head perm in
+        Par_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p new_perm)
+    | With_proof (head, e1, e2, tail, p1, p2) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        With_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p1 perm, commute_permutations p2 perm)
+    | Plus_left_proof (head, e1, e2, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Plus_left_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p perm)
+    | Plus_right_proof (head, e1, e2, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Plus_right_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p perm)
+    | Promotion_proof (head_without_whynot, formula, tail_without_whynot, p) ->
+        let head_perm, tail_perm = head_tail_perm head_without_whynot perm in
+        let conclusion_without_whynot = head_without_whynot @ [formula] @ tail_without_whynot in
+        Promotion_proof (permute conclusion_without_whynot head_perm, formula, permute conclusion_without_whynot tail_perm, commute_permutations p perm)
+    | Dereliction_proof (head, formula, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Dereliction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p perm)
+    | Weakening_proof (head, formula, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        let new_perm = perm_minus_element head perm in
+        Weakening_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
+    | Contraction_proof (head, formula, tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        let new_perm = perm_plus_element head perm in
+        Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
     | Exchange_proof (_, permutation, p) -> commute_permutations p (permute permutation perm)
     | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
