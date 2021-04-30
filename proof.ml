@@ -225,8 +225,9 @@ let try_rule_request sequent rule_request =
 
 let is_atomic_zero_selection_sequent sequent = 
   let n = get_formula_position is_whynot sequent in
-  let head, _, tail = head_formula_tail n sequent in
-  List.for_all is_atomic_or_zero (head @ tail)
+  let head, formula, tail = head_formula_tail n sequent in
+  List.for_all is_atomic_or_zero (head @ tail) &&
+  (not (List.mem formula sequent))
 
 let is_reversible_selection_sequent = function
   | [f1; f2; Whynot _] when dual f1 = f2 -> false

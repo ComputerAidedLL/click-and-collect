@@ -1,6 +1,8 @@
+let auto_reverse_selection = true
+
 let auto_reverse_sequent_with_exceptions request_as_json =
     let sequent = Raw_sequent.sequent_from_json request_as_json in
-    let proof = Proof.rec_apply_reversible_rule false (Hypothesis_proof sequent) in
+    let proof = Proof.rec_apply_reversible_rule (not auto_reverse_selection) (Hypothesis_proof sequent) in
     Proof.to_json proof;;
 
 let auto_reverse_sequent request_as_json =
