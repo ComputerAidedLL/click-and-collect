@@ -223,34 +223,60 @@ let try_rule_request sequent rule_request =
     try from_sequent_and_rule_request sequent rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
-let apply_reversible_rule proof =
-    let sequent = get_conclusion proof in
-    try try_rule_request sequent (Top (get_formula_position is_top sequent))
-        with NotApplicable ->
-    try try_rule_request sequent (Bottom (get_formula_position is_bottom sequent))
-        with NotApplicable ->
-    try try_rule_request sequent (Par (get_formula_position is_par sequent))
-        with NotApplicable ->
-    try try_rule_request sequent (Dereliction (get_formula_position is_double_whynot sequent))
-        with NotApplicable ->
-    try try_rule_request sequent (With (get_formula_position is_with sequent))
-        with NotApplicable ->
-    try try_rule_request sequent (Promotion (get_formula_position is_ofcourse sequent))
-        with NotApplicable ->
-    try try_rule_request sequent One
-        with NotApplicable ->
-    try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
-        with NotApplicable ->
-    try try_rule_request sequent Axiom
-        with NotApplicable ->
-    proof;;
+let is_atomic_zero_selection_sequent sequent = 
+  let n = get_formula_position is_whynot sequent in
+  let head, formula, tail = head_formula_tail n sequent in
+  List.for_all is_atomic_or_zero (head @ tail) &&
+  (not (List.mem formula sequent))
 
-let rec rec_apply_reversible_rule proof =
-    let new_proof = apply_reversible_rule proof in
+let is_reversible_selection_sequent = function
+  | [f1; f2; Whynot _] when dual f1 = f2 -> false
+  | [f1; Whynot _; f2] when dual f1 = f2 -> false
+  | [Whynot _; f1; f2] when dual f1 = f2 -> false
+  | s -> is_atomic_zero_selection_sequent s
+
+let try_rule_selection sequent n =
+  let head, formula, tail = head_formula_tail n sequent in
+  match formula with
+    Whynot e -> Contraction_proof (head, e, tail,
+                  (Dereliction_proof (head, e, Whynot e :: tail,
+                     (Hypothesis_proof (head @ [e;  Whynot e] @ tail)))))
+  | _ -> raise NotApplicable
+
+(* selection tells if selection rule already applied *)
+let apply_reversible_rule selection proof =
+    let sequent = get_conclusion proof in
+    try try_rule_request sequent (Top (get_formula_position is_top sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent (Bottom (get_formula_position is_bottom sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent (Par (get_formula_position is_par sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent (Dereliction (get_formula_position is_double_whynot sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent (With (get_formula_position is_with sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent (Promotion (get_formula_position is_ofcourse sequent)), selection
+        with NotApplicable ->
+    try try_rule_request sequent One, selection
+        with NotApplicable ->
+    try if List.length sequent = 1 then try_rule_request sequent (Tensor 0), selection
+        else raise NotApplicable
+        with NotApplicable ->
+    try try_rule_request sequent Axiom, selection
+        with NotApplicable ->
+    try if not selection && is_reversible_selection_sequent sequent
+        then try_rule_selection sequent (get_formula_position is_whynot sequent), true
+        else raise NotApplicable
+        with NotApplicable ->
+    proof, selection;;
+
+let rec rec_apply_reversible_rule selection proof =
+    let new_proof, new_selection = apply_reversible_rule selection proof in
     match new_proof with
         | Hypothesis_proof _ -> new_proof
         | _ -> let premises = get_premises new_proof in
-            let new_premises = List.map rec_apply_reversible_rule premises in
+            let new_premises = List.map (rec_apply_reversible_rule new_selection) premises in
             set_premises new_proof new_premises;;
 
 (* PROOF -> RULE REQUEST *)
