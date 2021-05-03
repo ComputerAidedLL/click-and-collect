@@ -32,12 +32,12 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequentWithoutPermutation, sequentToDisplay, permutationBeforeRule, options) {
+function createSequent(sequent, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
-        .data('sequentWithoutPermutation', sequentWithoutPermutation);
+        .data('sequentWithoutPermutation', sequent);
 
-    if ('hyp' in sequentToDisplay) {
-        createFormulaList(sequentToDisplay, permutationBeforeRule, 'hyp', $sequentDiv, options);
+    if ('hyp' in sequent) {
+        createFormulaList(sequent, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
@@ -51,14 +51,14 @@ function createSequent(sequentWithoutPermutation, sequentToDisplay, permutationB
     }
     $sequentDiv.append($thesisSpan);
 
-    if ('cons' in sequentToDisplay) {
-        createFormulaList(sequentToDisplay, permutationBeforeRule, 'cons', $sequentDiv, options);
+    if ('cons' in sequent) {
+        createFormulaList(sequent, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequent, permutationBeforeRule, sequentPart, $sequentDiv, options) {
+function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
     let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
 
     if (options.withInteraction) {
@@ -74,8 +74,7 @@ function createFormulaList(sequent, permutationBeforeRule, sequentPart, $sequent
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
         let formulaAsJson = sequent[sequentPart][i];
-        let initialPosition = permutationBeforeRule !== null ? permutationBeforeRule[sequentPart][i] : i;
-        let $li = $('<li>').data('initialPosition', initialPosition);
+        let $li = $('<li>').data('initialPosition', i);
 
         // Build formula
         let $span = $('<span>', {'class': 'main-formula'})
