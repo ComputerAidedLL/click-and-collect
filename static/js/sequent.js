@@ -363,3 +363,10 @@ function markAsNotAutoProvable($sequentDiv) {
     $turnstile.addClass('not-auto-provable');
     $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
 }
+
+function undoMarkAsNotAutoProvable($sequentDiv) {
+    $sequentDiv.data('notAutoProvable', null);
+    let $turnstile = $sequentDiv.find('span.turnstile');
+    $turnstile.removeClass('not-auto-provable');
+    $turnstile.removeAttr('title');
+}

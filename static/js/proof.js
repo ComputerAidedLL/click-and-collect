@@ -74,9 +74,7 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
             options);
-    }
-
-    if (options.checkProvability) {
+    } else if (options.checkProvability) {
         checkProvability($sequentDiv);
     }
 }
@@ -163,9 +161,11 @@ function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, 
 
     // Add premises
     let $table = $td.closest('table');
-    if (premises.length === 1) {
+    if (premises.length === 0) {
+        markParentSequentsAsComplete($sequentDiv);
+    } else if (premises.length === 1) {
         createSubProof(premises[0], $table.parent(), options);
-    } else if (premises.length > 1) {
+    } else {
         let $div = $('<div>');
         $div.insertBefore($table);
         for (let premise of premises) {
@@ -342,6 +342,30 @@ function checkProofIsComplete(proofAsJson) {
     return proofAsJson.appliedRule.premises.every(checkProofIsComplete);
 }
 
+function getParentSequentDiv($sequentDiv) {
+    let $table = $sequentDiv.closest('table');
+    if ($table.is(':last-child')) {
+        let $div = $table.closest('div');
+        if ($div.hasClass('proof')) {
+            return null;
+        } else {
+            return $div.parent().next().find('div.sequent');
+        }
+    } else {
+        return $table.next().find('div.sequent');
+    }
+}
+
+function markParentSequentsAsComplete($sequentDiv) {
+    undoMarkAsNotProvable($sequentDiv);
+    undoMarkAsNotAutoProvable($sequentDiv);
+
+    let parentSequentDiv = getParentSequentDiv($sequentDiv);
+    if (parentSequentDiv !== null) {
+        markParentSequentsAsComplete(parentSequentDiv);
+    }
+}
+
 // *************
 // EXPORT AS COQ
 // *************
@@ -457,10 +481,11 @@ function exportAsLatex($container, format) {
 // *****************
 
 function checkProvability($sequentDiv) {
-    if ($sequentDiv.data('notProvable') === true) {
+    if ($sequentDiv.data('notProvable') === true || $sequentDiv.data('notProvable') === false) {
         return;
     }
 
+    $sequentDiv.data('notProvable', false);
     let sequent = $sequentDiv.data('sequentWithoutPermutation');
 
     $.ajax({
@@ -472,6 +497,11 @@ function checkProvability($sequentDiv) {
         {
             if (data['is_provable'] === false) {
                 markAsNotProvable($sequentDiv);
+
+                let $parentSequentDiv = getParentSequentDiv($sequentDiv);
+                if ($parentSequentDiv !== null) {
+                    checkProvability($parentSequentDiv);
+                }
             }
         },
         error: onAjaxError
@@ -483,6 +513,13 @@ function markAsNotProvable($sequentDiv) {
     let $turnstile = $sequentDiv.find('span.turnstile');
     $turnstile.addClass('not-provable');
     $turnstile.attr('title', 'This sequent is not provable');
+}
+
+function undoMarkAsNotProvable($sequentDiv) {
+    $sequentDiv.data('notProvable', false);
+    let $turnstile = $sequentDiv.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
+    $turnstile.removeAttr('title');
 }
 
 
