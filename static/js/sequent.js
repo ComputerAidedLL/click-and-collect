@@ -32,12 +32,12 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequent, options) {
+function createSequent(sequentWithoutPermutation, sequentToDisplay, permutationBeforeRule, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'})
-        .data('sequentWithoutPermutation', sequent);
+        .data('sequentWithoutPermutation', sequentWithoutPermutation);
 
-    if ('hyp' in sequent) {
-        createFormulaList(sequent, 'hyp', $sequentDiv, options);
+    if ('hyp' in sequentToDisplay) {
+        createFormulaList(sequentToDisplay, permutationBeforeRule, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
@@ -51,14 +51,14 @@ function createSequent(sequent, options) {
     }
     $sequentDiv.append($thesisSpan);
 
-    if ('cons' in sequent) {
-        createFormulaList(sequent, 'cons', $sequentDiv, options);
+    if ('cons' in sequentToDisplay) {
+        createFormulaList(sequentToDisplay, permutationBeforeRule, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
+function createFormulaList(sequent, permutationBeforeRule, sequentPart, $sequentDiv, options) {
     let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
 
     if (options.withInteraction) {
@@ -74,7 +74,8 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
         let formulaAsJson = sequent[sequentPart][i];
-        let $li = $('<li>').data('initialPosition', i);
+        let initialPosition = permutationBeforeRule !== null ? permutationBeforeRule[sequentPart][i] : i;
+        let $li = $('<li>').data('initialPosition', initialPosition);
 
         // Build formula
         let $span = $('<span>', {'class': 'main-formula'})
@@ -341,8 +342,9 @@ function autoProveSequent($sequentDiv) {
         success: function(data)
         {
             if (data.success) {
-                let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentDiv, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                cleanPedagogicError($container);
+                let $sequentContainer = removeSequentDiv($sequentDiv);
+                createSubProof(data['proof'], $sequentContainer, options);
                 markAsCompleteIfProofIsComplete($container);
             } else {
                 if (data['is_provable']) {
