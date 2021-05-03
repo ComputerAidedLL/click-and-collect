@@ -473,7 +473,8 @@ let sequent_to_focused_sequent sequent =
 
 let proof_from_focused_proof focused_proof =
     let proof = unfocus_proof focused_proof in
-    commute_permutations proof []
+    let n = List.length (get_conclusion proof) in
+    commute_permutations proof (identity n)
 
 exception NonProvableSequent
 exception NonAutoProvableSequent
