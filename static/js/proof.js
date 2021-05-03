@@ -441,6 +441,10 @@ function exportAsLatex($container, format) {
 // *****************
 
 function checkProvability($sequentDiv) {
+    if ($sequentDiv.data('notProvable') === true) {
+        return;
+    }
+
     let sequent = $sequentDiv.data('sequentWithoutPermutation');
 
     $.ajax({
@@ -459,6 +463,7 @@ function checkProvability($sequentDiv) {
 }
 
 function markAsNotProvable($sequentDiv) {
+    $sequentDiv.data('notProvable', true);
     let $turnstile = $sequentDiv.find('span.turnstile');
     $turnstile.addClass('not-provable');
     $turnstile.attr('title', 'This sequent is not provable');

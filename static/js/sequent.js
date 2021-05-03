@@ -321,6 +321,10 @@ function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
 // ******************
 
 function autoProveSequent($sequentDiv) {
+    if ($sequentDiv.data('notProvable') === true || $sequentDiv.data('notAutoProvable') === true) {
+        return;
+    }
+
     let $container = $sequentDiv.closest('.proof-container');
     let options = $container.data('options');
 
@@ -353,6 +357,7 @@ function autoProveSequent($sequentDiv) {
 }
 
 function markAsNotAutoProvable($sequentDiv) {
+    $sequentDiv.data('notAutoProvable', true);
     let $turnstile = $sequentDiv.find('span.turnstile');
     $turnstile.addClass('not-auto-provable');
     $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
