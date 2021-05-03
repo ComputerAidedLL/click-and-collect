@@ -426,13 +426,11 @@ let head_tail_perm head perm =
     let n_head = List.length head in
     head_tail n_head perm
 
-let perm_minus_element head perm =
-    let n_head = List.length head in
-    List.map (fun k -> if k > n_head then k - 1 else k) (List.filter (fun k -> k <> n_head) perm)
+let perm_minus_element n perm =
+    List.map (fun k -> if k > n then k - 1 else k) (List.filter (fun k -> k <> n) perm)
 
-let perm_plus_element head perm =
-    let n_head = List.length head in
-    List.concat (List.map (fun k -> if k = n_head then [n_head; n_head + 1] else if k > n_head then [k + 1] else [k]) perm)
+let perm_plus_element n perm =
+    List.concat (List.map (fun k -> if k = n then [n; n + 1] else if k > n then [k + 1] else [k]) perm)
 
 let rec commute_permutations proof perm =
     let conclusion = get_conclusion proof in
@@ -444,14 +442,14 @@ let rec commute_permutations proof perm =
         Top_proof (permute conclusion head_perm, permute conclusion tail_perm)
     | Bottom_proof (head, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        let new_perm = perm_minus_element head perm in
+        let new_perm = perm_minus_element (List.length head) perm in
         Bottom_proof (permute conclusion head_perm, permute conclusion tail_perm, commute_permutations p new_perm)
     | Tensor_proof (head, _, _, tail, p1, p2) ->
         let new_proof = set_premises proof [commute_permutations p1 (identity (List.length head + 1)); commute_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, new_proof)
     | Par_proof (head, e1, e2, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        let new_perm = perm_plus_element head perm in
+        let new_perm = perm_plus_element (List.length head) perm in
         Par_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p new_perm)
     | With_proof (head, e1, e2, tail, p1, p2) ->
         let head_perm, tail_perm = head_tail_perm head perm in
@@ -471,11 +469,11 @@ let rec commute_permutations proof perm =
         Dereliction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p perm)
     | Weakening_proof (head, formula, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        let new_perm = perm_minus_element head perm in
+        let new_perm = perm_minus_element (List.length head) perm in
         Weakening_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
     | Contraction_proof (head, formula, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        let new_perm = perm_plus_element head perm in
+        let new_perm = perm_plus_element (List.length head) perm in
         Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
     | Exchange_proof (_, permutation, p) -> commute_permutations p (permute permutation perm)
     | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
