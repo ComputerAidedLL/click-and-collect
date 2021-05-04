@@ -18,6 +18,9 @@ open Yojson
 (*********)
 (* UTILS *)
 (*********)
+let get_boolean_param = function
+    | None -> false
+    | Some s -> s = "true" || s = "1"
 
 let send_json ~code json =
   Eliom_registration.String.send ~code (json, "application/json")
@@ -107,13 +110,14 @@ let _ =
 let apply_rule_service =
   Eliom_service.create
       ~path:(Eliom_service.Path ["apply_rule"])
-      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ~meth:(Eliom_service.Post (Eliom_parameter.neopt (Eliom_parameter.string "autoWeak"), Eliom_parameter.raw_post_data))
       ()
 
 (* Service definition *)
-let apply_rule_handler () (content_type, raw_content_opt) =
+let apply_rule_handler auto_weak_opt (content_type, raw_content_opt) =
+    let auto_weak = get_boolean_param auto_weak_opt in
     post_handler raw_content_opt (function request_as_json ->
-        let technical_success, json_response = apply_rule request_as_json in
+        let technical_success, json_response = apply_rule auto_weak request_as_json in
         if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
         else send_json ~code:400 (Yojson.Basic.to_string json_response))
 

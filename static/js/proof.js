@@ -49,11 +49,20 @@ function initProof(proofAsJson, $container, options = {}) {
     }
 
     if (options.autoReverseOption) {
-        createAutoReverseOption($container, options.autoReverse, options.onAutoReverseToggle);
+        createOption($container, 'autoReverse', 'Auto-reverse',function (autoReverse) {
+            if (autoReverse) {
+                autoReverseContainer($container);
+            }
+            options.onAutoReverseToggle(autoReverse);
+        });
     }
 
     if (options.autoReverse) {
         autoReverseContainer($container);
+    }
+
+    if (options.autoWeakOption) {
+        createOption($container, 'autoWeak', 'Auto-weak', options.onAutoWeakToggle);
     }
 }
 
@@ -117,14 +126,15 @@ function applyRule(ruleRequest, $sequentDiv) {
 
     $.ajax({
         type: 'POST',
-        url: '/apply_rule',
+        url: `/apply_rule?autoWeak=${options.autoWeak}`,
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
         {
             if (data.success === true) {
                 cleanPedagogicError($container);
-                addPremises($sequentDiv, permutationBeforeRule, ruleRequest, data['premises'], options);
+                let appliedRule = data['proof'].appliedRule;
+                addPremises($sequentDiv, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
                 markAsCompleteIfProofIsComplete($container);
 
                 if (!isSequentComplete($sequentDiv) && options.autoReverse) {
@@ -527,27 +537,24 @@ function undoMarkAsNotProvable($sequentDiv) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function createAutoReverseOption($container, defaultValue = false, onToggle) {
+function createOption($container, optionName, text, onToggle) {
     let $input = $('<input type="checkbox">');
-    $input.prop('checked', defaultValue);
+    let options = $container.data('options');
+    $input.prop('checked', options[optionName]);
     $input.on('change', function() {
         let options = $container.data('options');
-        options.autoReverse = this.checked;
+        options[optionName] = this.checked;
         $container.data('options', options);
         onToggle(this.checked);
-        if (this.checked) {
-            autoReverseContainer($container);
-        }
     });
 
-    let $autoReverseBar = $('<div>', {'class': 'auto-reverse-bar'})
-        .append($('<span>', {'class': 'auto-reverse-label'})
-            .text('Auto-reverse'))
+    let $optionBar = $('<div>', {'class': 'option-bar'})
+        .append($('<span>', {'class': 'option-label'}).text(text))
         .append($('<label>', {'class': 'switch'})
             .append($input)
             .append($('<span class="slider"></span>')));
 
-    $container.append($autoReverseBar);
+    $container.append($optionBar);
 }
 
 function autoReverseContainer($container) {

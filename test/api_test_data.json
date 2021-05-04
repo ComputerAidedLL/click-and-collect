@@ -566,6 +566,22 @@
       "expected_error_message": "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only."
     }
   ],
+  "call_api_apply_rule_auto_weak": [
+    {
+      "request": {"rr":{"r":"one"},"s":{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"whynot","v":{"t":"litt","v":"B"}},{"t":"one"}]}},
+      "expected_premises": [
+        {
+          "sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"B"}},{"type":"one"}]},
+          "appliedRule":{
+            "ruleRequest":{"rule":"weakening","formulaPosition":0},
+            "premises":[
+              {
+                "sequent":{"cons":[{"type":"one"}]},
+                "appliedRule":{
+                  "ruleRequest":{"rule":"one"},
+                  "premises":[]}}]}}]
+    }
+  ],
   "call_api_sequent_is_provable": [
     {
       "sequent_as_json": {"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"dual","v":{"t":"litt","v":"A"}}]},
