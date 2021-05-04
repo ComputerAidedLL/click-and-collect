@@ -124,14 +124,7 @@
                         Assisted-proving features
                     </h4>
                     <ul>
-                        <li><span class="bold">Non-provability checks:</span> a red turnstile <span class="turnstile not-provable">⊢</span> means that the sequent is known <span class="bold">not to be provable</span>, however a black turnstile is not claiming anything about provability.
-                        <li><span class="bold">"Auto-reverse":</span> when switched on this option applies systematically reversible rules to generated sequents.
-                            This includes not only the introduction rules for <span class="flip">&</span>, &, ⊥, ⊤, ! and 1, but also:
-                            <ul>
-                                <li>axiom rule for atomic formulas</li>
-                                <li>dereliction rule on ?? formulas</li>
-                                <li>⊗ rule with empty context</li>
-                            </ul>
+                        <li><span class="bold">Non-provability checks:</span> a red turnstile <span class="turnstile not-provable">⊢</span> means that the sequent is known <span class="bold">not to be provable</span>, however a black turnstile is not claiming anything about provability.</li>
                         <li><span class="bold">Automated prover:</span> you can <span class="bold">double-click on a turnstile ⊢</span> to launch the auto-prover on a sequent. Three possibilities:
                         <ul>
                             <li>the prover makes it, the proof is automatically filled up;</li>
@@ -163,6 +156,20 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <div id="auto-reverse-dialog" title="Auto-reverse option" class="dialog">
+            <p>When switched-on this option applies systematically reversible rules to generated sequents.<br>
+            This includes not only the introduction rules for <span class="flip">&</span>, &, ⊥, ⊤, ! and 1, but also:</p>
+            <ul>
+                <li>axiom rule for atomic formulas</li>
+                <li>dereliction rule on ?? formulas</li>
+                <li>⊗ rule with empty context</li>
+            </ul>
+        </div>
+
+        <div id="auto-weak-dialog" title="Auto-weak option" class="dialog">
+            <p>When this option is switched-on, axiom rule and one rule are accepted in a ? context.</p>
         </div>
 
         <div class="section-wrapper">

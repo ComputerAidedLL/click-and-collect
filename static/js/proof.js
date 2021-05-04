@@ -54,7 +54,7 @@ function initProof(proofAsJson, $container, options = {}) {
                 autoReverseContainer($container);
             }
             options.onAutoReverseToggle(autoReverse);
-        });
+        }, options.autoReverseDialog);
     }
 
     if (options.autoReverse) {
@@ -62,7 +62,7 @@ function initProof(proofAsJson, $container, options = {}) {
     }
 
     if (options.autoWeakOption) {
-        createOption($container, 'autoWeak', 'Auto-weak', options.onAutoWeakToggle);
+        createOption($container, 'autoWeak', 'Auto-weak', options.onAutoWeakToggle, options.autoWeakDialog);
     }
 }
 
@@ -537,7 +537,7 @@ function undoMarkAsNotProvable($sequentDiv) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function createOption($container, optionName, text, onToggle) {
+function createOption($container, optionName, text, onToggle, dialog) {
     let $input = $('<input type="checkbox">');
     let options = $container.data('options');
     $input.prop('checked', options[optionName]);
@@ -550,6 +550,9 @@ function createOption($container, optionName, text, onToggle) {
 
     let $optionBar = $('<div>', {'class': 'option-bar'})
         .append($('<span>', {'class': 'option-label'}).text(text))
+        .append($('<span>', {'class': 'option-info', 'title': `Learn about ${text} option`})
+            .text('ⓘ')
+            .on('click', function () { $(`#${dialog}`).dialog('open'); }))
         .append($('<label>', {'class': 'switch'})
             .append($input)
             .append($('<span class="slider"></span>')));
