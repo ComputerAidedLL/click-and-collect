@@ -62,9 +62,9 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .tagBox .tag { position:relative; top:-0.6em; text-align: left; margin-left: 0.2em; font-size: 0.9em; }
 .proof .tagBox .contraction { top:-0.4em; }
 .proof .inference { border-top: 1px solid #000; }
-.proof .turnstile { margin: 0 0.3em; }
-.turnstile.not-provable { color: red; user-select: none; }
-.turnstile.not-auto-provable { color: orange; user-select: none; }
+.proof .turnstile { margin: 0 0.3em; user-select: none; }
+.turnstile.not-provable { color: red; }
+.turnstile.not-auto-provable { color: orange; }
 .proof .commaList { display: inline-block; list-style: none; margin: 0; padding: 0; }
 .proof .commaList li { display: inline-block; margin-left: 0.2em; }
 .proof .commaList li:after { content: ','; margin-left: 0.2em; }
@@ -102,3 +102,5 @@ img.export:hover { cursor: pointer; }
 input:checked + .slider { background-color: #66a3e0; }
 input:checked + .slider:before { -webkit-transform: translateX(1em); -ms-transform: translateX(1em); transform: translateX(1em);  }
 
+@keyframes rotating { to { transform: rotate(360deg); }}
+.loading { display: inline-block; animation: rotating 3s linear infinite; }
