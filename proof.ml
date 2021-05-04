@@ -477,3 +477,24 @@ let rec commute_permutations proof perm =
         Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
     | Exchange_proof (_, permutation, p) -> commute_permutations p (permute permutation perm)
     | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
+
+let rec find_sublist_starting_with_sequent sequent l = match l with
+    | [] -> None
+    | (s, p) :: tail -> if s = sequent then Some l else find_sublist_starting_with_sequent sequent tail;;
+
+let get_first_proof proofs_of_sequent =
+    let _, p = List.hd proofs_of_sequent in p
+
+let rec get_proofs_of_sequents proof =
+    match proof with
+    | Hypothesis_proof s -> [(s, proof)]
+    | _ -> let proofs_by_premises = List.map get_proofs_of_sequents (get_premises proof) in
+        let proofs_of_premises = List.concat proofs_by_premises in
+        let s = get_conclusion proof in
+        match find_sublist_starting_with_sequent s proofs_of_premises with
+        | Some l -> l
+        | None -> let p = set_premises proof (List.map get_first_proof proofs_by_premises) in
+            (s, p) :: proofs_of_premises;;
+
+let remove_loop proof =
+    get_first_proof (get_proofs_of_sequents proof)

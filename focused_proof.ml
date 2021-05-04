@@ -139,8 +139,8 @@ let sort_whynot l =
   List.sort (fun x y -> whynot_height y - whynot_height x) l
 
 (* [prove sequent select_d2 max_d2] attempts to prove the sequent [sequent]
-   where [select_d2] contains the candidates for the D2 rule and [max_d2]
-   is a (pseudo-)bound on the number of applications of the D2 rule. *)
+   where [select_d2] contains the candidates for the Focusing_exponential rule and [max_d2]
+   is a (pseudo-)bound on the number of applications of the Focusing_exponential rule. *)
 let rec prove sequent select_d2 max_d2 = match sequent with
   | Async (theta, gamma, l) -> begin match l with
       | [] ->
@@ -474,7 +474,7 @@ let sequent_to_focused_sequent sequent =
 let proof_from_focused_proof focused_proof =
     let proof = unfocus_proof focused_proof in
     let n = List.length (get_conclusion proof) in
-    commute_permutations proof (identity n)
+    remove_loop (commute_permutations proof (identity n))
 
 exception NonProvableSequent
 exception NonAutoProvableSequent
