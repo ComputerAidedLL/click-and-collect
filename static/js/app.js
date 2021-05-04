@@ -37,11 +37,13 @@ function submitSequent(element) {
     addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
     // We get autoReverse option in URL
     let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
+    // We get autoWeak option in URL
+    let autoWeak = getQueryParamInUrl('auto_weak') === '1';
 
-    parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse);
+    parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse, autoWeak);
 }
 
-function parseSequentAsString(sequentAsString, $container, autoReverse) {
+function parseSequentAsString(sequentAsString, $container, autoReverse, autoWeak) {
     let apiUrl = '/parse_sequent';
 
     $.ajax({
@@ -57,7 +59,10 @@ function parseSequentAsString(sequentAsString, $container, autoReverse) {
                     checkProvability: true,
                     autoReverseOption: true,
                     autoReverse: autoReverse,
-                    onAutoReverseToggle: onAutoReverseToggle
+                    onAutoReverseToggle: onAutoReverseToggle,
+                    autoWeakOption: true,
+                    autoWeak: autoWeak,
+                    onAutoWeakToggle: onAutoWeakToggle
                 });
             } else {
                 displayPedagogicError(data['error_message'], $container);
@@ -137,6 +142,14 @@ function onAutoReverseToggle(autoReverse) {
         addQueryParamInUrl('auto_reverse', '1', 'Auto reverse mode set to true');
     } else {
         addQueryParamInUrl('auto_reverse', null, 'Auto reverse mode set to false');
+    }
+}
+
+function onAutoWeakToggle(autoWeak) {
+    if (autoWeak) {
+        addQueryParamInUrl('auto_weak', '1', 'Auto weak mode set to true');
+    } else {
+        addQueryParamInUrl('auto_weak', null, 'Auto weak mode set to false');
     }
 }
 

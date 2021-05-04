@@ -316,7 +316,7 @@ let get_json_list json key =
     try Yojson.Basic.Util.to_list value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"));;
 
-let rec from_json auto_weak json =
+let rec from_json json =
     let sequent_as_json = required_field json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
     let applied_ruled_as_json = optional_field json "appliedRule" in
@@ -326,7 +326,7 @@ let rec from_json auto_weak json =
             let rule_request = Rule_request.from_json rule_request_as_json in
             let premises_as_json = get_json_list applied_ruled_as_json "premises" in
             let premises = List.map from_json premises_as_json in
-            from_sequent_and_rule_request_and_premises auto_weak sequent rule_request premises;;
+            from_sequent_and_rule_request_and_premises false sequent rule_request premises;;
 
 
 (* PROOF -> JSON *)
