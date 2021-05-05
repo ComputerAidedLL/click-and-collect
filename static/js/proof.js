@@ -172,7 +172,7 @@ function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, 
     // Add premises
     let $table = $td.closest('table');
     if (premises.length === 0) {
-        markParentSequentsAsComplete($sequentDiv);
+        markParentSequentsAsProved($sequentDiv);
     } else if (premises.length === 1) {
         createSubProof(premises[0], $table.parent(), options);
     } else {
@@ -191,7 +191,8 @@ function undoRule($sequentDiv) {
     // Erase data
     $sequentDiv
         .data('permutationBeforeRule', null)
-        .data('ruleRequest', null);
+        .data('ruleRequest', null)
+        .data('proved', null);
 
     // Remove line
     let $td = $sequentDiv.closest('td');
@@ -352,27 +353,44 @@ function checkProofIsComplete(proofAsJson) {
     return proofAsJson.appliedRule.premises.every(checkProofIsComplete);
 }
 
-function getParentSequentDiv($sequentDiv) {
+function isBinary($sequentDiv) {
     let $table = $sequentDiv.closest('table');
-    if ($table.is(':last-child')) {
-        let $div = $table.closest('div');
-        if ($div.hasClass('proof')) {
-            return null;
-        } else {
-            return $div.parent().next().find('div.sequent');
-        }
-    } else {
-        return $table.next().find('div.sequent');
-    }
+    return $table.hasClass('binary-rule');
 }
 
-function markParentSequentsAsComplete($sequentDiv) {
+function isProved($sequentDiv) {
+    return $sequentDiv.data('proved') === true;
+}
+
+function getParentSequentDiv($sequentDiv) {
+    let $table = $sequentDiv.closest('table');
+    if (!$table.is(':last-child')) {
+        return $table.next().find('div.sequent');
+    }
+
+    let $div = $table.closest('div');
+    if ($div.hasClass('proof')) {
+        return null;
+    }
+
+    return $div.parent().next().find('div.sequent');
+}
+
+function markParentSequentsAsProved($sequentDiv) {
+    $sequentDiv.data('proved', true);
     undoMarkAsNotProvable($sequentDiv);
     undoMarkAsNotAutoProvable($sequentDiv);
 
     let parentSequentDiv = getParentSequentDiv($sequentDiv);
     if (parentSequentDiv !== null) {
-        markParentSequentsAsComplete(parentSequentDiv);
+        if (!isBinary(parentSequentDiv)) {
+            markParentSequentsAsProved(parentSequentDiv);
+        }
+
+        let premises = getPremises(parentSequentDiv);
+        if (premises.every(isProved)) {
+            markParentSequentsAsProved(parentSequentDiv);
+        }
     }
 }
 
@@ -574,11 +592,32 @@ function autoReverseSequentPremises($sequentDiv) {
     }
 }
 
+function getPremises($sequentDiv) {
+    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
+    if (ruleRequest === null) {
+        return [];
+    }
+
+    let $table = $sequentDiv.closest('table');
+    let $prev = $table.prev();
+
+    if ($prev.prop('tagName') === 'TABLE') {
+        return [$prev.find('div.sequent')];
+    }
+
+    let $premises = [];
+    $prev.children('div.sibling').each(function (i, sibling) {
+        let $siblingTable = $(sibling).children('table').last();
+        $premises = $premises.concat($siblingTable.find('div.sequent'));
+    })
+
+    return $premises;
+}
+
 function recGetPremisesSequentDiv($table) {
     let $sequentDiv = $table.find('div.sequent')
     let ruleRequest = $sequentDiv.data('ruleRequest') || null;
     if (ruleRequest !== null) {
-        let $table = $sequentDiv.closest('table');
         let $prev = $table.prev();
 
         if ($prev.length) {
