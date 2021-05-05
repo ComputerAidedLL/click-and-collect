@@ -135,6 +135,7 @@ let sort_whynot l =
   List.sort (fun x y -> whynot_height y - whynot_height x) l
 
 exception Ttl_exceeded
+let has_reached_exponential_bound = ref false
 
 (* [prove sequent select_d2 ttl] attempts to prove the sequent [sequent]
    where [select_d2] contains the candidates for the Focusing_exponential rule,
@@ -167,7 +168,7 @@ let rec prove sequent select_d2 max_d2 ttl =
                 apply_d2' (List.tl select_d2) max_d2
             and apply_d2' select_d2 max_d2 =
               if select_d2 = [] then begin
-                (if max_d2 = 0 then raise NoValue);
+                (if max_d2 = 0 then (has_reached_exponential_bound := true; raise NoValue));
                 let select_d2' =
                   sort_whynot (List.filter (fun x -> not (is_dual x))
                   (Set_formula.elements theta)) in
@@ -294,6 +295,13 @@ let rec prove sequent select_d2 max_d2 ttl =
               None
       | _ -> None
 
+let rec prove_with_increasing_bound focused_sequent exponential_bound ttl =
+    match prove focused_sequent [] exponential_bound ttl with
+        | None -> if !has_reached_exponential_bound
+            then prove_with_increasing_bound focused_sequent (exponential_bound + 1) ttl
+            else (Some false, None)
+        | Some proof -> (Some true, Some proof)
+
 (* [prove_sequent sequent] attempts to prove [sequent] and returns
    the result [(res, proof)].
    [res] = None if max execution time is reached, and [res] = (Some b)
@@ -303,9 +311,8 @@ let rec prove sequent select_d2 max_d2 ttl =
 let prove_focused_sequent focused_sequent =
   let max_execution_time_in_seconds = 3. in
   let ttl = Sys.time () +. max_execution_time_in_seconds in
-  try match prove focused_sequent [] 4 ttl with
-    | None -> (Some false, None)
-    | Some proof -> (Some true, Some proof)
+  has_reached_exponential_bound := false;
+  try prove_with_increasing_bound focused_sequent 0 ttl
   with Ttl_exceeded -> (None, None)
 
 (* FOCUSED <-> NOT FOCUSED *)
