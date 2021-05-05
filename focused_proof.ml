@@ -164,7 +164,7 @@ let rec prove sequent select_d2 max_d2 ttl =
               try
                 let p =
                   get_op (prove (Sync (theta, gamma, f))
-                    (List.tl select_d2) (abs (max_d2)) ttl) in
+                    (List.tl select_d2) (abs max_d2) ttl) in
                 Some (Node (sequent, Focusing_exponential f, [p]))
               with NoValue ->
                 apply_d2' (List.tl select_d2) max_d2
