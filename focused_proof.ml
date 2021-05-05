@@ -139,7 +139,7 @@ exception Ttl_exceeded
 (* [prove sequent select_d2 ttl] attempts to prove the sequent [sequent]
    where [select_d2] contains the candidates for the Focusing_exponential rule,
    [max_d2] when positive is a (pseudo-)bound on the number of applications of the Focusing_exponential rule,
-   [max_d2] when negative is a bound for recursive calls only (the bound will be abs (max_d2))
+   [max_d2] when negative is a bound for recursive calls only (the bound will be [abs max_d2])
    and [ttl] is a time to leave. *)
 let rec prove sequent select_d2 max_d2 ttl =
   (if Sys.time () > ttl then raise Ttl_exceeded);
