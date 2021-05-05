@@ -4,6 +4,10 @@ $( function() {
         e.preventDefault(); // avoid to execute the actual submit of the form.
     });
 
+    $('.dialog').each(function (i, item) {
+        $(item).dialog({autoOpen: false});
+    })
+
     // Parse URL and auto-complete / auto-submit sequent form
     let sequentParam = getQueryParamInUrl('s');
     if (sequentParam !== null) {
@@ -60,9 +64,11 @@ function parseSequentAsString(sequentAsString, $container, autoReverse, autoWeak
                     autoReverseOption: true,
                     autoReverse: autoReverse,
                     onAutoReverseToggle: onAutoReverseToggle,
+                    autoReverseDialog: 'auto-reverse-dialog',
                     autoWeakOption: true,
                     autoWeak: autoWeak,
-                    onAutoWeakToggle: onAutoWeakToggle
+                    onAutoWeakToggle: onAutoWeakToggle,
+                    autoWeakDialog: 'auto-weak-dialog',
                 });
             } else {
                 displayPedagogicError(data['error_message'], $container);

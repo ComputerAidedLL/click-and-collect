@@ -80,9 +80,13 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .export-bar, .option-bar { margin-left: auto; margin-right: auto; display: table; }
 .export-bar { margin-top: 1em; }
 .option-bar { margin-top: 0.5em; }
-.export-bar span, .option-label { color: #777; margin-right: 0.5em; }
+.export-bar span, .option-label, .option-info { color: #777; margin-right: 0.5em; }
 img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; }
-img.export:hover { cursor: pointer; }
+img.export:hover, .option-info:hover { cursor: pointer; }
+.option-info { font-weight: bold; }
+.option-label { vertical-align: text-bottom; }
+
+
 
 .pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; text-indent: 0; }
 .pedagogic-error .message { display: inline-block; }
