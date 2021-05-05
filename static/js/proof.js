@@ -383,12 +383,7 @@ function markParentSequentsAsProved($sequentDiv) {
 
     let parentSequentDiv = getParentSequentDiv($sequentDiv);
     if (parentSequentDiv !== null) {
-        if (!isBinary(parentSequentDiv)) {
-            markParentSequentsAsProved(parentSequentDiv);
-        }
-
-        let premises = getPremises(parentSequentDiv);
-        if (premises.every(isProved)) {
+        if (!isBinary(parentSequentDiv) || getPremises(parentSequentDiv).every(isProved)) {
             markParentSequentsAsProved(parentSequentDiv);
         }
     }
