@@ -333,11 +333,19 @@ function autoProveSequent($sequentDiv) {
     let permutationBeforeRule = getSequentPermutation($sequentDiv);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
+    let $turnstile = $sequentDiv.find('.turnstile');
+
     $.ajax({
         type: 'POST',
         url: '/auto_prove_sequent',
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify(sequent)),
+        beforeSend: function() {
+            $turnstile.addClass('loading');
+        },
+        complete: function(){
+            $turnstile.removeClass('loading');
+        },
         success: function(data)
         {
             if (data.success) {

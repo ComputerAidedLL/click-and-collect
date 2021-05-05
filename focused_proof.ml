@@ -129,19 +129,21 @@ let rec choose_kth_from_list k l = match l with
         let x, tl' = choose_kth_from_list (k - 1) tl in
         x, hd :: tl'
 
-(* [bl] indicates if the (pseudo-)bound on the number of applications of the D2
-   rule is reached. *)
-let bl = ref false
-
 (* [sort_whynot l] sorts the list of formulas [l] in ascending order using
    [whynot_height f] as the key of [f]. *)
 let sort_whynot l =
   List.sort (fun x y -> whynot_height y - whynot_height x) l
 
-(* [prove sequent select_d2 max_d2] attempts to prove the sequent [sequent]
-   where [select_d2] contains the candidates for the Focusing_exponential rule and [max_d2]
-   is a (pseudo-)bound on the number of applications of the Focusing_exponential rule. *)
-let rec prove sequent select_d2 max_d2 = match sequent with
+exception Ttl_exceeded
+
+(* [prove sequent select_d2 ttl] attempts to prove the sequent [sequent]
+   where [select_d2] contains the candidates for the Focusing_exponential rule,
+   [max_d2] when positive is a (pseudo-)bound on the number of applications of the Focusing_exponential rule,
+   [max_d2] when negative is an increasing bound for recursive calls only (the bound will be [abs max_d2])
+   and [ttl] is a time to leave. *)
+let rec prove sequent select_d2 max_d2 ttl =
+  (if Sys.time () > ttl then raise Ttl_exceeded);
+  match sequent with
   | Async (theta, gamma, l) -> begin match l with
       | [] ->
           let rec apply_d1 k =
@@ -151,7 +153,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
               if is_dual f then apply_d1 (k + 1)
               else
                 try
-                  let p = get_op (prove (Sync (theta, gamma', f)) select_d2 max_d2) in
+                  let p = get_op (prove (Sync (theta, gamma', f)) select_d2 max_d2 ttl) in
                   Some (Node (sequent, Focusing_central (f, gamma'), [p]))
                 with NoValue -> apply_d1 (k + 1) in
           begin try
@@ -160,15 +162,14 @@ let rec prove sequent select_d2 max_d2 = match sequent with
             let rec apply_d2 select_d2 max_d2 =
               let f = List.hd select_d2 in
               try
-                let p =
-                  get_op (prove (Sync (theta, gamma, f))
-                    (List.tl select_d2) max_d2) in
+                (* we take abs max_d2 since it can be negative (thus increasingly limited) *)
+                let p = get_op (prove (Sync (theta, gamma, f)) (List.tl select_d2) (abs max_d2) ttl) in
                 Some (Node (sequent, Focusing_exponential f, [p]))
               with NoValue ->
                 apply_d2' (List.tl select_d2) max_d2
             and apply_d2' select_d2 max_d2 =
               if select_d2 = [] then begin
-                (if max_d2 = 0 then (bl := true; raise NoValue));
+                (if max_d2 = 0 then raise NoValue);
                 let select_d2' =
                   sort_whynot (List.filter (fun x -> not (is_dual x))
                   (Set_formula.elements theta)) in
@@ -187,26 +188,26 @@ let rec prove sequent select_d2 max_d2 = match sequent with
           begin match hd with
           | Bottom ->
               begin try
-                let p = get_op (prove (Async (theta, gamma, tl)) select_d2 max_d2) in
+                let p = get_op (prove (Async (theta, gamma, tl)) select_d2 max_d2 ttl) in
                 Some (Node (sequent, Bottom_intro, [p]))
               with NoValue -> None end
           | Top -> Some (Node (sequent, Top_intro, [Null]))
           | With (f, g) ->
               if whynot_height f > whynot_height g then
                 try
-                  let pg = get_op (prove (Async (theta, gamma, g :: tl)) select_d2 max_d2) in
-                  let pf = get_op (prove (Async (theta, gamma, f :: tl)) select_d2 max_d2) in
+                  let pg = get_op (prove (Async (theta, gamma, g :: tl)) select_d2 max_d2 ttl) in
+                  let pf = get_op (prove (Async (theta, gamma, f :: tl)) select_d2 max_d2 ttl) in
                   Some (Node (sequent, With_intro, [pf; pg]))
                 with NoValue -> None
               else
                 begin try
-                  let pf = get_op (prove (Async (theta, gamma, f :: tl)) select_d2 max_d2) in
-                  let pg = get_op (prove (Async (theta, gamma, g :: tl)) select_d2 max_d2) in
+                  let pf = get_op (prove (Async (theta, gamma, f :: tl)) select_d2 max_d2 ttl) in
+                  let pg = get_op (prove (Async (theta, gamma, g :: tl)) select_d2 max_d2 ttl) in
                   Some (Node (sequent, With_intro, [pf; pg]))
               with NoValue -> None end
           | Par (f, g) ->
               begin try
-                let p = get_op (prove (Async (theta, gamma, f :: g :: tl)) select_d2 max_d2) in
+                let p = get_op (prove (Async (theta, gamma, f :: g :: tl)) select_d2 max_d2 ttl) in
                 Some (Node (sequent, Par_intro, [p]))
               with NoValue -> None end
           | Whynot g ->
@@ -214,13 +215,13 @@ let rec prove sequent select_d2 max_d2 = match sequent with
                 let p =
                   get_op
                     (prove (Async (Set_formula.add g theta, gamma, tl))
-                    select_d2 max_d2) in
+                    select_d2 max_d2 ttl) in
                 Some (Node (sequent, Whynot_intro, [p]))
               with NoValue ->
                 None end
           | _ ->
               try
-                let p = get_op (prove (Async (theta, hd :: gamma, tl)) select_d2 max_d2) in
+                let p = get_op (prove (Async (theta, hd :: gamma, tl)) select_d2 max_d2 ttl) in
                 Some (Node (sequent, Async_on_pos, [p]))
               with NoValue -> None
            end end
@@ -228,7 +229,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
       match f with
       | _ when is_async f || is_dual f ->
           begin try
-            let p = get_op (prove (Async (theta, gamma, [f])) select_d2 max_d2) in
+            let p = get_op (prove (Async (theta, gamma, [f])) select_d2 max_d2 ttl) in
             Some (Node (sequent, Sync_on_neg, [p]))
           with NoValue -> None end
       | One ->
@@ -239,20 +240,20 @@ let rec prove sequent select_d2 max_d2 = match sequent with
       | Plus (g, h) ->
           if whynot_height g > whynot_height h then
             try
-              let p = get_op (prove (Sync (theta, gamma, h)) select_d2 max_d2) in
+              let p = get_op (prove (Sync (theta, gamma, h)) select_d2 max_d2 ttl) in
               Some (Node (sequent, Plus_right_intro, [p]))
             with NoValue ->
               try
-                let p = get_op (prove (Sync (theta, gamma, g)) select_d2 max_d2) in
+                let p = get_op (prove (Sync (theta, gamma, g)) select_d2 max_d2 ttl) in
                 Some (Node (sequent, Plus_left_intro, [p]))
               with NoValue -> None
           else
             begin try
-              let p = get_op (prove (Sync (theta, gamma, g)) select_d2 max_d2) in
+              let p = get_op (prove (Sync (theta, gamma, g)) select_d2 max_d2 ttl) in
               Some (Node (sequent, Plus_left_intro, [p]))
             with NoValue ->
               try
-                let p = get_op (prove (Sync (theta, gamma, h)) select_d2 max_d2) in
+                let p = get_op (prove (Sync (theta, gamma, h)) select_d2 max_d2 ttl) in
                 Some (Node (sequent, Plus_right_intro, [p]))
               with NoValue -> None end
       | Tensor (g, h) ->
@@ -263,15 +264,15 @@ let rec prove sequent select_d2 max_d2 = match sequent with
               try
                 if whynot_height g > whynot_height h then
                   let ph =
-                    get_op (prove (Sync (theta, gamma2, h)) select_d2 max_d2) in
+                    get_op (prove (Sync (theta, gamma2, h)) select_d2 max_d2 ttl) in
                   let pg =
-                    get_op (prove (Sync (theta, gamma1, g)) select_d2 max_d2) in
+                    get_op (prove (Sync (theta, gamma1, g)) select_d2 max_d2 ttl) in
                   Some (Node (sequent, Tensor_intro (gamma1, gamma2), [pg; ph]))
                 else
                   let pg =
-                    get_op (prove (Sync (theta, gamma1, g)) select_d2 max_d2) in
+                    get_op (prove (Sync (theta, gamma1, g)) select_d2 max_d2 ttl) in
                   let ph =
-                    get_op (prove (Sync (theta, gamma2, h)) select_d2 max_d2) in
+                    get_op (prove (Sync (theta, gamma2, h)) select_d2 max_d2 ttl) in
                   Some (Node (sequent, Tensor_intro (gamma1, gamma2), [pg; ph]))
               with NoValue ->
                 split_gamma (k - 1) in
@@ -280,7 +281,7 @@ let rec prove sequent select_d2 max_d2 = match sequent with
       | Ofcourse g ->
           if gamma = [] then
             try
-              let p = get_op (prove (Async (theta, gamma, [g])) select_d2 max_d2) in
+              let p = get_op (prove (Async (theta, gamma, [g])) select_d2 max_d2 ttl) in
               Some (Node (sequent, Ofcourse_intro, [p]))
             with NoValue -> None
           else
@@ -295,24 +296,20 @@ let rec prove sequent select_d2 max_d2 = match sequent with
               None
       | _ -> None
 
-(* [prove_sequent sequent cst_max_d2] attempts to prove [sequent] and returns
-   the result [(res, proof, time)].
-   [res] = None if the bound [cst_max_d2] is reached, and [res] = (Some b)
+(* [prove_sequent sequent] attempts to prove [sequent] and returns
+   the result [(res, proof)].
+   [res] = None if max execution time is reached, and [res] = (Some b)
    when the proof search has been finished and b indicates the provability of
    [sequent]. When the sequent is provable, [proof] contains the proof found.
    *)
-let prove_focused_sequent focused_sequent cst_max_d2 =
-  bl := false;
-  let t = Sys.time () in
-  match prove focused_sequent [] cst_max_d2 with
-    | None ->
-        let exec_time = Sys.time () -. t in
-        if !bl then (None, None, exec_time)
-        else
-          (Some false, None, exec_time)
-    | Some proof ->
-        let exec_time = Sys.time () -. t in
-        (Some true, Some proof, exec_time)
+let prove_focused_sequent focused_sequent =
+  let max_execution_time_in_seconds = 3. in
+  let ttl = Sys.time () +. max_execution_time_in_seconds in
+  (* max_d2 is set as -1: bound will be increasingly limited *)
+  try match prove focused_sequent [] (-1) ttl with
+    | None -> (Some false, None)
+    | Some proof -> (Some true, Some proof)
+  with Ttl_exceeded -> (None, None)
 
 (* FOCUSED <-> NOT FOCUSED *)
 exception NotFound
@@ -481,7 +478,7 @@ exception NonAutoProvableSequent
 
 let prove_sequent sequent =
     let focused_sequent = sequent_to_focused_sequent sequent in
-    match prove_focused_sequent focused_sequent 3 with
-    | Some true, Some focused_proof, _ -> proof_from_focused_proof focused_proof
-    | Some false, _, _ -> raise NonProvableSequent
+    match prove_focused_sequent focused_sequent with
+    | Some true, Some focused_proof -> proof_from_focused_proof focused_proof
+    | Some false, _ -> raise NonProvableSequent
     | _ -> raise NonAutoProvableSequent
