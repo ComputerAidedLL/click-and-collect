@@ -15,6 +15,20 @@ open Auto_prove_sequent
 open Yojson
 
 
+(***********)
+(* LOGGING *)
+(***********)
+
+let () =
+  Lwt_log.default :=
+    Lwt_log.channel
+      ~template:"$(date).$(milliseconds) [$(level)] $(message)"
+      ~close_mode:`Keep
+      ~channel:Lwt_io.stdout
+      ();
+
+  Lwt_log.add_rule "*" Lwt_log.Warning
+
 (*********)
 (* UTILS *)
 (*********)

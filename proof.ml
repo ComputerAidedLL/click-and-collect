@@ -436,7 +436,8 @@ let rec to_latex proof =
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 
-(* SIMPLIFY *)
+(* SIMPLIFY : COMMUTE UP PERMUTATIONS *)
+
 let rec head_tail element = function
     | [] -> raise (Failure "element not found")
     | e :: l -> if e = element then [], l else let head, tail = head_tail element l in e :: head, tail
@@ -497,6 +498,9 @@ let rec commute_permutations proof perm =
     | Exchange_proof (_, permutation, p) -> commute_permutations p (permute permutation perm)
     | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
 
+
+(* SIMPLIFY : REMOVE LOOP *)
+
 let rec find_sublist_starting_with_sequent sequent l = match l with
     | [] -> None
     | (s, p) :: tail -> if s = sequent then Some l else find_sublist_starting_with_sequent sequent tail;;
@@ -517,3 +521,210 @@ let rec get_proofs_of_sequents proof =
 
 let remove_loop proof =
     get_first_proof (get_proofs_of_sequents proof)
+
+
+(* SIMPLIFY : COMMUTE DOWN WEAKENING *)
+let rec tail_n l n =
+    if n = 0 then l else tail_n (List.tl l) (n-1);;
+
+let rec head_n l n =
+    if n = 0 then [] else List.hd l :: head_n (List.tl l) (n-1);;
+
+let new_head_wk_tail_wk_head_tail head tail head_wk tail_wk formula output_formula_length =
+    if List.length head <= List.length head_wk - output_formula_length
+    then
+        let middle = tail_n head_wk (List.length head + output_formula_length) in
+        head @ [formula] @ middle, tail_wk, head, middle @ tail_wk
+    else
+        let middle = head_n tail_wk (List.length tail_wk - List.length tail - output_formula_length) in
+        head_wk, middle @ [formula] @ tail, head_wk @ middle, tail;;
+
+let rec sort_weakenings_by_head_size_desc = function
+    | Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))
+        when List.length head_wk1 <= List.length head_wk2 ->
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        let sorted_weakening = sort_weakenings_by_head_size_desc (Weakening_proof (new_head_wk1, f1, new_tail_wk1, p)) in
+        sort_weakenings_by_head_size_desc (Weakening_proof (new_head_wk2, f2, new_tail_wk2, sorted_weakening))
+    | p -> p;;
+
+let rec get_weakening_head_size_list = function
+    | Weakening_proof (head_wk, _, _, p) -> List.length head_wk :: get_weakening_head_size_list p
+    | _ -> [];;
+
+let rec get_first_common_position_with_exception l1 l2 n = match l1, l2 with
+    | [], l2 -> None
+    | l1, [] -> None
+    | e1 :: tail1, e2 :: tail2 -> if e1 = e2 && e1 <> n then Some e1
+        else if e1 = n || e1 > e2
+        then get_first_common_position_with_exception tail1 l2 n
+        else get_first_common_position_with_exception l1 tail2 n;;
+
+let rec get_weakening_with_head_size n_head = function
+    | Weakening_proof (head_wk, f, tail_wk, p)
+        when List.length head_wk = n_head ->
+        Weakening_proof (head_wk, f, tail_wk, p)
+    | Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))
+        when List.length head_wk2 = n_head ->
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        Weakening_proof (new_head_wk2, f2, new_tail_wk2, Weakening_proof (new_head_wk1, f1, new_tail_wk1, p))
+    | Weakening_proof (head_wk, f, tail_wk, p) ->
+        get_weakening_with_head_size n_head (Weakening_proof (head_wk, f, tail_wk, get_weakening_with_head_size n_head p))
+    | _ -> raise (Failure "Weakening not found");;
+
+let get_commuted_proof = function
+    | _, proof -> proof;;
+
+let has_commuted = function
+    | b, _ -> b;;
+
+let rec rec_commute_down_weakenings proof =
+    match proof with
+    | Axiom_proof _ -> false, proof
+    | One_proof -> false, proof
+    | Top_proof _ -> false, proof
+    | Bottom_proof (head, tail, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk Sequent.Bottom 0 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Bottom_proof (new_head, new_tail, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Tensor_proof (head, e1, e2, tail, Weakening_proof (head_wk, formula, e :: tail_wk, p), p2) ->
+        (* Last element of tail_wk should be equal to e1. If e1 is weakened just after, we can not commute down weakening (cf next case).*)
+        let new_tail_wk = head_n (e :: tail_wk) (List.length tail_wk) in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Tensor_proof (head_wk @ new_tail_wk, e1, e2, tail, p, p2))) in
+        true, Weakening_proof (head_wk, formula, new_tail_wk @ [Sequent.Tensor (e1,e2)] @ tail, new_proof)
+    | Tensor_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, [], Weakening_proof (head_wk2, f2, tail_wk2, p)), p2) ->
+        (* e1 should be equal to Whynot f1. We swap the two weakenings. *)
+        let swapped_weakenings = Weakening_proof (head_wk2, f2, tail_wk2 @ [e1], Weakening_proof (head_wk2 @ tail_wk2, f1, [], p)) in
+        rec_commute_down_weakenings (Tensor_proof (head, e1, e2, tail, swapped_weakenings, p2))
+    | Tensor_proof (head, e1, e2, tail, p1, Weakening_proof (e :: head_wk, formula, tail_wk, p)) ->
+        (* e should be equal to e2. If e2 is weakened just after, we can not commute down weakening (cf next case).*)
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Tensor_proof (head, e1, e2, head_wk @ tail_wk, p1, p))) in
+        true, Weakening_proof (head @ [Sequent.Tensor (e1,e2)] @ head_wk, formula, tail_wk, new_proof)
+    | Tensor_proof (head, e1, e2, tail, p1, Weakening_proof ([], f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))) ->
+        (* e2 should be equal to Whynot f1. We swap the two weakenings. *)
+        let swapped_weakenings = Weakening_proof ([e2] @ head_wk2, f2, tail_wk2, Weakening_proof ([], f1, head_wk2 @ tail_wk2, p)) in
+        rec_commute_down_weakenings (Tensor_proof (head, e1, e2, tail, p1, swapped_weakenings))
+    | Par_proof (head, e1, e2, tail, Weakening_proof (head_wk, formula, tail_wk, p))
+        when List.length head_wk <> List.length head && List.length head_wk <> List.length head + 1 ->
+        (* If one of par formulas is weakened just after: we can not commute down weakening (cf next cases). *)
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Par (e1, e2)) 2 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Par_proof (new_head, e1, e2, new_tail, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Par_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p)))
+        when List.length head_wk2 <> List.length head ->
+        (* If first weaken after par is on e1 or e2 and if second weaken is not on the other one,
+            then we can commute second weaken with {par + first weaken}. *)
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        let second_weakening = Weakening_proof (new_head_wk1, f1, new_tail_wk1, p) in
+        let new_head_wk2, new_tail_wk2, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail new_head_wk2 new_tail_wk2 (Par (e1, e2)) 2 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Par_proof (new_head, e1, e2, new_tail, second_weakening))) in
+        true, Weakening_proof (new_head_wk2, f2, new_tail_wk2, new_proof)
+    | Par_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, Weakening_proof (head_wk3, f3, tail_wk3, p)))) ->
+        (* If first weaken after par is on e1 or e2 and second weaken is on the other one (cf cases before).
+            We can commute third weaken with {par + first weaken + second weaken}. *)
+        let new_head_wk3, new_tail_wk3, new_head_wk2, new_tail_wk2 =
+            new_head_wk_tail_wk_head_tail head_wk2 tail_wk2 head_wk3 tail_wk3 (Whynot f2) 0 in
+        let third_weakening = Weakening_proof (new_head_wk2, f2, new_tail_wk2, p) in
+        let new_head_wk3, new_tail_wk3, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 new_head_wk3 new_tail_wk3 (Whynot f1) 0 in
+        let second_weakening = Weakening_proof (new_head_wk1, f1, new_tail_wk1, third_weakening) in
+        let new_head_wk3, new_tail_wk3, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail new_head_wk3 new_tail_wk3 (Par (e1, e2)) 2 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Par_proof (new_head, e1, e2, new_tail, second_weakening))) in
+        true, Weakening_proof (new_head_wk3, f3, new_tail_wk3, new_proof)
+    | With_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, tail_wk1, p1), Weakening_proof (head_wk2, f2, tail_wk2, p2))
+        when List.length head_wk1 = List.length head_wk2 && List.length head_wk1 <> List.length head ->
+        (* f1 and f2 should be equal, we can commute down both weakenings below With_proof *)
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk1 tail_wk1 (With (e1, e2)) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (With_proof (new_head, e1, e2, new_tail, p1, p2))) in
+        true, Weakening_proof (new_head_wk, f1, new_tail_wk, new_proof)
+    | With_proof (head, e1, e2, tail, p1, p2) -> begin
+        (* p1 and p2 does not starts with same weakening, we look for a common swappable weakening on both side *)
+        let sorted_p1 = sort_weakenings_by_head_size_desc (get_commuted_proof (rec_commute_down_weakenings p1)) in
+        let sorted_p2 = sort_weakenings_by_head_size_desc (get_commuted_proof (rec_commute_down_weakenings p2)) in
+        let l1 = get_weakening_head_size_list sorted_p1 in
+        let l2 = get_weakening_head_size_list sorted_p2 in
+        match get_first_common_position_with_exception l1 l2 (List.length head) with
+            | None -> false, With_proof (head, e1, e2, tail, sorted_p1, sorted_p2)
+            | Some n -> rec_commute_down_weakenings (With_proof (head, e1, e2, tail, get_weakening_with_head_size n sorted_p1, get_weakening_with_head_size n sorted_p2)) end
+    | Plus_left_proof (head, e1, e2, tail, Weakening_proof (head_wk, formula, tail_wk, p))
+        when List.length head_wk <> List.length head ->
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Plus (e1, e2)) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Plus_left_proof (new_head, e1, e2, new_tail, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Plus_left_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))) ->
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        let second_weakening = Weakening_proof (new_head_wk1, f1, new_tail_wk1, p) in
+        let new_head_wk2, new_tail_wk2, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail new_head_wk2 new_tail_wk2 (Plus (e1, e2)) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Plus_left_proof (new_head, e1, e2, new_tail, second_weakening))) in
+        true, Weakening_proof (new_head_wk2, f2, new_tail_wk2, new_proof)
+    | Plus_right_proof (head, e1, e2, tail, Weakening_proof (head_wk, formula, tail_wk, p))
+        when List.length head_wk <> List.length head ->
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Plus (e1, e2)) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Plus_right_proof (new_head, e1, e2, new_tail, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Plus_right_proof (head, e1, e2, tail, Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))) ->
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        let second_weakening = Weakening_proof (new_head_wk1, f1, new_tail_wk1, p) in
+        let new_head_wk2, new_tail_wk2, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail new_head_wk2 new_tail_wk2 (Plus (e1, e2)) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Plus_right_proof (new_head, e1, e2, new_tail, second_weakening))) in
+        true, Weakening_proof (new_head_wk2, f2, new_tail_wk2, new_proof)
+    | Promotion_proof (head_without_whynot, e, tail_without_whynot, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+        let head = Sequent.add_whynot head_without_whynot in
+        let tail = Sequent.add_whynot tail_without_whynot in
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Ofcourse e) 1 in
+        let new_head_without_whynot = remove_whynot new_head in
+        let new_tail_without_whynot = remove_whynot new_tail in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Dereliction_proof (head, e, tail, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+        if List.length head = List.length head_wk
+        then
+            (* derelected formula is weakened just after: we can weaken immediately *)
+            let new_proof = get_commuted_proof (rec_commute_down_weakenings p) in
+            true, Weakening_proof (head_wk, e, tail_wk, new_proof)
+        else
+            let new_head_wk, new_tail_wk, new_head, new_tail =
+                new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 1 in
+            let new_proof = get_commuted_proof (rec_commute_down_weakenings (Dereliction_proof (new_head, e, new_tail, p))) in
+            true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Contraction_proof (head, e, tail, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+        if List.length head = List.length head_wk || List.length head + 1 = List.length head_wk
+        then
+            (* contracted formula is weakened just after: we can ignore the two operations *)
+            true, get_commuted_proof (rec_commute_down_weakenings p)
+        else
+            let new_head_wk, new_tail_wk, new_head, new_tail =
+                new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 2 in
+            let new_proof = get_commuted_proof (rec_commute_down_weakenings (Contraction_proof (new_head, e, new_tail, p))) in
+            true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Exchange_proof (s, permutation, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+        let n_head_wk = List.length head_wk in
+        let n_tail_wk = List.length tail_wk in
+        let new_permutation = perm_minus_element n_head_wk permutation in
+        let exchange_proof = if new_permutation = identity (n_head_wk + n_tail_wk) then p else Exchange_proof (head_wk @ tail_wk, new_permutation, p) in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings exchange_proof) in
+        let conclusion = get_conclusion proof in
+        let new_head_wk, _, new_tail_wk = head_formula_tail (position_in_list (List.length head_wk) permutation) conclusion in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | _ -> let commuted_premises = List.map rec_commute_down_weakenings (get_premises proof) in
+        let new_proof = set_premises proof (List.map get_commuted_proof commuted_premises) in
+        if List.exists has_commuted commuted_premises
+        then rec_commute_down_weakenings new_proof
+        else false, new_proof;;
+
+let commute_down_weakenings proof =
+    get_commuted_proof (rec_commute_down_weakenings proof);;
