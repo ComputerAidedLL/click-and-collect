@@ -108,13 +108,13 @@ let call_api_apply_rule_auto_weak () =
     let test_samples = json_file |> member "call_api_apply_rule_auto_weak" |> to_list in
     let run_test test_sample =
         let request_as_json = test_sample |> member "request" in
-        let expected_premises = test_sample |> member "expected_premises" in
+        let expected_proof = test_sample |> member "expected_proof" in
         let response_as_string = call_api_post "apply_rule?autoWeak=true" (Yojson.Basic.to_string request_as_json) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" true success;
-        let premises = response_as_json |> member "proof" |> member "appliedRule" |> member "premises" in
-        Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_premises) (Yojson.Basic.to_string premises) in
+        let proof = response_as_json |> member "proof" in
+        Alcotest.(check string) "check sequent list returned" (Yojson.Basic.to_string expected_proof) (Yojson.Basic.to_string proof) in
     List.iter run_test test_samples
 
 let call_api_auto_reverse_full_response () =
