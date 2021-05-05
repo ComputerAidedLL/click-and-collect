@@ -569,17 +569,25 @@
   "call_api_apply_rule_auto_weak": [
     {
       "request": {"rr":{"r":"one"},"s":{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"whynot","v":{"t":"litt","v":"B"}},{"t":"one"}]}},
-      "expected_premises": [
-        {
-          "sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"B"}},{"type":"one"}]},
-          "appliedRule":{
-            "ruleRequest":{"rule":"weakening","formulaPosition":0},
-            "premises":[
-              {
+      "expected_proof": {
+        "sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"A"}},{"type":"whynot","value":{"type":"litt","value":"B"}},{"type":"one"}]},
+        "appliedRule":{"ruleRequest":{"rule":"weakening","formulaPosition":0},
+          "premises":[{
+            "sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"B"}},{"type":"one"}]},
+            "appliedRule":{
+              "ruleRequest":{"rule":"weakening","formulaPosition":0},
+              "premises":[{
                 "sequent":{"cons":[{"type":"one"}]},
-                "appliedRule":{
-                  "ruleRequest":{"rule":"one"},
-                  "premises":[]}}]}}]
+                "appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}]}}]}}
+    },
+    {
+      "request": {"rr":{"r":"axiom"},"s":{"hyp":[],"cons":[{"t":"whynot","v":{"t":"litt","v":"X"}},{"t":"ofcourse","v":{"t":"dual","v":{"t":"litt","v":"X"}}},{"t":"whynot","v":{"t":"bottom"}}]}},
+      "expected_proof": {"sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"X"}},{"type":"ofcourse","value":{"type":"dual","value":{"type":"litt","value":"X"}}},{"type":"whynot","value":{"type":"bottom"}}]},
+        "appliedRule":{
+          "ruleRequest":{"rule":"weakening","formulaPosition":2},
+          "premises":[{
+            "sequent":{"cons":[{"type":"whynot","value":{"type":"litt","value":"X"}},{"type":"ofcourse","value":{"type":"dual","value":{"type":"litt","value":"X"}}}]},
+            "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}]}}
     }
   ],
   "call_api_sequent_is_provable": [

@@ -118,10 +118,10 @@ let rec from_sequent_and_rule_request auto_weak sequent rule_request =
                       then raise (Rule_exception (true, "Can not apply 'axiom' rule in whynot context: not found two orthogonal formulas."))
                       else raise (Rule_exception (true, "Can not apply 'axiom' rule: the two formulas are not orthogonal.")))
                 else Axiom_proof e1)
-            | Whynot f :: tail when auto_weak ->
+            | Whynot f :: tail when auto_weak && not (List.mem (dual (Whynot f)) sequent) ->
                let proof = from_sequent_and_rule_request true tail Axiom in
                Weakening_proof ([], f, tail, proof)
-            | e :: Whynot f :: tail when auto_weak ->
+            | e :: Whynot f :: tail when auto_weak && e <> dual (Whynot f) ->
                let proof = from_sequent_and_rule_request true (e :: tail) Axiom in
                Weakening_proof ([e], f, tail, proof)
             | e1 :: e2 :: Whynot f :: tail when auto_weak ->
