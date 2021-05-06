@@ -312,7 +312,6 @@ let rec prove_with_increasing_bound focused_sequent exponential_bound ttl =
 let prove_focused_sequent focused_sequent =
   let max_execution_time_in_seconds = 3. in
   let ttl = Sys.time () +. max_execution_time_in_seconds in
-  has_reached_exponential_bound := false;
   try prove_with_increasing_bound focused_sequent 0 ttl
   with Ttl_exceeded -> (None, None)
 
