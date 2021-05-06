@@ -4,6 +4,9 @@ The repository contains
 frontend and backend code
 for an online interactive sequent prover for linear logic.
 
+## Technical informations and roadmap
+Some informations are available in the [wiki](https://github.com/etiennecallies/click-and-collect/wiki).
+
 ## Install
 ### Deploy on local dev environment
 - Install dependencies
