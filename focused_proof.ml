@@ -296,6 +296,7 @@ let rec prove sequent select_d2 max_d2 ttl =
       | _ -> None
 
 let rec prove_with_increasing_bound focused_sequent exponential_bound ttl =
+    has_reached_exponential_bound := false;
     match prove focused_sequent [] exponential_bound ttl with
         | None -> if !has_reached_exponential_bound
             then prove_with_increasing_bound focused_sequent (exponential_bound + 1) ttl
