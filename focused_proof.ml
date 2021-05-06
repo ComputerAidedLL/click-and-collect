@@ -135,11 +135,11 @@ let sort_whynot l =
   List.sort (fun x y -> whynot_height y - whynot_height x) l
 
 exception Ttl_exceeded
+let has_reached_exponential_bound = ref false
 
 (* [prove sequent select_d2 ttl] attempts to prove the sequent [sequent]
    where [select_d2] contains the candidates for the Focusing_exponential rule,
-   [max_d2] when positive is a (pseudo-)bound on the number of applications of the Focusing_exponential rule,
-   [max_d2] when negative is an increasing bound for recursive calls only (the bound will be [abs max_d2])
+   [max_d2] is a (pseudo-)bound on the number of applications of the Focusing_exponential rule,
    and [ttl] is a time to leave. *)
 let rec prove sequent select_d2 max_d2 ttl =
   (if Sys.time () > ttl then raise Ttl_exceeded);
@@ -162,14 +162,13 @@ let rec prove sequent select_d2 max_d2 ttl =
             let rec apply_d2 select_d2 max_d2 =
               let f = List.hd select_d2 in
               try
-                (* we take abs max_d2 since it can be negative (thus increasingly limited) *)
-                let p = get_op (prove (Sync (theta, gamma, f)) (List.tl select_d2) (abs max_d2) ttl) in
+                let p = get_op (prove (Sync (theta, gamma, f)) (List.tl select_d2) max_d2 ttl) in
                 Some (Node (sequent, Focusing_exponential f, [p]))
               with NoValue ->
                 apply_d2' (List.tl select_d2) max_d2
             and apply_d2' select_d2 max_d2 =
               if select_d2 = [] then begin
-                (if max_d2 = 0 then raise NoValue);
+                (if max_d2 = 0 then (has_reached_exponential_bound := true; raise NoValue));
                 let select_d2' =
                   sort_whynot (List.filter (fun x -> not (is_dual x))
                   (Set_formula.elements theta)) in
@@ -296,6 +295,14 @@ let rec prove sequent select_d2 max_d2 ttl =
               None
       | _ -> None
 
+let rec prove_with_increasing_bound focused_sequent exponential_bound ttl =
+    has_reached_exponential_bound := false;
+    match prove focused_sequent [] exponential_bound ttl with
+        | None -> if !has_reached_exponential_bound
+            then prove_with_increasing_bound focused_sequent (exponential_bound + 1) ttl
+            else (Some false, None)
+        | Some proof -> (Some true, Some proof)
+
 (* [prove_sequent sequent] attempts to prove [sequent] and returns
    the result [(res, proof)].
    [res] = None if max execution time is reached, and [res] = (Some b)
@@ -305,10 +312,7 @@ let rec prove sequent select_d2 max_d2 ttl =
 let prove_focused_sequent focused_sequent =
   let max_execution_time_in_seconds = 3. in
   let ttl = Sys.time () +. max_execution_time_in_seconds in
-  (* max_d2 is set as -1: bound will be increasingly limited *)
-  try match prove focused_sequent [] (-1) ttl with
-    | None -> (Some false, None)
-    | Some proof -> (Some true, Some proof)
+  try prove_with_increasing_bound focused_sequent 0 ttl
   with Ttl_exceeded -> (None, None)
 
 (* FOCUSED <-> NOT FOCUSED *)
