@@ -132,7 +132,7 @@ function applyRule(ruleRequest, $sequentTable) {
                 addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
                 markAsCompleteIfProofIsComplete($container);
 
-                if (!isSequentComplete($sequentTable) && options.autoReverse.value) {
+                if (!isSequentComplete($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
                 }
             } else {
