@@ -171,15 +171,19 @@ let parse_auto_prove_non_provable () =
         Alcotest.(check bool) "is_provable" is_provable false in
     List.iter run_test test_samples
 
-let auto_prove_and_remove_loop () =
-    let request_as_string = "{\"cons\":[{\"t\":\"whynot\",\"v\":{\"t\":\"whynot\",\"v\":{\"t\":\"one\"}}},{\"t\":\"whynot\",\"v\":{\"t\":\"bottom\"}}]}" in
-    let response_as_string = call_api_post "auto_prove_sequent" request_as_string 200 in
-    let response_as_json = Yojson.Basic.from_string response_as_string in
-    let success = response_as_json |> member "success" |> to_bool in
-    Alcotest.(check bool) "success" success true;
-    let expected_proof = "{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"contraction\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"dereliction\",\"formulaPosition\":1},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"contraction\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"dereliction\",\"formulaPosition\":1},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}},{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"dereliction\",\"formulaPosition\":2},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}},{\"type\":\"one\"},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"weakening\",\"formulaPosition\":1},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"one\"},{\"type\":\"whynot\",\"value\":{\"type\":\"bottom\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"weakening\",\"formulaPosition\":2},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"whynot\",\"value\":{\"type\":\"whynot\",\"value\":{\"type\":\"one\"}}},{\"type\":\"one\"}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"weakening\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"one\"}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"one\"},\"premises\":[]}}]}}]}}]}}]}}]}}]}}]}}]}}" in
-    let proof_as_json = response_as_json |> member "proof" in
-    Alcotest.(check string) "check proof" (Yojson.Basic.to_string proof_as_json) expected_proof
+let auto_prove_and_check_simplified_proof () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "auto_prove_and_check_simplified_proof" |> to_list in
+    let run_test test_sample =
+        let sequent_as_json = test_sample |> member "sequent" in
+        let expected_proof = test_sample |> member "proof" in
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let success = response_as_json |> member "success" |> to_bool in
+        let proof = response_as_json |> member "proof" in
+        Alcotest.(check bool) "success" success true;
+        Alcotest.(check string) "check proof" (Yojson.Basic.to_string expected_proof) (Yojson.Basic.to_string proof) in
+    List.iter run_test test_samples
 
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
@@ -209,7 +213,7 @@ let test_auto_reverse_sequent = [
 let test_auto_prove_sequent = [
     "Test parse, auto-prove and verify", `Quick, parse_auto_prove_and_verify;
     "Test parse, auto-prove on non provable sequent", `Quick, parse_auto_prove_non_provable;
-    "Test auto-prove and remove loop", `Quick, auto_prove_and_remove_loop;
+    "Test auto-prove and check simplified proof", `Quick, auto_prove_and_check_simplified_proof;
 ]
 
 (* Run it *)
