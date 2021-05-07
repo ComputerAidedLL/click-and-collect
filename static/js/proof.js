@@ -65,7 +65,6 @@ function initProof(proofAsJson, $container, options = {}) {
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
     let $sequentTable = createSequentTable(proofAsJson.sequent, options);
     $subProofDivContainer.prepend($sequentTable);
-    let $sequentDiv = $sequentTable.find('div' + '.sequent');
     if (proofAsJson.appliedRule) {
         let permutationBeforeRule = null;
 
@@ -74,33 +73,33 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
             proofAsJson = proofAsJson.appliedRule.premises[0];
         }
 
-        addPremises($sequentDiv,
+        addPremises($sequentTable,
             permutationBeforeRule,
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
             options);
     } else if (options.checkProvability) {
-        checkProvability($sequentDiv);
+        checkProvability($sequentTable);
     }
 }
 
 function createSequentTable(sequent, options) {
-    let $table = $('<table>');
+    let $sequentTable = $('<table>')
+        .data('sequentWithoutPermutation', sequent);
 
     let $td = $('<td>');
-    $td.append(createSequent(sequent, options));
-    $table.append($td);
+    $td.append(createSequent(sequent, $sequentTable, options));
+    $sequentTable.append($td);
 
     let $tagBox = $('<td>', {'class': 'tagBox'})
         .html('&nbsp;');
-    $table.append($tagBox);
+    $sequentTable.append($tagBox);
 
-    return $table;
+    return $sequentTable;
 }
 
-function removeSequentDiv($sequentDiv) {
-    undoRule($sequentDiv);
-    let $sequentTable = $sequentDiv.closest('table');
+function removeSequentTable($sequentTable) {
+    undoRule($sequentTable);
     let $div = $sequentTable.closest('div');
     $sequentTable.remove();
 
@@ -111,13 +110,13 @@ function removeSequentDiv($sequentDiv) {
 // APPLY RULE
 // **********
 
-function applyRule(ruleRequest, $sequentDiv) {
-    let $container = $sequentDiv.closest('.proof-container');
+function applyRule(ruleRequest, $sequentTable) {
+    let $container = $sequentTable.closest('.proof-container');
     let options = $container.data('options');
 
     // Sequent json that was stored in div may have been permuted before rule applying
-    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
-    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
     $.ajax({
@@ -130,11 +129,11 @@ function applyRule(ruleRequest, $sequentDiv) {
             if (data.success === true) {
                 cleanPedagogicError($container);
                 let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentDiv, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
                 markAsCompleteIfProofIsComplete($container);
 
-                if (!isSequentComplete($sequentDiv) && options.autoReverse.value) {
-                    autoReverseSequentPremises($sequentDiv);
+                if (!isSequentComplete($sequentTable) && options.autoReverse.value) {
+                    autoReverseSequentPremises($sequentTable);
                 }
             } else {
                 displayPedagogicError(data['errorMessage'], $container);
@@ -144,68 +143,66 @@ function applyRule(ruleRequest, $sequentDiv) {
     });
 }
 
-function addPremises($sequentDiv, permutationBeforeRule, ruleRequest, premises, options) {
+function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises, options) {
     // Undo previously applied rule if any
-    undoRule($sequentDiv);
+    undoRule($sequentTable);
 
     // Save data
-    $sequentDiv
+    $sequentTable
         .data('permutationBeforeRule', permutationBeforeRule)
         .data('ruleRequest', ruleRequest);
 
     // Add line
-    let $td = $sequentDiv.closest('td');
+    let $td = $sequentTable.find('div.sequent').closest('td');
     $td.addClass('inference');
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': `tag ${ruleRequest.rule}`}).html(RULES[ruleRequest.rule]);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
-        $ruleSymbol.on('click', function() { undoRule($sequentDiv); })
+        $ruleSymbol.on('click', function() { undoRule($sequentTable); })
     }
     $td.next('.tagBox').html($ruleSymbol);
 
     // Add premises
-    let $table = $td.closest('table');
     if (premises.length === 0) {
-        markParentSequentsAsProved($sequentDiv);
+        markParentSequentsAsProved($sequentTable);
     } else if (premises.length === 1) {
-        createSubProof(premises[0], $table.parent(), options);
+        createSubProof(premises[0], $sequentTable.parent(), options);
     } else {
         let $div = $('<div>');
-        $div.insertBefore($table);
+        $div.insertBefore($sequentTable);
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
             $div.append($sibling);
             createSubProof(premise, $sibling, options)
         }
-        $table.addClass('binary-rule');
+        $sequentTable.addClass('binary-rule');
     }
 }
 
-function undoRule($sequentDiv) {
+function undoRule($sequentTable) {
     // Erase data
-    $sequentDiv
+    $sequentTable
         .data('permutationBeforeRule', null)
         .data('ruleRequest', null)
         .data('proved', null);
 
     // Remove line
-    let $td = $sequentDiv.closest('td');
+    let $td = $sequentTable.find('div.sequent').closest('td');
     $td.removeClass('inference');
 
     // Remove rule symbol
     $td.next('.tagBox').html('');
 
     // Remove premises
-    let $table = $td.closest('table');
-    $table.prevAll().each(function (i, e) {
+    $sequentTable.prevAll().each(function (i, e) {
         e.remove();
     });
-    $table.removeClass('binary-rule');
+    $sequentTable.removeClass('binary-rule');
 
     // Mark proof as incomplete
-    let $container = $table.closest('.proof-container');
+    let $container = $sequentTable.closest('.proof-container');
     markAsIncomplete($container);
 }
 
@@ -253,13 +250,12 @@ function getProofAsJson($container) {
     return recGetProofAsJson($mainTable);
 }
 
-function recGetProofAsJson($table) {
-    let $sequentDiv = $table.find('div.sequent');
-    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
-    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
+function recGetProofAsJson($sequentTable) {
+    let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
     let appliedRule = null;
     if (ruleRequest !== null) {
-        let $prev = $table.prev();
+        let $prev = $sequentTable.prev();
         let premises = [];
         if ($prev.length) {
             if ($prev.prop('tagName') === 'TABLE') {
@@ -272,7 +268,7 @@ function recGetProofAsJson($table) {
         }
         appliedRule = { ruleRequest, premises };
 
-        let permutationBeforeRule = $sequentDiv.data('permutationBeforeRule');
+        let permutationBeforeRule = $sequentTable.data('permutationBeforeRule');
         if (!isIdentitySequentPermutation(permutationBeforeRule)) {
             let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
             appliedRule = {
@@ -334,8 +330,7 @@ function markAsCompleteIfProofIsComplete($container) {
     return false;
 }
 
-function isSequentComplete($sequentDiv) {
-    let $sequentTable = $sequentDiv.closest('table');
+function isSequentComplete($sequentTable) {
     let proofAsJson = recGetProofAsJson($sequentTable);
 
     return checkProofIsComplete(proofAsJson);
@@ -349,38 +344,36 @@ function checkProofIsComplete(proofAsJson) {
     return proofAsJson.appliedRule.premises.every(checkProofIsComplete);
 }
 
-function isBinary($sequentDiv) {
-    let $table = $sequentDiv.closest('table');
-    return $table.hasClass('binary-rule');
+function isBinary($sequentTable) {
+    return $sequentTable.hasClass('binary-rule');
 }
 
-function isProved($sequentDiv) {
-    return $sequentDiv.data('proved') === true;
+function isProved($sequentTable) {
+    return $sequentTable.data('proved') === true;
 }
 
-function getParentSequentDiv($sequentDiv) {
-    let $table = $sequentDiv.closest('table');
-    if (!$table.is(':last-child')) {
-        return $table.next().find('div.sequent');
+function getParentSequentTable($sequentTable) {
+    if (!$sequentTable.is(':last-child')) {
+        return $sequentTable.next();
     }
 
-    let $div = $table.closest('div');
+    let $div = $sequentTable.closest('div');
     if ($div.hasClass('proof')) {
         return null;
     }
 
-    return $div.parent().next().find('div.sequent');
+    return $div.parent().next();
 }
 
-function markParentSequentsAsProved($sequentDiv) {
-    $sequentDiv.data('proved', true);
-    undoMarkAsNotProvable($sequentDiv);
-    undoMarkAsNotAutoProvable($sequentDiv);
+function markParentSequentsAsProved($sequentTable) {
+    $sequentTable.data('proved', true);
+    undoMarkAsNotProvable($sequentTable);
+    undoMarkAsNotAutoProvable($sequentTable);
 
-    let parentSequentDiv = getParentSequentDiv($sequentDiv);
-    if (parentSequentDiv !== null) {
-        if (!isBinary(parentSequentDiv) || getPremises(parentSequentDiv).every(isProved)) {
-            markParentSequentsAsProved(parentSequentDiv);
+    let $parentSequentTable = getParentSequentTable($sequentTable);
+    if ($parentSequentTable !== null) {
+        if (!isBinary($parentSequentTable) || getPremisesSequentTable($parentSequentTable).every(isProved)) {
+            markParentSequentsAsProved($parentSequentTable);
         }
     }
 }
@@ -499,13 +492,13 @@ function exportAsLatex($container, format) {
 // CHECK PROVABILITY
 // *****************
 
-function checkProvability($sequentDiv) {
-    if ($sequentDiv.data('notProvable') === true || $sequentDiv.data('notProvable') === false) {
+function checkProvability($sequentTable) {
+    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notProvable') === false) {
         return;
     }
 
-    $sequentDiv.data('notProvable', false);
-    let sequent = $sequentDiv.data('sequentWithoutPermutation');
+    $sequentTable.data('notProvable', false);
+    let sequent = $sequentTable.data('sequentWithoutPermutation');
 
     $.ajax({
         type: 'POST',
@@ -515,11 +508,11 @@ function checkProvability($sequentDiv) {
         success: function(data)
         {
             if (data['is_provable'] === false) {
-                markAsNotProvable($sequentDiv);
+                markAsNotProvable($sequentTable);
 
-                let $parentSequentDiv = getParentSequentDiv($sequentDiv);
-                if ($parentSequentDiv !== null) {
-                    checkProvability($parentSequentDiv);
+                let $parentSequentTable = getParentSequentTable($sequentTable);
+                if ($parentSequentTable !== null) {
+                    checkProvability($parentSequentTable);
                 }
             }
         },
@@ -527,16 +520,16 @@ function checkProvability($sequentDiv) {
     });
 }
 
-function markAsNotProvable($sequentDiv) {
-    $sequentDiv.data('notProvable', true);
-    let $turnstile = $sequentDiv.find('span.turnstile');
+function markAsNotProvable($sequentTable) {
+    $sequentTable.data('notProvable', true);
+    let $turnstile = $sequentTable.find('span.turnstile');
     $turnstile.addClass('not-provable');
     $turnstile.attr('title', 'This sequent is not provable');
 }
 
-function undoMarkAsNotProvable($sequentDiv) {
-    $sequentDiv.data('notProvable', false);
-    let $turnstile = $sequentDiv.find('span.turnstile');
+function undoMarkAsNotProvable($sequentTable) {
+    $sequentTable.data('notProvable', false);
+    let $turnstile = $sequentTable.find('span.turnstile');
     $turnstile.removeClass('not-provable');
     $turnstile.removeAttr('title');
 }
@@ -570,56 +563,54 @@ function createOption($container, optionName, text, onToggle, dialog) {
 }
 
 function autoReverseContainer($container) {
-    let $mainSequentDiv = $container.find('div.sequent').last();
-    autoReverseSequentPremises($mainSequentDiv);
+    let $mainSequentTable = $container.find('table').last();
+    autoReverseSequentPremises($mainSequentTable);
 }
 
-function autoReverseSequentPremises($sequentDiv) {
-    let $premisesSequentDiv = recGetPremisesSequentDiv($sequentDiv.closest('table'));
-    for (let $premiseSequentDiv of $premisesSequentDiv) {
-        if (!isSequentComplete($premiseSequentDiv)) {
-            autoReverseSequent($premiseSequentDiv);
+function autoReverseSequentPremises($sequentTable) {
+    let $premisesSequentTables = getLastPremisesSequentTable($sequentTable);
+    for (let $premiseSequentTable of $premisesSequentTables) {
+        if (!isSequentComplete($premiseSequentTable)) {
+            autoReverseSequent($premiseSequentTable);
         }
     }
 }
 
-function getPremises($sequentDiv) {
-    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
+function getPremisesSequentTable($sequentTable) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
     if (ruleRequest === null) {
         return [];
     }
 
-    let $table = $sequentDiv.closest('table');
-    let $prev = $table.prev();
+    let $prev = $sequentTable.prev();
 
     if ($prev.prop('tagName') === 'TABLE') {
-        return [$prev.find('div.sequent')];
+        return [$prev];
     }
 
     let $premises = [];
     $prev.children('div.sibling').each(function (i, sibling) {
         let $siblingTable = $(sibling).children('table').last();
-        $premises = $premises.concat($siblingTable.find('div.sequent'));
+        $premises = $premises.concat($siblingTable);
     })
 
     return $premises;
 }
 
-function recGetPremisesSequentDiv($table) {
-    let $sequentDiv = $table.find('div.sequent')
-    let ruleRequest = $sequentDiv.data('ruleRequest') || null;
+function getLastPremisesSequentTable($sequentTable) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
     if (ruleRequest !== null) {
-        let $prev = $table.prev();
+        let $prev = $sequentTable.prev();
 
         if ($prev.length) {
             if ($prev.prop('tagName') === 'TABLE') {
-                return recGetPremisesSequentDiv($prev);
+                return getLastPremisesSequentTable($prev);
             }
 
             let $premises = [];
             $prev.children('div.sibling').each(function (i, sibling) {
                 let $siblingTable = $(sibling).children('table').last();
-                let $siblingPremises = recGetPremisesSequentDiv($siblingTable);
+                let $siblingPremises = getLastPremisesSequentTable($siblingTable);
                 $premises = $premises.concat($siblingPremises);
             })
 
@@ -627,16 +618,16 @@ function recGetPremisesSequentDiv($table) {
         }
     }
 
-    return [$sequentDiv];
+    return [$sequentTable];
 }
 
-function autoReverseSequent($sequentDiv) {
-    let $container = $sequentDiv.closest('.proof-container');
+function autoReverseSequent($sequentTable) {
+    let $container = $sequentTable.closest('.proof-container');
     let options = $container.data('options');
 
     // Sequent json that was stored in div may have been permuted before rule applying
-    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
-    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
     $.ajax({
@@ -647,7 +638,7 @@ function autoReverseSequent($sequentDiv) {
         success: function(data)
         {
             if (data.appliedRule !== null) {
-                addPremises($sequentDiv, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                addPremises($sequentTable, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
                 markAsCompleteIfProofIsComplete($container);
             }
         },

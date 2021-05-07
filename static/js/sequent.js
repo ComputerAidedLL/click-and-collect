@@ -32,9 +32,8 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequent, options) {
-    let $sequentDiv = $('<div>', {'class': 'sequent'})
-        .data('sequentWithoutPermutation', sequent);
+function createSequent(sequent, $sequentTable, options) {
+    let $sequentDiv = $('<div>', {'class': 'sequent'});
 
     if ('hyp' in sequent) {
         createFormulaList(sequent, 'hyp', $sequentDiv, options);
@@ -44,9 +43,9 @@ function createSequent(sequent, options) {
     if (options.withInteraction) {
         $thesisSpan.addClass('clickable');
         addClickAndDoubleClickEvent($thesisSpan, function () {
-            applyRule({rule: 'axiom'}, $sequentDiv);
+            applyRule({rule: 'axiom'}, $sequentTable);
         }, function () {
-            autoProveSequent($sequentDiv);
+            autoProveSequent($sequentTable);
         });
     }
     $sequentDiv.append($thesisSpan);
@@ -241,14 +240,14 @@ function addEventsAndStyle($li, formulaAsJson) {
 
 function buildApplyRuleCallBack(ruleConfig, $li) {
     return function() {
-        let $sequentDiv = $li.closest('div.sequent');
+        let $sequentTable = $li.closest('table');
         let ruleRequest = {rule: ruleConfig.rule};
 
         if (ruleConfig.needPosition) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
         }
 
-        applyRule(ruleRequest, $sequentDiv);
+        applyRule(ruleRequest, $sequentTable);
     }
 }
 
@@ -281,10 +280,10 @@ function addClickAndDoubleClickEvent ($element, singleClickCallBack, doubleClick
 // FORMULA PERMUTATION
 // *******************
 
-function getSequentPermutation($sequentDiv) {
+function getSequentPermutation($sequentTable) {
     return {
-        'hyp': getFormulasPermutation($sequentDiv.find('ul.hyp')),
-        'cons': getFormulasPermutation($sequentDiv.find('ul.cons'))
+        'hyp': getFormulasPermutation($sequentTable.find('ul.hyp')),
+        'cons': getFormulasPermutation($sequentTable.find('ul.cons'))
     };
 }
 
@@ -320,20 +319,20 @@ function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
 // AUTO-PROVE SEQUENT
 // ******************
 
-function autoProveSequent($sequentDiv) {
-    if ($sequentDiv.data('notProvable') === true || $sequentDiv.data('notAutoProvable') === true) {
+function autoProveSequent($sequentTable) {
+    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notAutoProvable') === true) {
         return;
     }
 
-    let $container = $sequentDiv.closest('.proof-container');
+    let $container = $sequentTable.closest('.proof-container');
     let options = $container.data('options');
 
     // Sequent json that was stored in div may have been permuted before rule applying
-    let sequentWithoutPermutation = $sequentDiv.data('sequentWithoutPermutation');
-    let permutationBeforeRule = getSequentPermutation($sequentDiv);
+    let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
+    let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
-    let $turnstile = $sequentDiv.find('.turnstile');
+    let $turnstile = $sequentTable.find('.turnstile');
 
     $.ajax({
         type: 'POST',
@@ -350,14 +349,14 @@ function autoProveSequent($sequentDiv) {
         {
             if (data.success) {
                 cleanPedagogicError($container);
-                let $sequentContainer = removeSequentDiv($sequentDiv);
+                let $sequentContainer = removeSequentTable($sequentTable);
                 createSubProof(data['proof'], $sequentContainer, options);
                 markAsCompleteIfProofIsComplete($container);
             } else {
                 if (data['is_provable']) {
-                    markAsNotAutoProvable($sequentDiv);
+                    markAsNotAutoProvable($sequentTable);
                 } else {
-                    markAsNotProvable($sequentDiv);
+                    markAsNotProvable($sequentTable);
                 }
             }
         },
@@ -365,16 +364,16 @@ function autoProveSequent($sequentDiv) {
     });
 }
 
-function markAsNotAutoProvable($sequentDiv) {
-    $sequentDiv.data('notAutoProvable', true);
-    let $turnstile = $sequentDiv.find('span.turnstile');
+function markAsNotAutoProvable($sequentTable) {
+    $sequentTable.data('notAutoProvable', true);
+    let $turnstile = $sequentTable.find('span.turnstile');
     $turnstile.addClass('not-auto-provable');
     $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
 }
 
-function undoMarkAsNotAutoProvable($sequentDiv) {
-    $sequentDiv.data('notAutoProvable', null);
-    let $turnstile = $sequentDiv.find('span.turnstile');
+function undoMarkAsNotAutoProvable($sequentTable) {
+    $sequentTable.data('notAutoProvable', null);
+    let $turnstile = $sequentTable.find('span.turnstile');
     $turnstile.removeClass('not-auto-provable');
     $turnstile.removeAttr('title');
 }
