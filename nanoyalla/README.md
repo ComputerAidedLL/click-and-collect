@@ -1,4 +1,4 @@
-**This is NanoYalla version 1.0.2**
+**This is NanoYalla version 1.0.3**
 
 *tested with Coq >= 8.8*
 

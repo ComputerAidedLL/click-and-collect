@@ -345,14 +345,14 @@ let rec to_json proof =
 (* PROOF -> COQ *)
 
 let coq_apply coq_rule =
-    Printf.sprintf "apply %s.\n" coq_rule;;
+    Printf.sprintf "apply %s; cbn.\n" coq_rule;;
 
 let coq_apply_with_args coq_rule args =
     let args_as_string = (String.concat " " args) in
-    Printf.sprintf "apply (%s %s).\n" coq_rule args_as_string;;
+    Printf.sprintf "apply (%s %s); cbn.\n" coq_rule args_as_string;;
 
 let permutation_to_coq permutation =
-    Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
+    Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation)) ^ "%nat";;
 
 let indent_line line =
     "  " ^ line;;

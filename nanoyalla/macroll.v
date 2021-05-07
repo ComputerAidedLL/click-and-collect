@@ -1,6 +1,7 @@
 From Coq Require Import Lia.
 From NanoYalla Require Export nanoll.
 
+Export List.ListNotations.
 
 (** * Informative / Transparent versions of list operations *)
 
@@ -318,3 +319,24 @@ intros pi.
 apply (ex_transp_middle1 nil), co_r.
 now apply (ex_transp_middle2 (wn A :: nil)), (ex_transp_middle2 nil l1).
 Defined.
+
+Declare Scope ll_scope.
+Bind Scope ll_scope with formula.
+Open Scope ll_scope.
+
+Module LLNotations.
+  Notation "⊢" := (ll nil) (format "⊢") : ll_scope.
+  Notation "⊢ x" := (ll (cons x nil)) (at level 85) : ll_scope.
+  Notation "⊢ x , y , .. , z" := (ll (cons x (cons y .. (cons z nil) ..))) (at level 85) : ll_scope.
+  Infix "⊗" := tens (at level 40) : ll_scope.
+  Infix "⊕" := aplus (at level 40) : ll_scope.
+  Infix "⅋" := parr (at level 40) : ll_scope.
+  Infix "＆" := awith (at level 40) : ll_scope.
+  Notation "? A" := (wn A) (format "? A", at level 31, right associativity) : ll_scope.
+  Notation "! A" := (oc A) (format "! A", at level 31, right associativity) : ll_scope.
+  Notation "1" := one : ll_scope.
+  Notation "⟂" := bot : ll_scope.
+  Notation "0" := zero : ll_scope.
+  Notation "⊤" := top : ll_scope.
+  Notation "A ^" := (dual A) (at level 12, format "A ^") : ll_scope.
+End LLNotations.
