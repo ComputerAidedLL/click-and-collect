@@ -66,10 +66,11 @@ function parseSequentAsString(sequentAsString, $container, autoReverse) {
                     withInteraction: true,
                     exportButtons: true,
                     checkProvability: true,
-                    autoReverseOption: true,
-                    autoReverse: autoReverse,
-                    onAutoReverseToggle: onAutoReverseToggle,
-                    autoReverseDialog: 'auto-reverse-dialog'
+                    autoReverse: {
+                        value: autoReverse,
+                        onToggle: onAutoReverseToggle,
+                        dialog: 'auto-reverse-dialog'
+                    }
                 });
             } else {
                 displayPedagogicError(data['error_message'], $container);

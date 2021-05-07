@@ -48,17 +48,17 @@ function initProof(proofAsJson, $container, options = {}) {
         createExportBar($container);
     }
 
-    if (options.autoReverseOption) {
+    if (options.autoReverse) {
         createOption($container, 'autoReverse', 'Auto-reverse',function (autoReverse) {
             if (autoReverse) {
                 autoReverseContainer($container);
             }
-            options.onAutoReverseToggle(autoReverse);
-        }, options.autoReverseDialog);
-    }
+            options.autoReverse.onToggle(autoReverse);
+        }, options.autoReverse.dialog);
 
-    if (options.autoReverse) {
-        autoReverseContainer($container);
+        if (options.autoReverse.value) {
+            autoReverseContainer($container);
+        }
     }
 }
 
@@ -133,7 +133,7 @@ function applyRule(ruleRequest, $sequentDiv) {
                 addPremises($sequentDiv, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
                 markAsCompleteIfProofIsComplete($container);
 
-                if (!isSequentComplete($sequentDiv) && options.autoReverse) {
+                if (!isSequentComplete($sequentDiv) && options.autoReverse.value) {
                     autoReverseSequentPremises($sequentDiv);
                 }
             } else {
@@ -549,10 +549,10 @@ function undoMarkAsNotProvable($sequentDiv) {
 function createOption($container, optionName, text, onToggle, dialog) {
     let $input = $('<input type="checkbox">');
     let options = $container.data('options');
-    $input.prop('checked', options[optionName]);
+    $input.prop('checked', options[optionName].value);
     $input.on('change', function() {
         let options = $container.data('options');
-        options[optionName] = this.checked;
+        options[optionName].value = this.checked;
         $container.data('options', options);
         onToggle(this.checked);
     });
