@@ -60,10 +60,6 @@ function initProof(proofAsJson, $container, options = {}) {
     if (options.autoReverse) {
         autoReverseContainer($container);
     }
-
-    if (options.autoWeakOption) {
-        createOption($container, 'autoWeak', 'Auto-weak', options.onAutoWeakToggle, options.autoWeakDialog);
-    }
 }
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
@@ -126,7 +122,7 @@ function applyRule(ruleRequest, $sequentDiv) {
 
     $.ajax({
         type: 'POST',
-        url: `/apply_rule?autoWeak=${options.autoWeak}`,
+        url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
         data: compressJson(JSON.stringify({ ruleRequest, sequent })),
         success: function(data)
