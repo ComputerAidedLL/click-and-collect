@@ -12,7 +12,7 @@ $( function() {
     let sequentParam = getQueryParamInUrl('s');
     if (sequentParam !== null) {
         $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
-        submitSequent($sequentForm);
+        submitSequent($sequentForm, true);
     }
     
     // Parse URL hash
@@ -31,7 +31,7 @@ $( function() {
 // SEQUENT FORM
 // ************
 
-function submitSequent(element) {
+function submitSequent(element, autoSubmit = false) {
     cleanMainProof();
 
     let form = $(element).closest('form');
@@ -41,6 +41,13 @@ function submitSequent(element) {
     addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
     // We get autoReverse option in URL
     let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
+
+    // Add GA events
+    gtag('event', 'submit-sequent', {
+        'event_category': 'user-action;',
+        'event_label': autoSubmit ? 'auto-submit' : 'manual-submit',
+        'value': sequentAsString
+    });
 
     parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse);
 }
