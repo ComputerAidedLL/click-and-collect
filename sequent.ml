@@ -74,7 +74,6 @@ let get_unique_variable_names sequent =
 let is_top = function | Top -> true | _ -> false;;
 let is_bottom = function | Bottom -> true | _ -> false;;
 let is_par = function | Par _ -> true | _ -> false;;
-let is_double_whynot = function | Whynot (Whynot _) -> true | _ -> false;;
 let is_with = function | With _ -> true | _ -> false;;
 let is_ofcourse = function | Ofcourse _ -> true | _ -> false;;
 

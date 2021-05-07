@@ -231,8 +231,6 @@ let apply_reversible_rule proof =
         with NotApplicable ->
     try try_rule_request sequent (Par (get_formula_position is_par sequent))
         with NotApplicable ->
-    try try_rule_request sequent (Dereliction (get_formula_position is_double_whynot sequent))
-        with NotApplicable ->
     try try_rule_request sequent (With (get_formula_position is_with sequent))
         with NotApplicable ->
     try try_rule_request sequent (Promotion (get_formula_position is_ofcourse sequent))
