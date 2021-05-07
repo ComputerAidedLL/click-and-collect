@@ -508,16 +508,36 @@ function checkProvability($sequentTable) {
         success: function(data)
         {
             if (data['is_provable'] === false) {
-                markAsNotProvable($sequentTable);
-
-                let $parentSequentTable = getParentSequentTable($sequentTable);
-                if ($parentSequentTable !== null) {
-                    checkProvability($parentSequentTable);
-                }
+                recMarkAsNotProvable($sequentTable);
             }
         },
         error: onAjaxError
     });
+}
+
+function recMarkAsNotProvable($sequentTable) {
+    markAsNotProvable($sequentTable);
+
+    let $parentSequentTable = getParentSequentTable($sequentTable);
+    if ($parentSequentTable !== null) {
+        let ruleRequest = $parentSequentTable.data('ruleRequest');
+        if (isReversible(ruleRequest)) {
+            recMarkAsNotProvable($parentSequentTable);
+        }
+    }
+}
+
+function isReversible(ruleRequest) {
+    switch (ruleRequest.rule) {
+        case "par":
+        case "with":
+        case "bottom":
+        case "promotion":
+            return true;
+
+        default:
+            return false;
+    }
 }
 
 function markAsNotProvable($sequentTable) {

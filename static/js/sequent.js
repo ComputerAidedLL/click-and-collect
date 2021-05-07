@@ -356,7 +356,7 @@ function autoProveSequent($sequentTable) {
                 if (data['is_provable']) {
                     markAsNotAutoProvable($sequentTable);
                 } else {
-                    markAsNotProvable($sequentTable);
+                    recMarkAsNotProvable($sequentTable);
                 }
             }
         },
