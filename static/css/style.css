@@ -27,6 +27,8 @@ input[type=text] { border: solid 2px #66a3e0; }
 form input[type="submit"]{ border: none; background-color: #66a3e0; color: white; font-weight: bold; }
 input[type=text], .code { background-color: #FFF; font-family: "Courier New", sans-serif; }
 
+.section.main-proof-section { max-width: none; }
+
 .code { border-radius: 0.3em; padding: 0.1em 0.2em; white-space: nowrap; box-decoration-break: clone; }
 .example { font-style: italic; margin-right: 1em; }
 
@@ -50,7 +52,6 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .close-section { color: #777; display: flex; justify-content: flex-end; margin-right: 1em; }
 
 /* PROOF */
-.proof-container { position: relative; }
 .proof.complete { background:#CFC; }
 .proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: auto; }
 .proof table { margin: auto; }
