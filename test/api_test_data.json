@@ -801,6 +801,13 @@
                                       "appliedRule":{"ruleRequest":{"rule":"promotion","formulaPosition":1},"premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"dual","value":{"type":"litt","value":"B"}}},{"type":"litt","value":"B"}]},
                                         "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},"premises":[{"sequent":{"cons":[{"type":"dual","value":{"type":"litt","value":"B"}},{"type":"litt","value":"B"}]},
                                           "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}]}}]}}]}}]}}]}}]}}]}}]}}]}}]}}]}}]}}]}}
+    },
+    {
+      "sequent": {"hyp":[],"cons":[{"t":"whynot","v":{"t":"one"}},{"t":"ofcourse","v":{"t":"bottom"}}]},
+      "proof": {
+        "sequent":{"cons":[
+          {"type":"whynot","value":{"type":"one"}},{"type":"ofcourse","value":{"type":"bottom"}}]},
+        "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}
     }
   ]
 }
