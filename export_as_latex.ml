@@ -39,7 +39,7 @@ let proof_to_latex proof =
         ^ "  \\shipout\\box\\proof\n"
         ^ "}\n\n" in
     let start_proof = "\\begin{document}\n\n\\adaptpage{\n\\begin{prooftree}\n" in
-    let proof_lines = Proof.to_latex proof in
+    let proof_lines = Proof.to_latex None proof in
     let end_proof = "\\end{prooftree}\n}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
 
