@@ -1,7 +1,5 @@
 open Proof
 
-exception Cannot_export_proof_as_latex_exception of string;;
-
 let proof_to_latex implicit_exchange proof =
     let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
         ^ "% https://click-and-collect.linear-logic.org/\n\n" in
@@ -113,5 +111,4 @@ let export_as_latex implicit_exchange format request_as_json =
     with Proof.Json_exception m -> false, "Bad proof json: " ^ m, ""
         | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m, ""
         | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m, ""
-        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m, ""
-        | Cannot_export_proof_as_latex_exception m -> false, "Cannot export proof as LaTeX: " ^ m, "";;
+        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m, "";;

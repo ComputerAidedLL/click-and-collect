@@ -363,10 +363,9 @@ function autoProveSequent($sequentTable) {
         success: function(data)
         {
             if (data.success) {
-                cleanPedagogicError($container);
+                cleanPedagogicMessage($container);
                 let $sequentContainer = removeSequentTable($sequentTable);
                 createSubProof(data['proof'], $sequentContainer, options);
-                markAsCompleteIfProofIsComplete($container);
             } else {
                 if (data['is_provable']) {
                     markAsNotAutoProvable($sequentTable);

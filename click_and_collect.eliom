@@ -12,6 +12,7 @@ open Export_as_latex
 open Is_sequent_provable
 open Auto_reverse_sequent
 open Auto_prove_sequent
+open Proof_compression
 open Yojson
 
 
@@ -249,3 +250,53 @@ let auto_prove_sequent_handler () (content_type, raw_content_opt) =
 let () =
   Eliom_registration.Any.register auto_prove_sequent_service auto_prove_sequent_handler;
   ()
+
+(******************)
+(* COMPRESS PROOF *)
+(******************)
+
+(* Service declaration *)
+let compress_proof_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["compress_proof"])
+      ~meth:(Eliom_service.Post (Eliom_parameter.unit, Eliom_parameter.raw_post_data))
+      ()
+
+(* Service definition *)
+let compress_proof_handler () (content_type, raw_content_opt) =
+    post_handler raw_content_opt (function request_as_json ->
+        let technical_success, string_response = compress_proof request_as_json in
+        if technical_success then send_file ~code:200 string_response "text/plain"
+        else send_json ~code:400 string_response)
+
+let () =
+  Eliom_registration.Any.register compress_proof_service compress_proof_handler;
+  ()
+
+
+(********************)
+(* UNCOMPRESS PROOF *)
+(********************)
+
+(* Service declaration *)
+let uncompress_proof_service =
+  Eliom_service.create
+      ~path:(Eliom_service.Path ["uncompress_proof"])
+      ~meth:(Eliom_service.Get (Eliom_parameter.string "compressedProof"))
+      ()
+
+(* Service definition *)
+let _ =
+  Eliom_registration.String.register
+    ~service:uncompress_proof_service
+    (fun compressed_proof () ->
+      let success, result = uncompress_proof compressed_proof in
+        let response =
+            if success then `Assoc [
+                ("is_valid", `Bool true);
+                ("proof", result)
+            ] else `Assoc [
+                ("is_valid", `Bool false);
+                ("error_message", result)
+            ] in
+        Lwt.return (Yojson.to_string response, "application/json"));;

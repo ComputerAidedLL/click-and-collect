@@ -128,12 +128,11 @@ function applyRule(ruleRequest, $sequentTable) {
         success: function(data)
         {
             if (data.success === true) {
-                cleanPedagogicError($container);
+                cleanPedagogicMessage($container);
                 let appliedRule = data['proof'].appliedRule;
                 addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
-                markAsCompleteIfProofIsComplete($container);
 
-                if (!isSequentComplete($sequentTable) && options.autoReverse?.value) {
+                if (!isProved($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
                 }
             } else {
@@ -211,15 +210,24 @@ function undoRule($sequentTable) {
 // PEDAGOGIC ERROR
 // ***************
 
-function displayPedagogicError(errorMessage, $container) {
+function displayPedagogicError(message, $container) {
+    displayPedagogicMessage(message, $container, 'error');
+}
+
+function displayPedagogicInfo(message, $container) {
+    displayPedagogicMessage(message, $container, 'info');
+}
+
+function displayPedagogicMessage(errorMessage, $container, className) {
     let $div = $container
-        .children('div.pedagogic-error');
+        .children('div.pedagogic-message');
     if (!$div.length) {
-        $div = $('<div>', {'class': 'pedagogic-error'});
+        $div = $('<div>', {'class': 'pedagogic-message'})
+            .addClass(className);
         $div.append($('<div>', {'class': 'message'}));
         let $close = $('<div>', {'class': 'close-button'});
         $close.html('✖');
-        $close.on('click', function () {cleanPedagogicError($container);});
+        $close.on('click', function () { cleanPedagogicMessage($container); });
         $div.append($close);
 
         let $proofDiv = $container.children('div.proof');
@@ -228,13 +236,17 @@ function displayPedagogicError(errorMessage, $container) {
         } else {
             $container.append($div);
         }
+    } else {
+        $div.removeClass();
+        $div.addClass('pedagogic-message');
+        $div.addClass(className);
     }
     $div.children('div.message').text(errorMessage);
 }
 
-function cleanPedagogicError($container) {
+function cleanPedagogicMessage($container) {
     $container
-        .children('div.pedagogic-error')
+        .children('div.pedagogic-message')
         .remove();
 }
 
@@ -332,34 +344,6 @@ function markAsIncomplete($container) {
     $mainDiv.removeClass('complete');
 }
 
-function markAsCompleteIfProofIsComplete($container) {
-    // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
-
-    // We check if proof is complete
-    if (checkProofIsComplete(proofAsJson)) {
-        markAsComplete($container);
-
-        return true;
-    }
-
-    return false;
-}
-
-function isSequentComplete($sequentTable) {
-    let proofAsJson = recGetProofAsJson($sequentTable);
-
-    return checkProofIsComplete(proofAsJson);
-}
-
-function checkProofIsComplete(proofAsJson) {
-    if (proofAsJson.appliedRule === null) {
-        return false;
-    }
-
-    return proofAsJson.appliedRule.premises.every(checkProofIsComplete);
-}
-
 function isBinary($sequentTable) {
     return $sequentTable.hasClass('binary-rule');
 }
@@ -391,6 +375,9 @@ function markParentSequentsAsProved($sequentTable) {
         if (!isBinary($parentSequentTable) || getPremisesSequentTable($parentSequentTable).every(isProved)) {
             markParentSequentsAsProved($parentSequentTable);
         }
+    } else {
+        let $container = $sequentTable.closest('.proof-container');
+        markAsComplete($container);
     }
 }
 
@@ -405,37 +392,38 @@ function createExportBar($container) {
     let coqButton = createExportButton(
         'images/coq.png',
         'Export as Coq',
-        'coq',
         function () { exportAsCoq($container); });
     $exportBar.append(coqButton);
 
     let latexButton = createExportButton(
         'images/LaTeX_logo.png',
         'Export as LaTeX',
-        'latex',
         function () { openExportDialog($container, 'tex'); });
     $exportBar.append(latexButton);
 
     let pdfButton = createExportButton(
         'images/pdf-icon.png',
         'Export as PDF',
-        'pdf',
         function () { openExportDialog($container, 'pdf'); });
     $exportBar.append(pdfButton);
 
     let pngButton = createExportButton(
         'images/camera.png',
         'Export as PNG',
-        'png',
         function () { openExportDialog($container, 'png'); });
     $exportBar.append(pngButton);
+
+    let shareButton = createExportButton(
+        'images/share-icon.png',
+        'Share proof URL',
+        function () { shareProof($container); });
+    $exportBar.append(shareButton);
 
     $container.append($exportBar);
 }
 
-function createExportButton(logoPath, title, className, onClick) {
+function createExportButton(logoPath, title, onClick) {
     return $(`<img src="${logoPath}" title="${title}"  alt=""/>`)
-        .addClass(className)
         .addClass('export')
         .on('click', onClick);
 }
@@ -518,6 +506,28 @@ function exportAsLatex($container, format, implicitExchange) {
     httpRequest.send(compressJson(JSON.stringify(proofAsJson)));
 }
 
+// ***********
+// SHARE PROOF
+// ***********
+
+function shareProof($container) {
+    // We get proof stored in HTML
+    let proofAsJson = getProofAsJson($container);
+
+    $.ajax({
+        type: 'POST',
+        url: '/compress_proof',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify(proofAsJson)),
+        success: function(data)
+        {
+            addQueryParamInUrl('p', data, "Add compressed_proof in URL");
+            copyUrlToClipboard();
+            displayPedagogicInfo('Sharable URL has been copied to clipboard.', $container);
+        },
+        error: onAjaxError
+    });
+}
 
 // *****************
 // CHECK PROVABILITY
@@ -621,7 +631,7 @@ function autoReverseContainer($container) {
 function autoReverseSequentPremises($sequentTable) {
     let $premisesSequentTables = getLastPremisesSequentTable($sequentTable);
     for (let $premiseSequentTable of $premisesSequentTables) {
-        if (!isSequentComplete($premiseSequentTable)) {
+        if (!isProved($premiseSequentTable)) {
             autoReverseSequent($premiseSequentTable);
         }
     }
@@ -690,7 +700,6 @@ function autoReverseSequent($sequentTable) {
         {
             if (data.appliedRule !== null) {
                 addPremises($sequentTable, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
-                markAsCompleteIfProofIsComplete($container);
             }
         },
         error: onAjaxError

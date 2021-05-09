@@ -48,6 +48,15 @@ If you don't have LaTeX environment installed on your machine (or your server), 
 sudo apt-get install poppler-utils
 ```
 
+### Make share proof work
+You need to install [lzma](https://github.com/fccm/ocaml-lzma) package, which is sadly not available on opam.
+```
+git clone git@github.com:fccm/ocaml-lzma.git
+opam pin add lzma ocaml-lzma/ -n
+opam depext lzma
+opam install lzma
+```
+
 ## Contribute
 ### Modify Coq nanoyalla package
 Whenever a file in `nanoyalla/` directory package is modified, nanoyalla version should be incremented that way:
