@@ -441,7 +441,9 @@ let rec to_latex implicit_exchange permutation_opt proof =
     | Exchange_proof (_, display_permutation, permutation, p) ->
         if implicit_exchange
             then to_latex implicit_exchange (Some display_permutation) p
-            else to_latex implicit_exchange None p ^ (latex_apply "exv" conclusion)
+            else to_latex implicit_exchange None p ^
+                if permutation = identity (List.length permutation) then ""
+                else (latex_apply "exv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 
