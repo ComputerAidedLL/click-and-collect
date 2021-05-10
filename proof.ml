@@ -417,7 +417,7 @@ let latex_apply latex_rule conclusion =
 let rec to_latex implicit_exchange permutation_opt proof =
     (* implicit_exchange is true when we don't display exchange rule.
        permutation_opt is [None] when conclusion is to display as is,
-       [Some permutation] if we need to permute it bofore *)
+       [Some permutation] if we need to permute it before *)
     let to_latex_clear_exchange = to_latex implicit_exchange None in
     let conclusion =
       let preconclusion = get_conclusion proof in
