@@ -44,7 +44,7 @@ function submitSequent(element, autoSubmit = false) {
 
     // Add GA events
     gtag('event', 'submit-sequent', {
-        'event_category': 'user-action;',
+        'event_category': 'user-action',
         'event_label': autoSubmit ? 'auto-submit' : 'manual-submit',
         'value': sequentAsString
     });
