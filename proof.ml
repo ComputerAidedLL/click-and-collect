@@ -414,10 +414,15 @@ let to_coq_with_hyps = to_coq_with_hyps_increment 0
 let latex_apply latex_rule conclusion =
     Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
 
+let nonify = function
+  | None -> None
+  | Some _ -> Some None
+
 let rec to_latex exchange proof =
 (* exchange is [None] for explicit exchange,
                [Some None] for implicit exchange with no permutation to apply to conclusion,
                [Some (Some permutation)] for implicit exchange with [permutation] to be applied to conclusion *)
+    let to_latex_clear_exchange = to_latex (nonify exchange) in
     let conclusion =
       let preconclusion = get_conclusion proof in
       match exchange with
@@ -427,16 +432,16 @@ let rec to_latex exchange proof =
     | Axiom_proof _ -> latex_apply "axv" conclusion
     | One_proof -> latex_apply "onev" conclusion
     | Top_proof _ -> latex_apply "topv" conclusion
-    | Bottom_proof (_, _, p) -> to_latex (Some None) p ^ (latex_apply "botv" conclusion)
-    | Tensor_proof (_, _, _, _, p1, p2) -> to_latex (Some None) p1 ^ (to_latex (Some None) p2) ^ (latex_apply "tensorv" conclusion)
-    | Par_proof (_, _, _, _, p) -> to_latex (Some None) p ^ (latex_apply "parrv" conclusion)
-    | With_proof (_, _, _, _, p1, p2) -> to_latex (Some None) p1 ^ (to_latex (Some None) p2) ^ (latex_apply "withv" conclusion)
-    | Plus_left_proof (_, _, _, _, p) -> to_latex (Some None) p ^ (latex_apply "pluslv" conclusion)
-    | Plus_right_proof (_, _, _, _, p) -> to_latex (Some None) p ^ (latex_apply "plusrv" conclusion)
-    | Promotion_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "ocv" conclusion)
-    | Dereliction_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "dev" conclusion)
-    | Weakening_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "wkv" conclusion)
-    | Contraction_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "cov" conclusion)
+    | Bottom_proof (_, _, p) -> to_latex_clear_exchange p ^ (latex_apply "botv" conclusion)
+    | Tensor_proof (_, _, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "tensorv" conclusion)
+    | Par_proof (_, _, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "parrv" conclusion)
+    | With_proof (_, _, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "withv" conclusion)
+    | Plus_left_proof (_, _, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "pluslv" conclusion)
+    | Plus_right_proof (_, _, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "plusrv" conclusion)
+    | Promotion_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "ocv" conclusion)
+    | Dereliction_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "dev" conclusion)
+    | Weakening_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "wkv" conclusion)
+    | Contraction_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "cov" conclusion)
     | Exchange_proof (_, display_permutation, permutation, p) ->
        (match exchange with
         | None -> to_latex None p ^ (latex_apply "exv" conclusion)
