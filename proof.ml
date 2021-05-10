@@ -414,20 +414,16 @@ let to_coq_with_hyps = to_coq_with_hyps_increment 0
 let latex_apply latex_rule conclusion =
     Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
 
-let nonify = function
-  | None -> None
-  | Some _ -> Some None
-
-let rec to_latex exchange proof =
-(* exchange is [None] for explicit exchange,
-               [Some None] for implicit exchange with no permutation to apply to conclusion,
-               [Some (Some permutation)] for implicit exchange with [permutation] to be applied to conclusion *)
-    let to_latex_clear_exchange = to_latex (nonify exchange) in
+let rec to_latex implicit_exchange permutation_opt proof =
+    (* implicit_exchange is true when we don't display exchange rule.
+       permutation_opt is [None] when conclusion is to display as is,
+       [Some permutation] if we need to permute it bofore *)
+    let to_latex_clear_exchange = to_latex implicit_exchange None in
     let conclusion =
       let preconclusion = get_conclusion proof in
-      match exchange with
-      | None | Some None -> sequent_to_latex preconclusion
-      | Some (Some permutation) -> sequent_to_latex (permute preconclusion permutation) in
+      match permutation_opt with
+      | None -> sequent_to_latex preconclusion
+      | Some permutation -> sequent_to_latex (permute preconclusion permutation) in
     match proof with
     | Axiom_proof _ -> latex_apply "axv" conclusion
     | One_proof -> latex_apply "onev" conclusion
@@ -443,9 +439,9 @@ let rec to_latex exchange proof =
     | Weakening_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "wkv" conclusion)
     | Contraction_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "cov" conclusion)
     | Exchange_proof (_, display_permutation, permutation, p) ->
-       (match exchange with
-        | None -> to_latex None p ^ (latex_apply "exv" conclusion)
-        | Some _ -> to_latex (Some (Some display_permutation)) p)
+        if implicit_exchange
+            then to_latex implicit_exchange (Some display_permutation) p
+            else to_latex implicit_exchange None p ^ (latex_apply "exv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 

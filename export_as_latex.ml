@@ -2,7 +2,7 @@ open Proof
 
 exception Cannot_export_proof_as_latex_exception of string;;
 
-let proof_to_latex proof =
+let proof_to_latex implicit_exchange proof =
     let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
         ^ "% https://click-and-collect.linear-logic.org/\n\n" in
     let packages = "\\documentclass{article}\n\n"
@@ -39,13 +39,13 @@ let proof_to_latex proof =
         ^ "  \\shipout\\box\\proof\n"
         ^ "}\n\n" in
     let start_proof = "\\begin{document}\n\n\\adaptpage{\n\\begin{prooftree}\n" in
-    let proof_lines = Proof.to_latex None proof in
+    let proof_lines = Proof.to_latex implicit_exchange None proof in
     let end_proof = "\\end{prooftree}\n}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
 
-let export_as_latex_with_exceptions request_as_json =
+let export_as_latex_with_exceptions implicit_exchange request_as_json =
     let proof = Proof.from_json request_as_json in
-    proof_to_latex proof;;
+    proof_to_latex implicit_exchange proof;;
 
 let temp_directory = "local/var/temp";;
 
@@ -104,8 +104,8 @@ let get_png_file proof_as_latex =
     let png_file_name = Printf.sprintf "%s/%s-1.png" temp_directory file_prefix in
     read_and_remove_file png_file_name
 
-let export_as_latex request_as_json format =
-    try let proof_as_latex = export_as_latex_with_exceptions request_as_json in
+let export_as_latex implicit_exchange format request_as_json =
+    try let proof_as_latex = export_as_latex_with_exceptions implicit_exchange request_as_json in
         if format = "tex" then true, proof_as_latex, "text/plain"
         else if format = "pdf" then true, get_pdf_file proof_as_latex, "application/pdf"
         else if format = "png" then true, get_png_file proof_as_latex, "image/png"

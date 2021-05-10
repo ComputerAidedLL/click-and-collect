@@ -413,21 +413,21 @@ function createExportBar($container) {
         'images/LaTeX_logo.png',
         'Export as LaTeX',
         'latex',
-        function () { exportAsLatex($container, 'tex'); });
+        function () { exportAsLatex($container, 'tex', false); });
     $exportBar.append(latexButton);
 
     let pdfButton = createExportButton(
         'images/pdf-icon.png',
         'Export as PDF',
         'pdf',
-        function () { exportAsLatex($container, 'pdf'); });
+        function () { exportAsLatex($container, 'pdf', false); });
     $exportBar.append(pdfButton);
 
     let pngButton = createExportButton(
         'images/camera.png',
         'Export as PNG',
         'png',
-        function () { exportAsLatex($container, 'png'); });
+        function () { exportAsLatex($container, 'png', true); });
     $exportBar.append(pngButton);
 
     $container.append($exportBar);
@@ -471,12 +471,12 @@ function exportAsCoq($container) {
 // EXPORT AS LATEX
 // ***************
 
-function exportAsLatex($container, format) {
+function exportAsLatex($container, format, implicitExchange) {
     // We get proof stored in HTML
     let proofAsJson = getProofAsJson($container);
 
     let httpRequest = new XMLHttpRequest();
-    httpRequest.open('POST', `/export_as_latex?format=${format}`, true);
+    httpRequest.open('POST', `/export_as_latex?format=${format}&implicitExchange=${implicitExchange}`, true);
     httpRequest.responseType = 'blob';
     httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
 
