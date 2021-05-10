@@ -74,7 +74,7 @@ let set_premises proof premises = match proof, premises with
     | Dereliction_proof (head, e, tail, _), [p] -> Dereliction_proof (head, e, tail, p)
     | Weakening_proof (head, e, tail, _), [p] -> Weakening_proof (head, e, tail, p)
     | Contraction_proof (head, e, tail, _), [p] -> Contraction_proof (head, e, tail, p)
-    | Exchange_proof (sequent, permutation1, permutation2, _), [p] -> Exchange_proof (sequent, permutation1, permutation2, p)
+    | Exchange_proof (sequent, display_permutation, permutation, _), [p] -> Exchange_proof (sequent, display_permutation, permutation, p)
     | Hypothesis_proof sequent, _ -> raise (Failure "Can not set premises of hypothesis")
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
@@ -194,14 +194,13 @@ let rec from_sequent_and_rule_request sequent rule_request =
             Whynot e -> Contraction_proof (head, e, tail, (Hypothesis_proof (head @ [Whynot e; Whynot e] @ tail)))
             | _ -> raise (Rule_exception (false, "Cannot apply contraction rule on this formula"))
         )
-        | Exchange permutation -> (
+        | Exchange (display_permutation, permutation) -> (
             if List.length sequent <> List.length permutation
             then raise (Rule_exception (false, "When applying exchange rule, formula_positions and sequent must have same size"))
             else if not (is_valid_permutation permutation)
             then raise (Rule_exception (false, "When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
-            else let permuted_sequent = permute sequent permutation in
-                 let permutation_inv = permutation_inverse permutation in
-                 Exchange_proof (permuted_sequent, permutation_inv, permutation_inv, Hypothesis_proof permuted_sequent)
+            else let permuted_sequent = permute sequent (permutation_inverse permutation) in
+                 Exchange_proof (permuted_sequent, display_permutation, permutation, Hypothesis_proof permuted_sequent)
         );;
 
 let from_sequent_and_rule_request_and_premises sequent rule_request premises =
@@ -287,7 +286,7 @@ let get_rule_request = function
     | Dereliction_proof (head, _, _, _) -> Dereliction (List.length head)
     | Weakening_proof (head, _, _, _) -> Weakening (List.length head)
     | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
-    | Exchange_proof (_, _, permutation, _) -> Exchange (permutation_inverse permutation)
+    | Exchange_proof (_, display_permutation, permutation, _) -> Exchange (display_permutation, permutation)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
@@ -438,10 +437,10 @@ let rec to_latex exchange proof =
     | Dereliction_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "dev" conclusion)
     | Weakening_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "wkv" conclusion)
     | Contraction_proof (_, _, _, p) -> to_latex (Some None) p ^ (latex_apply "cov" conclusion)
-    | Exchange_proof (_, permutation, _, p) -> 
+    | Exchange_proof (_, display_permutation, permutation, p) ->
        (match exchange with
         | None -> to_latex None p ^ (latex_apply "exv" conclusion)
-        | Some _ -> to_latex (Some (Some permutation)) p)
+        | Some _ -> to_latex (Some (Some display_permutation)) p)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 
@@ -720,15 +719,15 @@ let rec rec_commute_down_weakenings proof =
                 new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 2 in
             let new_proof = get_commuted_proof (rec_commute_down_weakenings (Contraction_proof (new_head, e, new_tail, p))) in
             true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
-    | Exchange_proof (s, permutation1, permutation2, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+    | Exchange_proof (s, display_permutation, permutation, Weakening_proof (head_wk, formula, tail_wk, p)) ->
         let n_head_wk = List.length head_wk in
         let n_tail_wk = List.length tail_wk in
-        let new_permutation1 = perm_minus_element n_head_wk permutation1 in
-        let new_permutation2 = perm_minus_element n_head_wk permutation2 in
-        let exchange_proof = if new_permutation2 = identity (n_head_wk + n_tail_wk) then p else Exchange_proof (head_wk @ tail_wk, new_permutation1, new_permutation2, p) in
+        let new_display_permutation = perm_minus_element n_head_wk display_permutation in
+        let new_permutation = perm_minus_element n_head_wk permutation in
+        let exchange_proof = if new_permutation = identity (n_head_wk + n_tail_wk) then p else Exchange_proof (head_wk @ tail_wk, new_display_permutation, new_permutation, p) in
         let new_proof = get_commuted_proof (rec_commute_down_weakenings exchange_proof) in
         let conclusion = get_conclusion proof in
-        let new_head_wk, _, new_tail_wk = head_formula_tail (position_in_list (List.length head_wk) permutation2) conclusion in
+        let new_head_wk, _, new_tail_wk = head_formula_tail (position_in_list (List.length head_wk) permutation) conclusion in
         true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
     | _ -> let commuted_premises = List.map rec_commute_down_weakenings (get_premises proof) in
         let new_proof = set_premises proof (List.map get_commuted_proof commuted_premises) in

@@ -15,7 +15,7 @@ type rule_request =
     | Dereliction of int
     | Weakening of int
     | Contraction of int
-    | Exchange of int list;;
+    | Exchange of int list * int list;;
 
 
 (* JSON -> RULE *)
@@ -63,7 +63,7 @@ let from_json rule_request_as_json =
         | "dereliction" -> Dereliction (get_int rule_request_as_json "formulaPosition")
         | "weakening" -> Weakening (get_int rule_request_as_json "formulaPosition")
         | "contraction" -> Contraction (get_int rule_request_as_json "formulaPosition")
-        | "exchange" -> Exchange (get_int_list rule_request_as_json "permutation")
+        | "exchange" -> Exchange (get_int_list rule_request_as_json "displayPermutation", get_int_list rule_request_as_json "permutation")
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;
 
 (* RULE -> JSON *)
@@ -105,6 +105,7 @@ let to_json = function
     | Contraction formula_position -> `Assoc [
         ("rule", `String "contraction");
         ("formulaPosition", `Int formula_position)]
-    | Exchange permutation -> `Assoc [
+    | Exchange (display_permutation, permutation) -> `Assoc [
         ("rule", `String "exchange");
+        ("displayPermutation", `List (List.map (fun n -> `Int n) display_permutation));
         ("permutation", `List (List.map (fun n -> `Int n) permutation))];;

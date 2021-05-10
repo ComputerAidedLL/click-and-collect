@@ -65,11 +65,12 @@ function initProof(proofAsJson, $container, options = {}) {
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
     let $sequentTable = createSequentTable(proofAsJson.sequent, options);
     $subProofDivContainer.prepend($sequentTable);
+
     if (proofAsJson.appliedRule) {
-        let permutationBeforeRule = null;
+        let permutationBeforeRule = getSequentIdentityPermutation(proofAsJson.sequent);
 
         if (proofAsJson.appliedRule.ruleRequest.rule === 'exchange') {
-            permutationBeforeRule = {'hyp': [], 'cons': proofAsJson.appliedRule.ruleRequest.permutation};
+            permutationBeforeRule = {'hyp': [], 'cons': invertPermutation(proofAsJson.appliedRule.ruleRequest.permutation)};
             proofAsJson = proofAsJson.appliedRule.premises[0];
         }
 
@@ -269,12 +270,23 @@ function recGetProofAsJson($sequentTable) {
         appliedRule = { ruleRequest, premises };
 
         let permutationBeforeRule = $sequentTable.data('permutationBeforeRule');
-        if (!isIdentitySequentPermutation(permutationBeforeRule)) {
+        let displayPermutation = getSequentPermutation($sequentTable);
+        if (!isIdentitySequentPermutation(permutationBeforeRule)
+            || !isIdentitySequentPermutation(displayPermutation)) {
             let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+
+            // Permutation asked by API is from premise to conclusion, and we have the other way
+            // We need to invert permutation
+            let invertedPermutation = invertPermutation(permutationBeforeRule['cons']);
+
+            // Display permutation asked by API is from premise to displayed conclusion
+            let permutedDisplayPermutation = permute(invertedPermutation, displayPermutation['cons']);
+
             appliedRule = {
                 ruleRequest: {
                     rule: 'exchange',
-                    permutation: permutationBeforeRule['cons']
+                    permutation: invertedPermutation,
+                    displayPermutation: permutedDisplayPermutation
                 },
                 premises: [{sequent: sequentWithPermutation, appliedRule}]
             }
@@ -285,10 +297,6 @@ function recGetProofAsJson($sequentTable) {
 }
 
 function isIdentitySequentPermutation(sequentPermutation) {
-    if (sequentPermutation === null) {
-        return true;
-    }
-
     return isIdentity(sequentPermutation['hyp']) && isIdentity(sequentPermutation['cons']);
 }
 
@@ -300,6 +308,14 @@ function isIdentity(permutation) {
     }
 
     return true;
+}
+
+function invertPermutation(permutation) {
+    let invertedPerm = [];
+    for (let i of identity(permutation.length)) {
+        invertedPerm.push(permutation.indexOf(i));
+    }
+    return invertedPerm;
 }
 
 // **********************
