@@ -413,21 +413,21 @@ function createExportBar($container) {
         'images/LaTeX_logo.png',
         'Export as LaTeX',
         'latex',
-        function () { exportAsLatex($container, 'tex', false); });
+        function () { openExportDialog($container, 'tex'); });
     $exportBar.append(latexButton);
 
     let pdfButton = createExportButton(
         'images/pdf-icon.png',
         'Export as PDF',
         'pdf',
-        function () { exportAsLatex($container, 'pdf', false); });
+        function () { openExportDialog($container, 'pdf'); });
     $exportBar.append(pdfButton);
 
     let pngButton = createExportButton(
         'images/camera.png',
         'Export as PNG',
         'png',
-        function () { exportAsLatex($container, 'png', false); });
+        function () { openExportDialog($container, 'png'); });
     $exportBar.append(pngButton);
 
     $container.append($exportBar);
@@ -470,6 +470,21 @@ function exportAsCoq($container) {
 // ***************
 // EXPORT AS LATEX
 // ***************
+
+function openExportDialog($container, format) {
+    let exportDialog = $('#export-dialog');
+    exportDialog.find('p' + '.implicit').off('click')
+        .on('click', function () {
+            exportAsLatex($container, format, true);
+            exportDialog.dialog('close');
+        });
+    exportDialog.find('p' + '.explicit').off('click')
+        .on('click', function () {
+            exportAsLatex($container, format, false);
+            exportDialog.dialog('close');
+        });
+    exportDialog.dialog('open');
+}
 
 function exportAsLatex($container, format, implicitExchange) {
     // We get proof stored in HTML
