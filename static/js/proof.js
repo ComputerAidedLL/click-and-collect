@@ -427,7 +427,7 @@ function createExportBar($container) {
         'images/camera.png',
         'Export as PNG',
         'png',
-        function () { exportAsLatex($container, 'png', true); });
+        function () { exportAsLatex($container, 'png', false); });
     $exportBar.append(pngButton);
 
     $container.append($exportBar);
