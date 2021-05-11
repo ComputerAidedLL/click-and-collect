@@ -32,6 +32,11 @@ let () =
 (*********)
 (* UTILS *)
 (*********)
+
+let get_boolean_value = function
+    | None -> false
+    | Some s -> s = "true" || s = "1"
+
 let send_json ~code json =
   Eliom_registration.String.send ~code (json, "application/json")
 
@@ -164,13 +169,14 @@ let () =
 let export_as_latex_service =
   Eliom_service.create
       ~path:(Eliom_service.Path ["export_as_latex"])
-      ~meth:(Eliom_service.Post (Eliom_parameter.string "format", Eliom_parameter.raw_post_data))
+      ~meth:(Eliom_service.Post (Eliom_parameter.prod (Eliom_parameter.string "format") (Eliom_parameter.opt (Eliom_parameter.string "implicitExchange")), Eliom_parameter.raw_post_data))
       ()
 
 (* Service definition *)
-let export_as_latex_handler format (content_type, raw_content_opt) =
+let export_as_latex_handler (format, implicit_exchange_opt) (content_type, raw_content_opt) =
+    let implicit_exchange = get_boolean_value implicit_exchange_opt in
     post_handler raw_content_opt (function request_as_json ->
-        let technical_success, string_response, file_type = export_as_latex request_as_json format in
+        let technical_success, string_response, file_type = export_as_latex implicit_exchange format request_as_json in
         if technical_success then send_file ~code:200 string_response file_type
         else send_json ~code:400 string_response)
 

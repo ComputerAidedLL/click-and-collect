@@ -298,14 +298,29 @@ function getFormulasPermutation($ul) {
     return permutation;
 }
 
-function permuteSequent(sequentWithoutPermutation, sequentPermutation) {
+function getSequentIdentityPermutation(sequent) {
     return {
-        'hyp': permuteFormulas(sequentWithoutPermutation['hyp'], sequentPermutation['hyp']),
-        'cons': permuteFormulas(sequentWithoutPermutation['cons'], sequentPermutation['cons'])
+        'hyp': getFormulaListIdentityPermutation(sequent['hyp'] || []),
+        'cons': getFormulaListIdentityPermutation(sequent['cons'] || [])
     };
 }
 
-function permuteFormulas(formulasWithoutPermutation, formulasPermutation) {
+function getFormulaListIdentityPermutation(formulaList) {
+    return identity(formulaList.length);
+}
+
+function identity(n) {
+    return [...Array(n).keys()];
+}
+
+function permuteSequent(sequentWithoutPermutation, sequentPermutation) {
+    return {
+        'hyp': permute(sequentWithoutPermutation['hyp'], sequentPermutation['hyp']),
+        'cons': permute(sequentWithoutPermutation['cons'], sequentPermutation['cons'])
+    };
+}
+
+function permute(formulasWithoutPermutation, formulasPermutation) {
     let newFormulas = [];
 
     for (let initialPosition of formulasPermutation) {

@@ -345,7 +345,7 @@ let permute_proof proof sequent_below =
     let sequent = get_conclusion proof in
     let indexed_sequent = index_list 0 sequent in
     let permutation = get_permutation indexed_sequent sequent_below in
-    Exchange_proof (sequent, permutation, proof)
+    Exchange_proof (sequent, permutation, permutation, proof)
 
 let rec weaken proof head tail = function
     | [] -> proof
@@ -362,7 +362,7 @@ let move_left left_offset right_offset proof =
         @ [n - right_offset - 1]
         @ List.init (n - right_offset - left_offset - 1) (fun k -> left_offset + k)
         @ List.init right_offset (fun k -> n - right_offset + k) in
-    Exchange_proof (sequent, permutation, proof)
+    Exchange_proof (sequent, permutation, permutation, proof)
 
 let move_right left_offset right_offset proof =
     let sequent = get_conclusion proof in
@@ -371,7 +371,7 @@ let move_right left_offset right_offset proof =
         @ List.init (n - right_offset - left_offset - 1) (fun k -> left_offset + 1 + k)
         @ [left_offset]
         @ List.init right_offset (fun k -> n - right_offset + k) in
-    Exchange_proof (sequent, permutation, proof)
+    Exchange_proof (sequent, permutation, permutation, proof)
 
 let rec unfocus_proof = function
     | Null -> raise (Failure "Focused proof is null")
