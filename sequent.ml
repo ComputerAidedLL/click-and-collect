@@ -183,3 +183,55 @@ let formula_to_latex formula =
 
 let sequent_to_latex sequent =
     String.concat ", " (List.map formula_to_latex sequent);;
+
+
+(* SEQUENT -> ASCII *)
+
+let rec formula_to_ascii_atomic =
+  function
+  | One -> "1", true
+  | Bottom -> "_", true
+  | Top -> "T", true
+  | Zero -> "0", true
+  | Litt x -> x, true
+  | Dual x -> Printf.sprintf "%s^" x, true
+  | Tensor (e1, e2) ->
+      let s1, atomic1 = formula_to_ascii_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_ascii_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s * %s" s1_parenthesis s2_parenthesis, false
+  | Par (e1, e2) ->
+      let s1, atomic1 = formula_to_ascii_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_ascii_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s | %s" s1_parenthesis s2_parenthesis, false
+  | With (e1, e2) ->
+      let s1, atomic1 = formula_to_ascii_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_ascii_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s & %s" s1_parenthesis s2_parenthesis, false
+  | Plus (e1, e2) ->
+      let s1, atomic1 = formula_to_ascii_atomic e1 in
+      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+      let s2, atomic2 = formula_to_ascii_atomic e2 in
+      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+      Printf.sprintf "%s + %s" s1_parenthesis s2_parenthesis, false
+  | Ofcourse e ->
+      let s, atomic = formula_to_ascii_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "!%s" s_parenthesis, true
+  | Whynot e ->
+      let s, atomic = formula_to_ascii_atomic e in
+      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+      Printf.sprintf "?%s" s_parenthesis, true
+
+let formula_to_ascii formula =
+  let s, _ = formula_to_ascii_atomic formula in s
+
+let sequent_to_ascii utf8 sequent =
+  (if utf8 then "|-" else "|- ")
+  ^ (String.concat ", " (List.map formula_to_ascii sequent));;
+
