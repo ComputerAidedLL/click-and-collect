@@ -12,3 +12,4 @@ Files description:
 
   * `nanoll.v`: minimal trusted base defining LL proofs as the `ll` type
   * `macroll.v`: derivable rules for the `ll` type
+  * `extractionll.v`: configuration for proof extraction to OCaml
