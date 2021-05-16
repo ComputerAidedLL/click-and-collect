@@ -78,51 +78,70 @@ let is_with = function | With _ -> true | _ -> false;;
 let is_ofcourse = function | Ofcourse _ -> true | _ -> false;;
 
 
+(* EXPORTS *)
+
+type formula_format = {
+    atom_preformat : string -> string;
+    litt_format : (string -> string, unit, string) format;
+    dual_format : (string -> string, unit, string) format;
+    is_dual_atomic : bool;
+    one_format : string;
+    bottom_format : string;
+    top_format : string;
+    zero_format : string;
+    tensor_format : (string -> string -> string, unit, string) format;
+    par_format : (string -> string -> string, unit, string) format;
+    with_format : (string -> string -> string, unit, string) format;
+    plus_format : (string -> string -> string, unit, string) format;
+    ofcourse_format : (string -> string, unit, string) format;
+    whynot_format : (string -> string, unit, string) format }
+
+let rec formula_export_atomic formatting =
+  let unary_connective f e =
+    let s, atomic = formula_export_atomic formatting e in
+    let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+    Printf.sprintf f s_parenthesis, false in
+  let binary_connective f e1 e2 =
+    let s1, atomic1 = formula_export_atomic formatting e1 in
+    let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+    let s2, atomic2 = formula_export_atomic formatting e2 in
+    let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+    Printf.sprintf f s1_parenthesis s2_parenthesis, false in
+  function
+  | One -> formatting.one_format, true
+  | Bottom -> formatting.bottom_format, true
+  | Top -> formatting.top_format, true
+  | Zero -> formatting.zero_format, true
+  | Litt x -> Printf.sprintf formatting.litt_format (formatting.atom_preformat x), true
+  | Dual x -> Printf.sprintf formatting.dual_format (formatting.atom_preformat x), formatting.is_dual_atomic
+  | Tensor (e1, e2) -> binary_connective formatting.tensor_format e1 e2
+  | Par (e1, e2) -> binary_connective formatting.par_format e1 e2
+  | With (e1, e2) -> binary_connective formatting.with_format e1 e2
+  | Plus (e1, e2) -> binary_connective formatting.plus_format e1 e2
+  | Ofcourse e -> unary_connective formatting.ofcourse_format e
+  | Whynot e -> unary_connective formatting.whynot_format e
+
+
 (* SEQUENT -> COQ *)
 
-let rec formula_to_coq_atomic =
-  function
-  | One -> "one", true
-  | Bottom -> "bot", true
-  | Top -> "top", true
-  | Zero -> "zero", true
-  | Litt x -> x, true
-  | Dual x -> Printf.sprintf "dual %s" x, false
-  | Tensor (e1, e2) ->
-      let s1, atomic1 = formula_to_coq_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_coq_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "tens %s %s" s1_parenthesis s2_parenthesis, false
-  | Par (e1, e2) ->
-      let s1, atomic1 = formula_to_coq_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_coq_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "parr %s %s" s1_parenthesis s2_parenthesis, false
-  | With (e1, e2) ->
-      let s1, atomic1 = formula_to_coq_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_coq_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "awith %s %s" s1_parenthesis s2_parenthesis, false
-  | Plus (e1, e2) ->
-      let s1, atomic1 = formula_to_coq_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_coq_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "aplus %s %s" s1_parenthesis s2_parenthesis, false
-  | Ofcourse e ->
-      let s, atomic = formula_to_coq_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "oc %s" s_parenthesis, false
-  | Whynot e ->
-      let s, atomic = formula_to_coq_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "wn %s" s_parenthesis, false
+let coq_format = {
+    atom_preformat = (fun x -> x);
+    litt_format = "%s";
+    dual_format = "dual %s";
+    is_dual_atomic = false;
+    one_format = "one";
+    bottom_format = "bot";
+    top_format = "top";
+    zero_format = "zero";
+    tensor_format = "tens %s %s";
+    par_format = "parr %s %s";
+    with_format = "awith %s %s";
+    plus_format = "aplus %s %s";
+    ofcourse_format = "oc %s";
+    whynot_format = "wn %s" }
 
 let formula_to_coq formula =
-  let s, _ = formula_to_coq_atomic formula in s
+  let s, _ = formula_export_atomic coq_format formula in s
 
 let formula_list_to_coq formula_list =
     Printf.sprintf "[%s]" (String.concat "; " (List.map formula_to_coq formula_list));;
@@ -137,49 +156,24 @@ let litteral_to_latex s =
    (* Set numbers as indices. E.g.: A01' -> A_{01}' *)
     Str.global_replace (Str.regexp "\\([0-9]+\\)") "_{\\1}" s;;
 
-let rec formula_to_latex_atomic =
-  function
-  | One -> "\\one", true
-  | Bottom -> "\\bot", true
-  | Top -> "\\top", true
-  | Zero -> "\\zero", true
-  | Litt x -> litteral_to_latex x, true
-  | Dual x -> Printf.sprintf "{%s}\\orth" (litteral_to_latex x), true
-  | Tensor (e1, e2) ->
-      let s1, atomic1 = formula_to_latex_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_latex_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s \\tensor %s" s1_parenthesis s2_parenthesis, false
-  | Par (e1, e2) ->
-      let s1, atomic1 = formula_to_latex_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_latex_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s \\parr %s" s1_parenthesis s2_parenthesis, false
-  | With (e1, e2) ->
-      let s1, atomic1 = formula_to_latex_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_latex_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s \\with %s" s1_parenthesis s2_parenthesis, false
-  | Plus (e1, e2) ->
-      let s1, atomic1 = formula_to_latex_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_latex_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s \\plus %s" s1_parenthesis s2_parenthesis, false
-  | Ofcourse e ->
-      let s, atomic = formula_to_latex_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "\\oc %s" s_parenthesis, true
-  | Whynot e ->
-      let s, atomic = formula_to_latex_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "\\wn %s" s_parenthesis, true
+let latex_format = {
+    atom_preformat = litteral_to_latex;
+    litt_format = "%s";
+    dual_format = "{%s}\\orth";
+    is_dual_atomic = true;
+    one_format = "\\one";
+    bottom_format = "\\bot";
+    top_format = "\\top";
+    zero_format = "\\zero";
+    tensor_format = "%s \\tensor %s";
+    par_format = "%s \\parr %s";
+    with_format = "%s \\with %s";
+    plus_format = "%s \\plus %s";
+    ofcourse_format = "\\oc %s";
+    whynot_format = "\\wn %s" }
 
 let formula_to_latex formula =
-  let s, _ = formula_to_latex_atomic formula in s
+  let s, _ = formula_export_atomic latex_format formula in s
 
 let sequent_to_latex sequent =
     String.concat ", " (List.map formula_to_latex sequent);;
@@ -187,51 +181,25 @@ let sequent_to_latex sequent =
 
 (* SEQUENT -> ASCII *)
 
-let rec formula_to_ascii_atomic =
-  function
-  | One -> "1", true
-  | Bottom -> "_", true
-  | Top -> "T", true
-  | Zero -> "0", true
-  | Litt x -> x, true
-  | Dual x -> Printf.sprintf "%s^" x, true
-  | Tensor (e1, e2) ->
-      let s1, atomic1 = formula_to_ascii_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_ascii_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s * %s" s1_parenthesis s2_parenthesis, false
-  | Par (e1, e2) ->
-      let s1, atomic1 = formula_to_ascii_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_ascii_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s | %s" s1_parenthesis s2_parenthesis, false
-  | With (e1, e2) ->
-      let s1, atomic1 = formula_to_ascii_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_ascii_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s & %s" s1_parenthesis s2_parenthesis, false
-  | Plus (e1, e2) ->
-      let s1, atomic1 = formula_to_ascii_atomic e1 in
-      let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
-      let s2, atomic2 = formula_to_ascii_atomic e2 in
-      let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
-      Printf.sprintf "%s + %s" s1_parenthesis s2_parenthesis, false
-  | Ofcourse e ->
-      let s, atomic = formula_to_ascii_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "!%s" s_parenthesis, true
-  | Whynot e ->
-      let s, atomic = formula_to_ascii_atomic e in
-      let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-      Printf.sprintf "?%s" s_parenthesis, true
+let ascii_format = {
+    atom_preformat = (fun x -> x);
+    litt_format = "%s";
+    dual_format = "%s^";
+    is_dual_atomic = true;
+    one_format = "1";
+    bottom_format = "_";
+    top_format = "T";
+    zero_format = "0";
+    tensor_format = "%s * %s";
+    par_format = "%s | %s";
+    with_format = "%s & %s";
+    plus_format = "%s + %s";
+    ofcourse_format = "!%s";
+    whynot_format = "?%s" }
 
 let formula_to_ascii formula =
-  let s, _ = formula_to_ascii_atomic formula in s
+  let s, _ = formula_export_atomic ascii_format formula in s
 
 let sequent_to_ascii utf8 sequent =
   (if utf8 then "|-" else "|- ")
   ^ (String.concat ", " (List.map formula_to_ascii sequent));;
-
