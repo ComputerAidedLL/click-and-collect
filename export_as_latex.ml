@@ -41,10 +41,6 @@ let proof_to_latex implicit_exchange proof =
     let end_proof = "\\end{prooftree}\n}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
 
-let export_as_latex_with_exceptions implicit_exchange request_as_json =
-    let proof = Proof.from_json request_as_json in
-    proof_to_latex implicit_exchange proof;;
-
 let temp_directory = "local/var/temp";;
 
 let create_file_prefix =
@@ -103,7 +99,10 @@ let get_png_file proof_as_latex =
     read_and_remove_file png_file_name
 
 let export_as_latex implicit_exchange format request_as_json =
-    try let proof_as_latex = export_as_latex_with_exceptions implicit_exchange request_as_json in
+    try let proof = Proof.from_json request_as_json in
+        if format = "ascii" then true, to_ascii implicit_exchange proof, "text/plain"
+        else if format = "utf8" then true, to_utf8 implicit_exchange proof, "text/plain"
+        else let proof_as_latex = proof_to_latex implicit_exchange proof in
         if format = "tex" then true, proof_as_latex, "text/plain"
         else if format = "pdf" then true, get_pdf_file proof_as_latex, "application/pdf"
         else if format = "png" then true, get_png_file proof_as_latex, "image/png"

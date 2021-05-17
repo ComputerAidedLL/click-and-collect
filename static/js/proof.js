@@ -479,6 +479,11 @@ function exportAsLatex($container, format, implicitExchange) {
     httpRequest.responseType = 'blob';
     httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
 
+    let extension = `.${format}`;
+    if (format === 'ascii' || format === 'utf8') {
+        extension = `_${format}.txt`;
+    }
+
     httpRequest.onload = function (event) {
         if (httpRequest.status !== 200) {
             onError(httpRequest, event)
@@ -487,7 +492,7 @@ function exportAsLatex($container, format, implicitExchange) {
             let a = document.createElement('a');
             let url = window.URL.createObjectURL(blob);
             a.href = url;
-            a.download = `ccLLproof.${format}`;
+            a.download = `ccLLproof${extension}`;
             document.body.append(a);
             a.click();
             a.remove();
