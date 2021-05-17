@@ -414,11 +414,11 @@ let to_coq_with_hyps = to_coq_with_hyps_increment 0
 let latex_apply latex_rule conclusion =
     Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
 
-let rec to_latex implicit_exchange permutation_opt proof =
+let rec to_latex_permute implicit_exchange permutation_opt proof =
     (* implicit_exchange is true when we don't display exchange rule.
        permutation_opt is [None] when conclusion is to display as is,
        [Some permutation] if we need to permute it before *)
-    let to_latex_clear_exchange = to_latex implicit_exchange None in
+    let to_latex_clear_exchange = to_latex_permute implicit_exchange None in
     let conclusion =
       let preconclusion = get_conclusion proof in
       match permutation_opt with
@@ -440,12 +440,14 @@ let rec to_latex implicit_exchange permutation_opt proof =
     | Contraction_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "cov" conclusion)
     | Exchange_proof (_, display_permutation, permutation, p) ->
         if implicit_exchange
-            then to_latex implicit_exchange (Some display_permutation) p
-            else to_latex implicit_exchange None p ^
+            then to_latex_permute implicit_exchange (Some display_permutation) p
+            else to_latex_permute implicit_exchange None p ^
                 if permutation = identity (List.length permutation) then ""
                 else (latex_apply "exv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
+let to_latex implicit_exchange =
+    to_latex_permute implicit_exchange None
 
 (* SIMPLIFY : COMMUTE UP PERMUTATIONS *)
 

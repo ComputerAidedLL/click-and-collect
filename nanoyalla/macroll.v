@@ -27,7 +27,7 @@ Fixpoint transp {A} n m (l : list A) :=
    and None is "no permutation at this position" *)
 Fixpoint transpL {A} s (l : list A) :=
   match s with
-  | Some k :: s => match (transp 0 k l) with
+  | Some k :: s => match transp 0 k l with
                    | x :: r => x :: transpL s r
                    | nil => l
                    end
