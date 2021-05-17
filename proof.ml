@@ -109,8 +109,7 @@ let rec head_formula_tail n = function
         else let head, formula, tail = head_formula_tail (n - 1) formula_list
         in f::head, formula, tail;;
 
-let rec from_sequent_and_rule_request sequent rule_request =
-    match rule_request with
+let from_sequent_and_rule_request sequent = function
         | Axiom -> (
             match sequent with
             | [e1; e2] -> (if dual e1 <> e2

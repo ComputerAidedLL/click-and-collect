@@ -5,14 +5,11 @@ open Yojson
 open Yojson.Basic.Util
 
 (* The utils function *)
-let url_encode_string s =
-    Str.global_replace (Str.regexp "+") "%2B"
-    (Str.global_replace (Str.regexp "&") "%26" s)
-
-let call_api_get path =
+let call_api_get path param_key param_value =
     let body =
-      let complete_uri = "http://localhost:8080/" ^ path in
-      Client.get (Uri.of_string complete_uri) >>= fun (resp, body) ->
+      let uri = Uri.of_string ("http://localhost:8080/" ^ path) in
+      let complete_uri = Uri.add_query_param uri (param_key, [param_value]) in
+      Client.get complete_uri >>= fun (resp, body) ->
         let code = resp |> Response.status |> Code.code_of_status in
         Alcotest.(check int) (Printf.sprintf "returns 200 for path %s" path) 200 code;
         Cohttp_lwt.Body.to_string body in
@@ -30,8 +27,8 @@ let call_api_post path body_as_string expected_code =
 
 (* The tests *)
 let call_api_parse_sequent_full_response () =
-    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof\":{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}}" (call_api_get "parse_sequent?sequentAsString=a");
-    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent?sequentAsString=a*")
+    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof\":{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}}" (call_api_get "parse_sequent" "sequentAsString" "a");
+    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent" "sequentAsString" "a*")
 
 let call_api_parse_sequent () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
@@ -39,7 +36,7 @@ let call_api_parse_sequent () =
     let run_test test_sample =
         let sequent_as_string = test_sample |> member "sequent_as_string" |> to_string in
         let expected_sequent_as_json = test_sample |> member "expected_sequent_as_json" in
-        let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
+        let body = call_api_get "parse_sequent" "sequentAsString" sequent_as_string in
         let data = Yojson.Basic.from_string body in
         let is_valid = data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
@@ -49,7 +46,7 @@ let call_api_parse_sequent () =
 
 let call_api_parse_sequent_syntax_exception () =
     let assert_syntax_exception sequent_as_string =
-        let body = call_api_get ("parse_sequent?sequentAsString=" ^ sequent_as_string) in
+        let body = call_api_get "parse_sequent" "sequentAsString" sequent_as_string in
         let data = Yojson.Basic.from_string body in
         let is_valid = data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is invalid") false is_valid in
@@ -141,7 +138,7 @@ let parse_auto_prove_and_verify () =
     let test_samples = json_file |> member "parse_auto_prove_and_verify" |> to_list in
     let run_test test_sample =
         let sequent_as_string = test_sample |> to_string in
-        let parse_sequent_data = Yojson.Basic.from_string (call_api_get ("parse_sequent?sequentAsString=" ^ (url_encode_string sequent_as_string))) in
+        let parse_sequent_data = Yojson.Basic.from_string (call_api_get "parse_sequent" "sequentAsString" sequent_as_string) in
         let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
         let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
@@ -159,7 +156,7 @@ let parse_auto_prove_non_provable () =
     let test_samples = json_file |> member "parse_auto_prove_non_provable" |> to_list in
     let run_test test_sample =
         let sequent_as_string = test_sample |> to_string in
-        let parse_sequent_data = Yojson.Basic.from_string (call_api_get ("parse_sequent?sequentAsString=" ^ (url_encode_string sequent_as_string))) in
+        let parse_sequent_data = Yojson.Basic.from_string (call_api_get "parse_sequent" "sequentAsString" sequent_as_string) in
         let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
         let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
@@ -184,6 +181,21 @@ let auto_prove_and_check_simplified_proof () =
         Alcotest.(check bool) "success" success true;
         Alcotest.(check string) "check proof" (Yojson.Basic.to_string expected_proof) (Yojson.Basic.to_string proof) in
     List.iter run_test test_samples
+
+let test_compress_and_uncompress () =
+    let big_proof_as_json = Yojson.Basic.from_file "test/proof_test_data/lcm23.json" in
+    let proof_as_coq = call_api_post "export_as_coq" (Yojson.Basic.to_string big_proof_as_json) 200 in
+    let response_as_string = call_api_post "compress_proof" (Yojson.Basic.to_string big_proof_as_json) 200 in
+    Alcotest.(check bool) "less than 2000 characters long" true (String.length response_as_string < 2000);
+    (* There is no way to construct a Uri ocaml object with a correctly encoded = sign in query parameter *)
+    let safe_compressed_proof = Str.global_replace (Str.regexp "=") "~" response_as_string in
+    let body = call_api_get "uncompress_proof" "compressedProof" safe_compressed_proof in
+    let data = Yojson.Basic.from_string body in
+    let is_valid = data |> member "is_valid" |> to_bool in
+    Alcotest.(check bool) "is_valid" is_valid true;
+    let uncompressed_proof = data |> member "proof" in
+    let uncompressed_proof_as_coq = call_api_post "export_as_coq" (Yojson.Basic.to_string uncompressed_proof) 200 in
+    Alcotest.(check string) "check proof as coq" proof_as_coq uncompressed_proof_as_coq
 
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
@@ -216,6 +228,10 @@ let test_auto_prove_sequent = [
     "Test auto-prove and check simplified proof", `Quick, auto_prove_and_check_simplified_proof;
 ]
 
+let test_compress_uncompress = [
+    "Test compress and uncompress", `Quick, test_compress_and_uncompress;
+]
+
 (* Run it *)
 let () =
     Alcotest.run "API on localhost:8080" [
@@ -225,4 +241,5 @@ let () =
         "test_sequent_is_provable", test_sequent_is_provable;
         "test_auto_reverse_sequent", test_auto_reverse_sequent;
         "test_auto_prove_sequent", test_auto_prove_sequent;
+        "test_compress_uncompress", test_compress_uncompress;
     ]

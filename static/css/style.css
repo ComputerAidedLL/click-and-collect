@@ -90,9 +90,11 @@ img.export:hover, .option-info:hover { cursor: pointer; }
 #export-dialog p:hover { cursor:pointer; background-color: #eee; }
 
 
-.pedagogic-error { display: table; padding: 10px; margin: 1em auto; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: .25rem; text-indent: 0; }
-.pedagogic-error .message { display: inline-block; }
-.pedagogic-error .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
+.pedagogic-message { display: table; padding: 10px; margin: 1em auto; border: 1px solid; border-radius: .25rem; text-indent: 0; }
+.pedagogic-message.error { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+.pedagogic-message.info { color: #004085; background-color: #cce5ff; border-color: #cce5ff; }
+.pedagogic-message .message { display: inline-block; }
+.pedagogic-message .close-button { display: inline-block; cursor: pointer; margin-left: 10px; }
 
 /* RULES */
 .rules .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }

@@ -1,7 +1,5 @@
 open Proof
 
-exception Cannot_export_proof_as_coq_exception of string;;
-
 let proof_variables conclusion =
     let unique_variable_names = Sequent.get_unique_variable_names conclusion in
     match unique_variable_names with
@@ -39,5 +37,4 @@ let export_as_coq request_as_json =
     with Proof.Json_exception m -> false, "Bad proof json: " ^ m
         | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m
         | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m
-        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m
-        | Cannot_export_proof_as_coq_exception m -> false, "Cannot export proof as coq: " ^ m;;
+        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m;;

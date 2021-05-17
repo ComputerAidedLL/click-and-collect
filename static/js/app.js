@@ -14,6 +14,12 @@ $( function() {
         $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
         submitSequent($sequentForm, true);
     }
+
+    // Parse URL and auto-complete / auto-submit sequent form
+    let compressedProofParam = getQueryParamInUrl('p');
+    if (compressedProofParam !== null) {
+        uncompressProof(compressedProofParam, $('#main-proof-container'));
+    }
     
     // Parse URL hash
     switch (window.location.hash) {
@@ -32,15 +38,11 @@ $( function() {
 // ************
 
 function submitSequent(element, autoSubmit = false) {
-    cleanMainProof();
-
     let form = $(element).closest('form');
     let sequentAsString = form.find($('input[name=sequentAsString]')).val();
 
     // We update current URL by adding sequent in query parameters
     addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
-    // We get autoReverse option in URL
-    let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
 
     // Add GA events
     gtag('event', 'submit-sequent', {
@@ -49,10 +51,10 @@ function submitSequent(element, autoSubmit = false) {
         'value': sequentAsString
     });
 
-    parseSequentAsString(sequentAsString, $('#main-proof-container'), autoReverse);
+    parseSequentAsString(sequentAsString, $('#main-proof-container'));
 }
 
-function parseSequentAsString(sequentAsString, $container, autoReverse) {
+function parseSequentAsString(sequentAsString, $container) {
     let apiUrl = '/parse_sequent';
 
     $.ajax({
@@ -62,21 +64,31 @@ function parseSequentAsString(sequentAsString, $container, autoReverse) {
         success: function(data)
         {
             if (data['is_valid']) {
-                initProof(data['proof'], $container, {
-                    withInteraction: true,
-                    exportButtons: true,
-                    checkProvability: true,
-                    autoReverse: {
-                        value: autoReverse,
-                        onToggle: onAutoReverseToggle,
-                        dialog: 'auto-reverse-dialog'
-                    }
-                });
+                initMainProof(data['proof']);
             } else {
+                cleanMainProof();
                 displayPedagogicError(data['error_message'], $container);
             }
         },
         error: onAjaxError
+    });
+}
+
+function initMainProof(proofAsJson) {
+    cleanMainProof();
+
+    // We get autoReverse option in URL
+    let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
+
+    initProof(proofAsJson, $('#main-proof-container'), {
+        withInteraction: true,
+        exportButtons: true,
+        checkProvability: true,
+        autoReverse: {
+            value: autoReverse,
+            onToggle: onAutoReverseToggle,
+            dialog: 'auto-reverse-dialog'
+        }
     });
 }
 
@@ -153,6 +165,30 @@ function onAutoReverseToggle(autoReverse) {
     }
 }
 
+// ****************
+// UNCOMPRESS PROOF
+// ****************
+
+function uncompressProof(compressedProof, $container) {
+    let apiUrl = '/uncompress_proof';
+
+    $.ajax({
+        type: 'GET',
+        url: apiUrl,
+        data: { compressedProof },
+        success: function(data)
+        {
+            if (data['is_valid']) {
+                initMainProof(data['proof']);
+            } else {
+                cleanMainProof();
+                displayPedagogicError(data['error_message'], $container);
+            }
+        },
+        error: onAjaxError
+    });
+}
+
 // *****
 // UTILS
 // *****
@@ -193,4 +229,17 @@ function cleanUrlParams (title) {
     })
 
     window.history.pushState(null, title, currentUrl.toString());
+}
+
+function copyUrlToClipboard () {
+    // https://stackoverflow.com/questions/49618618/copy-current-url-to-clipboard/49618964#49618964
+
+    let dummy = document.createElement('input'),
+        text = window.location.href;
+
+    document.body.appendChild(dummy);
+    dummy.value = text;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
 }
