@@ -128,6 +128,7 @@ function applyRule(ruleRequest, $sequentTable) {
         success: function(data)
         {
             if (data.success === true) {
+                clearSavedProof();
                 cleanPedagogicMessage($container);
                 let appliedRule = data['proof'].appliedRule;
                 addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
@@ -160,7 +161,10 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
     let $ruleSymbol = $('<div>', {'class': `tag ${ruleRequest.rule}`}).html(RULES[ruleRequest.rule]);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
-        $ruleSymbol.on('click', function() { undoRule($sequentTable); })
+        $ruleSymbol.on('click', function() {
+            clearSavedProof();
+            undoRule($sequentTable);
+        })
     }
     $td.next('.tagBox').html($ruleSymbol);
 
@@ -527,6 +531,10 @@ function shareProof($container) {
         },
         error: onAjaxError
     });
+}
+
+function clearSavedProof() {
+    addQueryParamInUrl('p', null, 'Clear saved proof');
 }
 
 // *****************

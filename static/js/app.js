@@ -41,8 +41,12 @@ function submitSequent(element, autoSubmit = false) {
     let form = $(element).closest('form');
     let sequentAsString = form.find($('input[name=sequentAsString]')).val();
 
-    // We update current URL by adding sequent in query parameters
-    addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
+    if (!autoSubmit) {
+        clearSavedProof();
+
+        // We update current URL by adding sequent in query parameters
+        addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
+    }
 
     // Add GA events
     gtag('event', 'submit-sequent', {

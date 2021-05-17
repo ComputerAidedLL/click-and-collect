@@ -363,6 +363,7 @@ function autoProveSequent($sequentTable) {
         success: function(data)
         {
             if (data.success) {
+                clearSavedProof();
                 cleanPedagogicMessage($container);
                 let $sequentContainer = removeSequentTable($sequentTable);
                 createSubProof(data['proof'], $sequentContainer, options);
