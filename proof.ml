@@ -673,6 +673,7 @@ let remove_loop proof =
 
 
 (* SIMPLIFY : COMMUTE DOWN WEAKENING *)
+
 let rec tail_n l n =
     if n = 0 then l else tail_n (List.tl l) (n-1);;
 

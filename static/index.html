@@ -140,9 +140,7 @@
                     </h4>
                     <ul>
                         <li>To export your proof in Coq format, click on <img src="images/coq.png" title="Export as Coq" style="height:1em;" /> button, even if it's still open proof. The file is self-documented.</li>
-                        <li>To export your proof in LaTeX format, click on <img src="images/LaTeX_logo.png" title="Export as LaTeX" style="height: 1em;" /> button.</li>
-                        <li>To get your proof as LaTeX directly converted in PDF format, click on <img src="images/pdf-icon.png" title="Export as PDF" style="height: 1em;" /> button.</li>
-                        <li>To get a screenshot of your proof as LaTeX in PNG format, click on <img src="images/camera.png" title="Export as PNG" style="height: 1em;" /> button.</li>
+                        <li>To export your proof in LaTeX format, click on <img src="images/LaTeX_logo.png" title="Export as LaTeX" style="height: 1em;" /> button. A form will appear with several options, including an export directly converted in PDF ot PNG format.</li>
                         <li>To get an url link to your proof to share or reuse it, click on <img src="images/share-icon.png" title="Share proof URL" style="height: 1em;" /> button.</li>
                     </ul>
                 </div>
@@ -168,9 +166,38 @@
             </ul>
         </div>
 
-        <div id="export-dialog" title="Select export option" class="dialog">
-            <p class="implicit"><span class="bold">Implicit exchanges:</span> no exchange rule will appear in the export. The output will look like what is displayed in the interface (snapshot).</p>
-            <p class="explicit"><span class="bold">Explicit exchanges:</span> some exchanges will appear in the export. Derivation rules strictly apply through the proof.</p>
+        <div id="export-dialog" title="Choose export options" class="dialog">
+            <span class="italic">Output format:</span>
+            <table>
+                <tr><td><input type="radio" id="tex" name="format" value="tex" checked></td>
+                    <td><label for="tex"><span class="bold">Tex</span></label></td>
+                    <td><label for="tex">LaTeX code</label></td></tr>
+                <tr><td><input type="radio" id="pdf" name="format" value="pdf"></td>
+                    <td><label for="pdf"><span class="bold">Pdf</span></label></td>
+                    <td><label for="pdf">LaTeX directly converted in PDF format</label></td></tr>
+                <tr><td><input type="radio" id="png" name="format" value="png"></td>
+                    <td><label for="png"><span class="bold">Png</span></label></td>
+                    <td><label for="png">LaTeX directly converted in PNG format</label></td></tr>
+                <tr><td><input type="radio" id="ascii" name="format" value="ascii"></td>
+                    <td><label for="ascii"><span class="bold">Ascii</span></label></td>
+                    <td><label for="ascii">A graphic representation of proof using only ASCII characters</label></td></tr>
+                <tr><td><input type="radio" id="utf8" name="format" value="utf8"></td>
+                    <td><label for="utf8"><span class="bold">Utf8</span></label></td>
+                    <td><label for="utf8">A graphic representation of proof using UTF-8 characters</label></td></tr>
+            </table>
+
+            <p></p>
+            <span class="italic">Exchange option:</span>
+            <table>
+                <tr><td><input type="radio" id="implicit" name="implicit_explicit" value="implicit" checked></td>
+                    <td><label for="implicit"><span class="bold">Implicit</span></label></td>
+                    <td><label for="implicit">No exchange rule will appear in the export. The output will look like what is displayed in the interface (snapshot).</label></td></tr>
+                <tr><td><input type="radio" id="explicit" name="implicit_explicit" value="explicit"></td>
+                    <td><label for="explicit"><span class="bold">Explicit</span></label></td>
+                    <td><label for="explicit">Some exchanges will appear in the export. Derivation rules strictly apply through the proof.</label></td></tr>
+            </table>
+
+            <p><button type="button" class="download-button">Download export</button></p>
         </div>
 
         <div class="section-wrapper">

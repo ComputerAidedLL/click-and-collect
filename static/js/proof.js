@@ -407,20 +407,8 @@ function createExportBar($container) {
     let latexButton = createExportButton(
         'images/LaTeX_logo.png',
         'Export as LaTeX',
-        function () { openExportDialog($container, 'tex'); });
+        function () { openExportDialog($container); });
     $exportBar.append(latexButton);
-
-    let pdfButton = createExportButton(
-        'images/pdf-icon.png',
-        'Export as PDF',
-        function () { openExportDialog($container, 'pdf'); });
-    $exportBar.append(pdfButton);
-
-    let pngButton = createExportButton(
-        'images/camera.png',
-        'Export as PNG',
-        function () { openExportDialog($container, 'png'); });
-    $exportBar.append(pngButton);
 
     let shareButton = createExportButton(
         'images/share-icon.png',
@@ -468,19 +456,18 @@ function exportAsCoq($container) {
 // EXPORT AS LATEX
 // ***************
 
-function openExportDialog($container, format) {
+function openExportDialog($container) {
     let exportDialog = $('#export-dialog');
-    exportDialog.find('p' + '.implicit').off('click')
-        .on('click', function () {
-            exportAsLatex($container, format, true);
-            exportDialog.dialog('close');
-        });
-    exportDialog.find('p' + '.explicit').off('click')
-        .on('click', function () {
-            exportAsLatex($container, format, false);
-            exportDialog.dialog('close');
-        });
+    exportDialog.find('.' + 'download-button').off('click')
+        .on('click', function () { onDownloadClick(exportDialog, $container); });
     exportDialog.dialog('open');
+}
+
+function onDownloadClick(exportDialog, $container) {
+    let format = $('input[name=format]:checked', '#export-dialog').val();
+    let implicitExchange = $('input[name=implicit_explicit]:checked', '#export-dialog').val() === 'implicit';
+    exportAsLatex($container, format, implicitExchange);
+    exportDialog.dialog('close');
 }
 
 function exportAsLatex($container, format, implicitExchange) {
