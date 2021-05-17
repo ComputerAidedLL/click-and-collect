@@ -176,12 +176,12 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
     } else {
         let $div = $('<div>');
         $div.insertBefore($sequentTable);
+        $sequentTable.addClass('binary-rule');
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
             $div.append($sibling);
             createSubProof(premise, $sibling, options)
         }
-        $sequentTable.addClass('binary-rule');
     }
 }
 
@@ -376,9 +376,14 @@ function markParentSequentsAsProved($sequentTable) {
 
     let $parentSequentTable = getParentSequentTable($sequentTable);
     if ($parentSequentTable !== null) {
-        if (!isBinary($parentSequentTable) || getPremisesSequentTable($parentSequentTable).every(isProved)) {
-            markParentSequentsAsProved($parentSequentTable);
+        if (isBinary($parentSequentTable)) {
+            let $premises = getPremisesSequentTable($parentSequentTable);
+            // We check all premises are proved
+            if ($premises === null || !$premises.every(isProved)) {
+                return;
+            }
         }
+        markParentSequentsAsProved($parentSequentTable);
     } else {
         let $container = $sequentTable.closest('.proof-container');
         markAsComplete($container);
@@ -662,6 +667,11 @@ function getPremisesSequentTable($sequentTable) {
         let $siblingTable = $(sibling).children('table').last();
         $premises = $premises.concat($siblingTable);
     })
+
+    if ($premises.length < 2) {
+        // Proof has not been completely set up
+        return null;
+    }
 
     return $premises;
 }
