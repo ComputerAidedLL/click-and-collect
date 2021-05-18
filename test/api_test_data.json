@@ -667,15 +667,13 @@
     {
       "sequent": {"cons":[{"t":"whynot","v":{"t":"whynot","v":{"t":"one"}}},{"t":"whynot","v":{"t":"bottom"}}]},
       "proof": {"sequent":{"cons":[{"type":"whynot","value":{"type":"whynot","value":{"type":"one"}}},{"type":"whynot","value":{"type":"bottom"}}]},
-        "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":1},
-          "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"whynot","value":{"type":"one"}}},{"type":"bottom"}]},
-            "appliedRule":{"ruleRequest":{"rule":"bottom","formulaPosition":1},
-              "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"whynot","value":{"type":"one"}}}]},
+        "appliedRule":{"ruleRequest":{"rule":"weakening","formulaPosition":1},
+          "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"whynot","value":{"type":"one"}}}]},
+            "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},
+              "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"one"}}]},
                 "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},
-                  "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"one"}}]},
-                    "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},
-                      "premises":[{"sequent":{"cons":[{"type":"one"}]},
-                        "appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}]}}]}}]}}]}}
+                  "premises":[{"sequent":{"cons":[{"type":"one"}]},
+                    "appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}]}}]}}]}}
     },
     {
       "sequent": {"hyp":[],"cons":[
@@ -948,6 +946,36 @@
                                   "appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}]}},{"sequent":{"cons":[{"type":"whynot","value":{"type":"one"}}]},
                                 "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},"premises":[{"sequent":{"cons":[{"type":"one"}]},
                                   "appliedRule":{"ruleRequest":{"rule":"one"},"premises":[]}}]}}]}}]}}]}}]}}]}}]}}
+    },
+    {
+      "sequent": {"hyp":[],"cons":[{"t":"whynot","v":{"t":"ofcourse","v":{"t":"whynot","v":{"t":"par","v1":{"t":"litt","v":"X"},"v2":{"t":"dual","v":{"t":"litt","v":"X"}}}}}},
+        {"t":"whynot","v":{"t":"ofcourse","v":{"t":"whynot","v":{"t":"ofcourse","v":{"t":"whynot","v":{"t":"ofcourse","v":{"t":"par","v1":{"t":"litt","v":"Y"},"v2":{"t":"dual","v":{"t":"litt","v":"Y"}}}}}}}}},
+        {"t":"whynot","v":{"t":"ofcourse","v":{"t":"whynot","v":{"t":"ofcourse","v":{"t":"par","v1":{"t":"litt","v":"Y"},"v2":{"t":"dual","v":{"t":"litt","v":"Y"}}}}}}}]},
+      "proof": {"sequent":{"cons":[{"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}}}},
+        {"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}}}},
+        {"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}}]},
+        "appliedRule":{"ruleRequest":{"rule":"weakening","formulaPosition":1},
+          "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}}}},
+            {"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}}]},
+            "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},
+              "premises":[{"sequent":{"cons":[{"type":"ofcourse","value":{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}}},
+                {"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}}]},
+                "appliedRule":{"ruleRequest":{"rule":"promotion","formulaPosition":0},
+                  "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}},
+                    {"type":"whynot","value":{"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}}]},
+                    "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":1},
+                      "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}},
+                        {"type":"ofcourse","value":{"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}}]},
+                        "appliedRule":{"ruleRequest":{"rule":"promotion","formulaPosition":1},
+                          "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}},
+                            {"type":"whynot","value":{"type":"ofcourse","value":{"type":"par","value1":{"type":"litt","value":"Y"},"value2":{"type":"dual","value":{"type":"litt","value":"Y"}}}}}]},
+                            "appliedRule":{"ruleRequest":{"rule":"weakening","formulaPosition":1},
+                              "premises":[{"sequent":{"cons":[{"type":"whynot","value":{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}}]},
+                                "appliedRule":{"ruleRequest":{"rule":"dereliction","formulaPosition":0},
+                                  "premises":[{"sequent":{"cons":[{"type":"par","value1":{"type":"litt","value":"X"},"value2":{"type":"dual","value":{"type":"litt","value":"X"}}}]},
+                                    "appliedRule":{"ruleRequest":{"rule":"par","formulaPosition":0},
+                                      "premises":[{"sequent":{"cons":[{"type":"litt","value":"X"},{"type":"dual","value":{"type":"litt","value":"X"}}]},
+                                        "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}]}}]}}]}}]}}]}}]}}]}}]}}
     }
   ]
 }
