@@ -1,2 +1,8 @@
 #!/bin/sh
+if [ "$1" = "yalla" ]
+then
+    cp yallacut.v nanollcut.v;
+else
+    cp axiomcut.v nanollcut.v;
+fi;
 coq_makefile -f _CoqProject -o Makefile

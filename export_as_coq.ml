@@ -13,9 +13,9 @@ let proof_to_coq proof =
     let conclusion = get_conclusion proof in
     let header = "(* This Coq file has been generated using the C1ick ⅋ c⊗LLec⊥ tool. *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/ *)\n"
-        ^ "(* First download and install NanoYalla version 1.0.4, see README.md: *)\n"
+        ^ "(* First download and install NanoYalla version 1.1.0, see README.md: *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/download/nanoyalla.zip *)\n\n" in
-    let start_file_line = "From NanoYalla Require Import macroll.\n\nImport LLNotations.\n\nSection TheProof.\n\n" in
+    let start_file_line = "From NanoYalla Require Import macrollcut.\n\nImport LLNotations.\n\nSection TheProof.\n\n" in
     let variable_line = proof_variables conclusion in
     let proof_lines, number_of_hypotheses, hypotheses = to_coq_with_hyps proof in
     let goal_line = Printf.sprintf "Goal %s.\n" (String.concat " -> " (hypotheses @ [Sequent.sequent_to_coq conclusion])) in
