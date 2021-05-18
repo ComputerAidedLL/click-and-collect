@@ -129,10 +129,10 @@ let rec choose_kth_from_list k l = match l with
         let x, tl' = choose_kth_from_list (k - 1) tl in
         x, hd :: tl'
 
-(* [sort_whynot l] sorts the list of formulas [l] in decreasing order using
+(* [sort_whynot l] sorts the list of formulas [l] in increasing order using
    [whynot_height f] as the key of [f]. *)
 let sort_whynot l =
-  List.sort (fun x y -> whynot_height y - whynot_height x) l
+  List.sort (fun x y -> whynot_height x - whynot_height y) l
 
 exception Ttl_exceeded
 let has_reached_exponential_bound = ref false
@@ -475,7 +475,7 @@ let sequent_to_focused_sequent sequent =
 let proof_from_focused_proof focused_proof =
     let proof = unfocus_proof focused_proof in
     let n = List.length (get_conclusion proof) in
-    remove_loop (commute_down_weakenings (remove_loop (commute_permutations proof (identity n))))
+    remove_loop (commute_down_weakenings (commute_permutations proof (identity n)))
 
 exception NonProvableSequent
 exception NonAutoProvableSequent
