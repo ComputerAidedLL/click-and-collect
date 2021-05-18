@@ -168,6 +168,18 @@
             </ul>
         </div>
 
+        <div id="cut-mode-dialog" title="Cut mode option" class="dialog">
+            <p>When switched-on this option allows you to apply cut rule.
+                Click on the position you would like to cut (a comma <span class="code">,</span> between two formulas or a point <span class="code">.</span> at the beginning or end of a sequent), and type your formula in the popup.</p>
+        </div>
+
+        <div id="cut-formula-dialog" title="Enter cut formula" class="dialog">
+            <label>
+                <input type="text" name="formulaAsString" placeholder="Type formula ..." size="26" />
+            </label>
+            <input type="submit" value="Cut" />
+        </div>
+
         <div id="explicit-exchange-dialog" title="Explicit exchange" class="dialog">
             <p>By default, no exchange rule will appear in the export: the output will be displayed as in the interface (snapshot).
                 With explicit exchange activated, required exchanges will appear in the export, to get derivation rules applied strictly through the proof.</p>

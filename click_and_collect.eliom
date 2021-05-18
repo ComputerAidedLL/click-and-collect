@@ -118,6 +118,34 @@ let _ =
         Lwt.return (Yojson.to_string response, "application/json"));;
 
 
+(*****************)
+(* PARSE FORMULA *)
+(*****************)
+
+(* Service declaration *)
+let parse_formula_service =
+  Eliom_service.create
+    ~path:(Eliom_service.Path ["parse_formula"])
+    ~meth:(Eliom_service.Get (Eliom_parameter.string "formulaAsString"))
+    ()
+
+(* Service definition *)
+let _ =
+  Eliom_registration.String.register
+    ~service:parse_formula_service
+    (fun formula_as_string () ->
+      let success, result = safe_parse_formula formula_as_string in
+        let response =
+            if success then `Assoc [
+                ("is_valid", `Bool true);
+                ("formula", result)
+            ] else `Assoc [
+                ("is_valid", `Bool false);
+                ("error_message", result)
+            ] in
+        Lwt.return (Yojson.to_string response, "application/json"));;
+
+
 (**************)
 (* APPLY RULE *)
 (**************)

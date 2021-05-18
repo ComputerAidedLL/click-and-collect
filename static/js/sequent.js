@@ -58,7 +58,11 @@ function createSequent(sequent, $sequentTable, options) {
 }
 
 function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
+    let $firstPoint = $('<span>', {'class': 'first-point'});
+    $sequentDiv.append($firstPoint);
+
     let $ul = $('<ul>', {'class': ['commaList ' + sequentPart]});
+    $sequentDiv.append($ul);
 
     if (options.withInteraction) {
         $ul.sortable({
@@ -69,26 +73,27 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
                 ui.placeholder.width(ui.item.width());
             }
         });
+        addCutOnClick($firstPoint, true);
     }
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
         let formulaAsJson = sequent[sequentPart][i];
         let $li = $('<li>').data('initialPosition', i);
+        $ul.append($li);
 
         // Build formula
         let $span = $('<span>', {'class': 'main-formula'})
             .html(createFormulaHTML(formulaAsJson, true));
         $li.append($span);
+        let $commaSpan = $('<span>', {'class': 'comma'});
+        $li.append($commaSpan);
 
         if (options.withInteraction) {
             // Add events (click, double-click), and classes for hover
             addEventsAndStyle($li, formulaAsJson);
+            addCutOnClick($commaSpan, false);
         }
-
-        $ul.append($li);
     }
-
-    $sequentDiv.append($ul);
 }
 
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {

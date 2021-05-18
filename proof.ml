@@ -18,6 +18,7 @@ type proof =
     | Weakening_proof of formula list * formula * formula list * proof
     | Contraction_proof of formula list * formula * formula list * proof
     | Exchange_proof of sequent * int list * int list * proof
+    | Cut_proof of formula list * formula * formula list * proof * proof
     | Hypothesis_proof of sequent;;
 
 
@@ -57,6 +58,7 @@ let get_premises = function
     | Weakening_proof (_, _, _, p) -> [p]
     | Contraction_proof (_, _, _, p) -> [p]
     | Exchange_proof (_, _, _, p) -> [p]
+    | Cut_proof (_, _, _, p1, p2) -> [p1; p2]
     | Hypothesis_proof s -> raise (Failure "Can not get premises of hypothesis");;
 
 let set_premises proof premises = match proof, premises with
@@ -75,6 +77,7 @@ let set_premises proof premises = match proof, premises with
     | Weakening_proof (head, e, tail, _), [p] -> Weakening_proof (head, e, tail, p)
     | Contraction_proof (head, e, tail, _), [p] -> Contraction_proof (head, e, tail, p)
     | Exchange_proof (sequent, display_permutation, permutation, _), [p] -> Exchange_proof (sequent, display_permutation, permutation, p)
+    | Cut_proof (head, e, tail, _, _), [p1; p2] -> Cut_proof (head, e, tail, p1, p2)
     | Hypothesis_proof sequent, _ -> raise (Failure "Can not set premises of hypothesis")
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
@@ -96,6 +99,7 @@ let get_conclusion = function
     | Weakening_proof (head, e, tail, _) -> head @ [Whynot e] @ tail
     | Contraction_proof (head, e, tail, _) -> head @ [Whynot e] @ tail
     | Exchange_proof (sequent, _, permutation, _) -> permute sequent permutation
+    | Cut_proof (head, _, tail, _, _) -> head @ tail
     | Hypothesis_proof sequent -> sequent;;
 
 
@@ -104,10 +108,16 @@ let get_conclusion = function
 exception Rule_exception of bool * string;;
 
 let rec head_formula_tail n = function
-    | [] -> raise (Rule_exception (false, "Argument formula_positions[0] is greater than the number of given formulas"))
+    | [] -> raise (Rule_exception (false, "Argument formula_position is greater than the sequent"))
     | f :: formula_list -> if n = 0 then [], f, formula_list
         else let head, formula, tail = head_formula_tail (n - 1) formula_list
         in f::head, formula, tail;;
+
+let rec slice l n =
+    if n = 0 then [], l else
+    match l with
+    | [] -> raise (Rule_exception (false, "Argument formula_position is greater than the sequent"))
+    | e :: l' -> let head, tail = slice l' (n - 1) in e::head, tail;;
 
 let from_sequent_and_rule_request sequent = function
         | Axiom -> (
@@ -200,6 +210,10 @@ let from_sequent_and_rule_request sequent = function
             then raise (Rule_exception (false, "When applying exchange rule, formula_positions should be a permutation of the size of sequent formula list"))
             else let permuted_sequent = permute sequent (permutation_inverse permutation) in
                  Exchange_proof (permuted_sequent, display_permutation, permutation, Hypothesis_proof permuted_sequent)
+        )
+        | Cut (formula, n) -> (
+            let head, tail = slice sequent n in
+            Cut_proof (head, formula, tail, Hypothesis_proof (head @ [formula]), Hypothesis_proof ([dual formula] @ tail))
         );;
 
 let from_sequent_and_rule_request_and_premises sequent rule_request premises =
@@ -286,6 +300,7 @@ let get_rule_request = function
     | Weakening_proof (head, _, _, _) -> Weakening (List.length head)
     | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
     | Exchange_proof (_, display_permutation, permutation, _) -> Exchange (display_permutation, permutation)
+    | Cut_proof (head, formula, _, _, _) -> Cut (formula, List.length head)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
@@ -403,6 +418,7 @@ let rec to_coq_with_hyps_increment i = function
     | Exchange_proof (sequent, _, permutation, p) ->
         let s, n, hyps = to_coq_with_hyps_increment i p in
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent] ^ s, n, hyps
+    | Cut_proof (head, formula, tail, p1, p2) -> raise (Failure "not implemented yet")
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
 let to_coq_with_hyps = to_coq_with_hyps_increment 0
@@ -443,6 +459,7 @@ let rec to_latex_permute implicit_exchange permutation_opt proof =
             else to_latex_permute implicit_exchange None p ^
                 if permutation = identity (List.length permutation) then ""
                 else (latex_apply "exv" conclusion)
+    | Cut_proof (_, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "cutv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 let to_latex implicit_exchange =
@@ -565,6 +582,9 @@ let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
             else let premise_data = to_ascii_list utf8 implicit_exchange None p in
                 if permutation = identity (List.length permutation) then premise_data
                 else ascii_apply1 premise_data "ex" conclusion
+    | Cut_proof (_, _, _, p1, p2) ->
+       let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
+       ascii_apply1 premise_data "cut" conclusion
     | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
 
 let to_ascii_utf8 utf8 implicit_exchange proof =
@@ -645,6 +665,9 @@ let rec commute_permutations proof perm =
         let new_perm = perm_plus_element (List.length head) perm in
         Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
     | Exchange_proof (_, _, permutation, p) -> commute_permutations p (permute permutation perm)
+    | Cut_proof (head, _, tail, p1, p2) ->
+        let new_proof = set_premises proof [commute_permutations p1 (identity (List.length head + 1)); commute_permutations p2 (identity (1 + List.length tail))] in
+        if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
     | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
 
 

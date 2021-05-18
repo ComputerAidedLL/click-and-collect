@@ -144,3 +144,10 @@ let sequent_from_json raw_sequent_as_json =
 
 let sequent_to_json sequent =
      to_json (to_raw_sequent sequent);;
+
+(* FORMULA <-> JSON *)
+let formula_from_json raw_formula_as_json =
+    to_formula (json_to_raw_formula raw_formula_as_json);;
+
+let formula_to_json formula =
+    raw_formula_to_json (to_raw_formula formula);;
