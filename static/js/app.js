@@ -5,7 +5,7 @@ $( function() {
     });
 
     $('.dialog').each(function (i, item) {
-        $(item).dialog({autoOpen: false});
+        $(item).dialog({autoOpen: false, width: 500});
     })
 
     // Parse URL and auto-complete / auto-submit sequent form

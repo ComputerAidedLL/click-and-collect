@@ -448,6 +448,143 @@ let rec to_latex_permute implicit_exchange permutation_opt proof =
 let to_latex implicit_exchange =
     to_latex_permute implicit_exchange None
 
+(* PROOF -> ASCII / UTF8 *)
+
+(* as first step, proofs are translated as lists of ascii strings (all of the same length)
+   with left_shift and right_shift giving the lateral position of conclusion
+   then everything is concatenated
+   and ascii can be converted to utf8 *)
+
+type proof_text_list = int * int * string list
+
+let rec string_repeat n s =
+  match n with
+  | 0 -> ""
+  | k -> s ^ (string_repeat (k-1) s)
+
+let left_shift_proof_text n =
+  List.map (fun x -> String.make n ' ' ^ x)
+
+let right_shift_proof_text n =
+  List.map (fun x -> x ^ String.make n ' ')
+
+let rec proof_text_width = function
+  | [] -> 0
+  | line :: _ -> String.length line
+
+let concat_proof_text gap (left_shift1, right_shift1, proof1) (left_shift2, right_shift2, proof2) =
+  let width1 = proof_text_width proof1 in
+  let width2 = proof_text_width proof2 in
+  let length1 = List.length proof1 in
+  let length2 = List.length proof2 in
+  let proof1_extended, proof2_extended = 
+    if length1 > length2 then
+      (proof1, List.init (length1 - length2) (fun _ -> String.make width2 ' ') @ proof2)
+    else (List.init (length2 - length1) (fun _ -> String.make width1 ' ') @ proof1, proof2) in
+  (left_shift1, right_shift2, List.map2 (fun line1 line2 -> line1 ^ (String.make gap ' ') ^ line2) proof1_extended proof2_extended)
+
+let ascii_apply_hyp conclusion = (0, 0, [ conclusion ])
+
+let ascii_apply0 rule_name conclusion =
+  let width = String.length conclusion in
+  let rule_name_width = String.length rule_name in
+  (0, 1 + rule_name_width,
+   [ Printf.sprintf "%s %s" (string_repeat width "-") rule_name;
+     Printf.sprintf "%s %s" conclusion (String.make rule_name_width ' ') ])
+
+let ascii_apply1 premise_data rule_name conclusion =
+  let left_shift, right_shift, premise_text = premise_data in
+  let premise_length = proof_text_width premise_text - (left_shift + right_shift) in
+  let conclusion_length = String.length conclusion in
+  let rule_length = max premise_length conclusion_length in
+  let rule_name_width = String.length rule_name in
+  let make_rule_line left right =
+    Printf.sprintf "%s%s %s%s" (String.make left ' ') (string_repeat rule_length "-") rule_name (String.make right ' ') in
+  let make_conclusion_line left right =
+    Printf.sprintf "%s%s%s" (String.make left ' ') conclusion (String.make right ' ') in
+  if premise_length > conclusion_length then
+    let gap = premise_length - conclusion_length in
+    let left_centering = gap / 2 in
+    let right_centering = gap - left_centering in
+    let right_rule_shift = right_shift - (1 + rule_name_width) in
+    let right_enlarge = if right_rule_shift < 0 then - right_rule_shift else 0 in
+    let rule_line = make_rule_line left_shift (right_rule_shift + right_enlarge) in
+    let left_conclusion_shift = left_shift + left_centering in
+    let right_conclusion_shift = right_centering + right_shift + right_enlarge in
+    let conclusion_line = make_conclusion_line left_conclusion_shift right_conclusion_shift in
+    (left_conclusion_shift, right_conclusion_shift,
+     right_shift_proof_text right_enlarge premise_text @ [ rule_line; conclusion_line ])
+  else
+    let gap = conclusion_length - premise_length in
+    let left_centering = gap / 2 in
+    let right_centering = gap - left_centering in
+    let left_rule_shift = left_shift - left_centering in
+    let left_enlarge = if left_rule_shift < 0 then - left_rule_shift else 0 in
+    let right_rule_shift = right_shift - (right_centering + 1 + rule_name_width) in
+    let right_enlarge = if right_rule_shift < 0 then - right_rule_shift else 0 in
+    let rule_line = make_rule_line (left_rule_shift + left_enlarge) (right_rule_shift + right_enlarge) in
+    let left_conclusion_shift = left_rule_shift + left_enlarge in
+    let right_conclusion_shift = right_rule_shift + right_enlarge + 1 + rule_name_width in
+    let conclusion_line = make_conclusion_line left_conclusion_shift right_conclusion_shift in
+    (left_conclusion_shift, right_conclusion_shift,
+     left_shift_proof_text left_enlarge (right_shift_proof_text right_enlarge premise_text) @ [ rule_line; conclusion_line ])
+
+let vertical_gap_ascii = 3
+
+let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
+    (* implicit_exchange is true when we don't display exchange rule.
+       permutation_opt is [None] when conclusion is to display as is,
+       [Some permutation] if we need to permute it before *)
+    let to_ascii_list_clear_exchange = to_ascii_list utf8 implicit_exchange None in
+    let conclusion =
+      let preconclusion = get_conclusion proof in
+      match permutation_opt with
+      | None -> sequent_to_ascii utf8 preconclusion
+      | Some permutation -> sequent_to_ascii utf8 (permute preconclusion permutation) in
+    match proof with
+    | Axiom_proof _ -> ascii_apply0 "ax" conclusion
+    | One_proof -> ascii_apply0 "1" conclusion
+    | Top_proof _ -> ascii_apply0 "T" conclusion
+    | Bottom_proof (_, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "_" conclusion
+    | Tensor_proof (_, _, _, _, p1, p2) ->
+       let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
+       ascii_apply1 premise_data "*" conclusion
+    | Par_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "|" conclusion
+    | With_proof (_, _, _, _, p1, p2) ->
+       let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
+       ascii_apply1 premise_data "&" conclusion
+    | Plus_left_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+1" conclusion
+    | Plus_right_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+2" conclusion
+    | Promotion_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "!" conclusion
+    | Dereliction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?d" conclusion
+    | Weakening_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?w" conclusion
+    | Contraction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?c" conclusion
+    | Exchange_proof (_, display_permutation, permutation, p) ->
+        if implicit_exchange
+            then to_ascii_list utf8 implicit_exchange (Some display_permutation) p
+            else let premise_data = to_ascii_list utf8 implicit_exchange None p in
+                if permutation = identity (List.length permutation) then premise_data
+                else ascii_apply1 premise_data "ex" conclusion
+    | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
+
+let to_ascii_utf8 utf8 implicit_exchange proof =
+    let _, _, proof_text = to_ascii_list utf8 implicit_exchange None proof in
+    (String.concat "\n" proof_text) ^ "\n"
+
+let to_ascii =
+    to_ascii_utf8 false
+
+let to_utf8 implicit_exchange proof =
+    Str.global_replace (Str.regexp "+") "⊕"
+   (Str.global_replace (Str.regexp "*") "⊗"
+   (Str.global_replace (Str.regexp "|") "⅋"
+   (Str.global_replace (Str.regexp "T") "⊤"
+   (Str.global_replace (Str.regexp "_") "⊥"
+   (Str.global_replace (Str.regexp "-") "─"
+   (Str.global_replace (Str.regexp "|-") "⊢ "
+   (to_ascii_utf8 true implicit_exchange proof)))))))
+
+
 (* SIMPLIFY : COMMUTE UP PERMUTATIONS *)
 
 let rec head_tail element = function
@@ -536,6 +673,7 @@ let remove_loop proof =
 
 
 (* SIMPLIFY : COMMUTE DOWN WEAKENING *)
+
 let rec tail_n l n =
     if n = 0 then l else tail_n (List.tl l) (n-1);;
 

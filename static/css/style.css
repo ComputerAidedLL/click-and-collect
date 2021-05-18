@@ -6,6 +6,7 @@ a { text-decoration: none; }
 .flip { transform: scale(-1, -1); display: inline-block; }
 .bold { font-weight: bold; }
 .italic { font-style: italic; }
+.nowrap { white-space: nowrap; }
 
 h1 { margin: 0 auto; text-align: center; font-weight: 100; color: gray; font-size: 1.5em; }
 h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
@@ -87,8 +88,11 @@ img.export:hover, .option-info:hover { cursor: pointer; }
 .option-info { font-weight: bold; }
 .option-label { vertical-align: text-bottom; }
 
-#export-dialog p:hover { cursor:pointer; background-color: #eee; }
-
+#export-dialog input:focus { outline: none; }
+#export-dialog table td { vertical-align: top; padding-top: 0.3em; }
+#export-dialog table td:last-child { padding-left: 0.7em; }
+#export-dialog .option-bar { display: block; }
+#export-dialog .switch {vertical-align: sub; }
 
 .pedagogic-message { display: table; padding: 10px; margin: 1em auto; border: 1px solid; border-radius: .25rem; text-indent: 0; }
 .pedagogic-message.error { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }

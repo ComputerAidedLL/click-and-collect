@@ -49,10 +49,18 @@ function initProof(proofAsJson, $container, options = {}) {
     }
 
     if (options.autoReverse) {
-        createOption($container, 'autoReverse', 'Auto-reverse',function (autoReverse) {
+        createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
+            // Save option
+            let options = $container.data('options');
+            options.autoReverse.value = autoReverse;
+            $container.data('options', options);
+
+            // Apply autoReverse
             if (autoReverse) {
                 autoReverseContainer($container);
             }
+
+            // Apply callback
             options.autoReverse.onToggle(autoReverse);
         }, options.autoReverse.dialog);
 
@@ -405,22 +413,10 @@ function createExportBar($container) {
     $exportBar.append(coqButton);
 
     let latexButton = createExportButton(
-        'images/LaTeX_logo.png',
-        'Export as LaTeX',
-        function () { openExportDialog($container, 'tex'); });
-    $exportBar.append(latexButton);
-
-    let pdfButton = createExportButton(
-        'images/pdf-icon.png',
-        'Export as PDF',
-        function () { openExportDialog($container, 'pdf'); });
-    $exportBar.append(pdfButton);
-
-    let pngButton = createExportButton(
         'images/camera.png',
-        'Export as PNG',
-        function () { openExportDialog($container, 'png'); });
-    $exportBar.append(pngButton);
+        'Proof drawing',
+        function () { openExportDialog($container); });
+    $exportBar.append(latexButton);
 
     let shareButton = createExportButton(
         'images/share-icon.png',
@@ -468,19 +464,25 @@ function exportAsCoq($container) {
 // EXPORT AS LATEX
 // ***************
 
-function openExportDialog($container, format) {
+function openExportDialog($container) {
     let exportDialog = $('#export-dialog');
-    exportDialog.find('p' + '.implicit').off('click')
-        .on('click', function () {
-            exportAsLatex($container, format, true);
-            exportDialog.dialog('close');
-        });
-    exportDialog.find('p' + '.explicit').off('click')
-        .on('click', function () {
-            exportAsLatex($container, format, false);
-            exportDialog.dialog('close');
-        });
+    if (!exportDialog.find('.' + 'download-button').length) {
+        createOption(exportDialog, false, 'Draw explicit exchange rules', function () {}, 'explicit-exchange-dialog');
+        exportDialog.append($('<p>')
+            .append($('<button type="button">')
+                .addClass('download-button')
+                .text('Download export')));
+    }
+    exportDialog.find('.' + 'download-button').off('click')
+        .on('click', function () { onDownloadClick(exportDialog, $container); });
     exportDialog.dialog('open');
+}
+
+function onDownloadClick(exportDialog, $container) {
+    let format = $('input[name=format]:checked', '#export-dialog').val();
+    let implicitExchange = !$('#export-dialog').find('input' + '[type=checkbox]').is(':checked');
+    exportAsLatex($container, format, implicitExchange);
+    exportDialog.dialog('close');
 }
 
 function exportAsLatex($container, format, implicitExchange) {
@@ -492,6 +494,11 @@ function exportAsLatex($container, format, implicitExchange) {
     httpRequest.responseType = 'blob';
     httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
 
+    let extension = `.${format}`;
+    if (format === 'ascii' || format === 'utf8') {
+        extension = `_${format}.txt`;
+    }
+
     httpRequest.onload = function (event) {
         if (httpRequest.status !== 200) {
             onError(httpRequest, event)
@@ -500,7 +507,7 @@ function exportAsLatex($container, format, implicitExchange) {
             let a = document.createElement('a');
             let url = window.URL.createObjectURL(blob);
             a.href = url;
-            a.download = `ccLLproof.${format}`;
+            a.download = `ccLLproof${extension}`;
             document.body.append(a);
             a.click();
             a.remove();
@@ -613,14 +620,10 @@ function undoMarkAsNotProvable($sequentTable) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function createOption($container, optionName, text, onToggle, dialog) {
+function createOption($container, isChecked, text, onToggle, dialog) {
     let $input = $('<input type="checkbox">');
-    let options = $container.data('options');
-    $input.prop('checked', options[optionName].value);
+    $input.prop('checked', isChecked);
     $input.on('change', function() {
-        let options = $container.data('options');
-        options[optionName].value = this.checked;
-        $container.data('options', options);
         onToggle(this.checked);
     });
 
