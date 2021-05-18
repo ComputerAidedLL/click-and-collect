@@ -49,10 +49,18 @@ function initProof(proofAsJson, $container, options = {}) {
     }
 
     if (options.autoReverse) {
-        createOption($container, 'autoReverse', 'Auto-reverse',function (autoReverse) {
+        createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
+            // Save option
+            let options = $container.data('options');
+            options.autoReverse.value = autoReverse;
+            $container.data('options', options);
+
+            // Apply autoReverse
             if (autoReverse) {
                 autoReverseContainer($container);
             }
+
+            // Apply callback
             options.autoReverse.onToggle(autoReverse);
         }, options.autoReverse.dialog);
 
@@ -405,8 +413,8 @@ function createExportBar($container) {
     $exportBar.append(coqButton);
 
     let latexButton = createExportButton(
-        'images/LaTeX_logo.png',
-        'Export as LaTeX',
+        'images/camera.png',
+        'Proof drawing',
         function () { openExportDialog($container); });
     $exportBar.append(latexButton);
 
@@ -458,6 +466,13 @@ function exportAsCoq($container) {
 
 function openExportDialog($container) {
     let exportDialog = $('#export-dialog');
+    if (!exportDialog.find('.' + 'download-button').length) {
+        createOption(exportDialog, false, 'Draw explicit exchange rules', function () {}, 'explicit-exchange-dialog');
+        exportDialog.append($('<p>')
+            .append($('<button type="button">')
+                .addClass('download-button')
+                .text('Download export')));
+    }
     exportDialog.find('.' + 'download-button').off('click')
         .on('click', function () { onDownloadClick(exportDialog, $container); });
     exportDialog.dialog('open');
@@ -465,7 +480,7 @@ function openExportDialog($container) {
 
 function onDownloadClick(exportDialog, $container) {
     let format = $('input[name=format]:checked', '#export-dialog').val();
-    let implicitExchange = $('input[name=implicit_explicit]:checked', '#export-dialog').val() === 'implicit';
+    let implicitExchange = !$('#export-dialog').find('input' + '[type=checkbox]').is(':checked');
     exportAsLatex($container, format, implicitExchange);
     exportDialog.dialog('close');
 }
@@ -605,14 +620,10 @@ function undoMarkAsNotProvable($sequentTable) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function createOption($container, optionName, text, onToggle, dialog) {
+function createOption($container, isChecked, text, onToggle, dialog) {
     let $input = $('<input type="checkbox">');
-    let options = $container.data('options');
-    $input.prop('checked', options[optionName].value);
+    $input.prop('checked', isChecked);
     $input.on('change', function() {
-        let options = $container.data('options');
-        options[optionName].value = this.checked;
-        $container.data('options', options);
         onToggle(this.checked);
     });
 
