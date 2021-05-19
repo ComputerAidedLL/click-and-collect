@@ -418,7 +418,10 @@ let rec to_coq_with_hyps_increment i = function
     | Exchange_proof (sequent, _, permutation, p) ->
         let s, n, hyps = to_coq_with_hyps_increment i p in
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent] ^ s, n, hyps
-    | Cut_proof (head, formula, tail, p1, p2) -> raise (Failure "not implemented yet")
+    | Cut_proof (head, cut, _, p1, p2) ->
+        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        coq_apply_with_args "cut_r_ext" [formula_list_to_coq head; "(" ^ formula_to_coq cut ^ ")"] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
 let to_coq_with_hyps = to_coq_with_hyps_increment 0

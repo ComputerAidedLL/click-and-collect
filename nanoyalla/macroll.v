@@ -3,6 +3,7 @@ From NanoYalla Require Export nanoll.
 
 Export List.ListNotations.
 
+
 (** * Informative / Transparent versions of list operations *)
 
 Lemma app_assoc_inf {A} (l m n : list A) : l ++ m ++ n = (l ++ m) ++ n.
@@ -201,6 +202,8 @@ induction A as [ X | X
 cbn; rewrite ?IHA1, ?IHA2; reflexivity.
 Defined.
 
+Axiom cut_r : forall A l1 l2, ll (A :: l1) -> ll (dual A :: l2) -> ll (l1 ++ l2).
+
 Definition ex_perm_r p := ex_transpL (permL_of_perm p).
 
 Lemma ax_r_ext A : ll (dual A :: A :: nil).
@@ -319,6 +322,17 @@ intros pi.
 apply (ex_transp_middle1 nil), co_r.
 now apply (ex_transp_middle2 (wn A :: nil)), (ex_transp_middle2 nil l1).
 Defined.
+
+Lemma cut_r_ext l1 A l2 :
+  ll (l1 ++ A :: nil) -> ll (dual A :: l2) -> ll (l1 ++ l2).
+Proof.
+intros pi1 pi2.
+apply (cut_r A); auto.
+apply (ex_transp_middle2 nil) in pi1.
+replace (l1 ++ nil) with l1 in pi1; trivial.
+induction l1; intuition.
+Defined.
+
 
 Declare Scope ll_scope.
 Bind Scope ll_scope with formula.
