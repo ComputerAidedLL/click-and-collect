@@ -174,10 +174,12 @@
         </div>
 
         <div id="cut-formula-dialog" title="Enter cut formula" class="dialog">
-            <label>
-                <input type="text" name="formulaAsString" placeholder="Type formula ..." size="26" />
-            </label>
-            <input type="submit" value="Cut" />
+            <form action="#">
+                <label>
+                    <input type="text" name="formulaAsString" placeholder="Type formula ..." size="26" />
+                </label>
+                <input type="submit" value="Cut" />
+            </form>
         </div>
 
         <div id="explicit-exchange-dialog" title="Explicit exchange" class="dialog">
@@ -291,6 +293,9 @@
                     <div class="proof-container">{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"litt","v":"Δ"}]},"ar":{"rr":{"r":"weakening","fp":1},"p":[{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"litt","v":"Δ"}]},"ar":null}]}}</div>
                     <div class="proof-container">{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"litt","v":"Δ"}]},"ar":{"rr":{"r":"dereliction","fp":1},"p":[{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"litt","v":"A"},{"t":"litt","v":"Δ"}]},"ar":null}]}}</div>
                     <div class="proof-container">{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"litt","v":"Δ"}]},"ar":{"rr":{"r":"contraction","fp":1},"p":[{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"whynot","v":{"t":"litt","v":"A"}},{"t":"litt","v":"Δ"}]},"ar":null}]}}</div>
+                </div>
+                <div class="row">
+                    <div class="proof-container">{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"litt","v":"Δ"}]},"ar":{"rr":{"r":"cut","formula":{"t":"litt","v":"A"},"fp":1},"p":[{"s":{"cons":[{"t":"litt","v":"Γ"},{"t":"litt","v":"A"}]},"ar":null},{"s":{"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"Δ"}]},"ar":null}]}}</div>
                 </div>
             </div>
         </div>

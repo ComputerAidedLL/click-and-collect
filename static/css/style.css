@@ -22,7 +22,7 @@ h4:before { content: '⊢'; }
 .section-wrapper.dark-gray { background: #dfdfdf; }
 
 form { display: flex; flex-flow: wrap; justify-content: center; }
-input{ padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
+form input { padding: 1.1em 1em 0.9em; font-size: 1em; border-radius: 0.8em; margin: 0.2em; }
 input:focus { outline: none; box-shadow: none; }
 input[type=text] { border: solid 2px #66a3e0; }
 input[type=submit] { border: none; background-color: #66a3e0; color: white; font-weight: bold; }
@@ -109,7 +109,7 @@ img.export:hover, .option-info:hover { cursor: pointer; }
 
 /* SWITCH BUTTON */
 .switch { position: relative; display: inline-block; width: 2.2em; height: 1em; vertical-align: text-top; }
-.switch input { opacity: 0; width: 0; height: 1em; margin: 0; }
+.switch input { opacity: 0; width: 0; height: 1em; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 1em; }
 .slider:before { position: absolute; content: ""; height: 0.8em; width: 0.8em; left: 0.2em; bottom: 0.1em; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: #66a3e0; }

@@ -1,7 +1,8 @@
 $( function() {
-    let $sequentForm = $('#sequent-form');
-    $sequentForm.on('submit', function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
+    $('form').each(function (i, item) {
+        $(item).on('submit', function(e) {
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
     });
 
     $('.dialog').each(function (i, item) {
@@ -11,6 +12,7 @@ $( function() {
     // Parse URL and auto-complete / auto-submit sequent form
     let sequentParam = getQueryParamInUrl('s');
     if (sequentParam !== null) {
+        let $sequentForm = $('#sequent-form');
         $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
         submitSequent($sequentForm, true);
     }

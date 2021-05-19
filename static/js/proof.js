@@ -780,9 +780,11 @@ function addCutOnClick($commaOrPointSpan, isFirst) {
 
 function openCutPopup(onFormulaSuccessCallback) {
     let $cutFormulaDialog = $('#cut-formula-dialog');
+    let $textInput = $cutFormulaDialog.find($('input[name=formulaAsString]'));
+    $textInput.select();
     $cutFormulaDialog.find('input' + '[type=submit]').off('click')
         .on('click', function () {
-            let formulaAsString = $cutFormulaDialog.find($('input[name=formulaAsString]')).val();
+            let formulaAsString = $textInput.val();
             parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $cutFormulaDialog);
         })
     $cutFormulaDialog.dialog('open');
