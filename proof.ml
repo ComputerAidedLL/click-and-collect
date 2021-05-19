@@ -730,7 +730,8 @@ let rec get_proofs_of_sequents proof =
             (s, sorted, size, p) :: proofs_of_premises
 
 let remove_loop proof =
-    get_first_proof (get_proofs_of_sequents proof)
+    let n = List.length (get_conclusion proof) in
+    commute_permutations (get_first_proof (get_proofs_of_sequents proof)) (identity n)
 
 
 (* SIMPLIFY : COMMUTE DOWN WEAKENING *)
