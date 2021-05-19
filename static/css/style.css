@@ -13,7 +13,7 @@ h2 { margin: 1em auto 0 auto; text-align: center; font-size: 2em; }
 h3 { margin-top: 0; text-align: center; }
 h4:before { content: '⊢'; }
 .section { padding: 2em 0.4em; margin-left: auto; margin-right: auto; display: table; max-width: 60em; text-align: center; }
-.subsection { text-indent: 2em; text-align: justify; max-width: 25em; display: inline-block; vertical-align: top; padding: 0 2em; }
+.subsection { text-indent: 2em; text-align: justify; max-width: 25em; display: inline-block; vertical-align: top; margin: 0 1em; }
 .hidden { display: none; }
 
 .section-wrapper {overflow-x: auto; display: block; }
@@ -104,7 +104,7 @@ img.export:hover, .option-info:hover { cursor: pointer; }
 .rules .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
 .rules .proof-container { display: inline-block; vertical-align: bottom; }
 
-.section.footer .subsection { display: table; margin: auto; font-size: 0.8em; max-width: none; }
+.section.footer .subsection { display: table; margin: auto; font-size: 0.8em; max-width: none; text-align: center; text-indent: 0; }
 
 /* SWITCH BUTTON */
 .switch { position: relative; display: inline-block; width: 2.2em; height: 1em; }
