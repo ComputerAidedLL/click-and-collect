@@ -676,23 +676,58 @@ let rec commute_permutations proof perm =
 
 (* SIMPLIFY : REMOVE LOOP *)
 
-let rec find_sublist_starting_with_sequent sequent l = match l with
+let rec index_list offset = function
+    | [] -> []
+    | e :: tail -> (e, offset) :: index_list (offset + 1) tail
+
+let rec head_index_tail element = function
+    | [] -> raise (Failure "Could not find element in list")
+    | (e, i) :: l -> if e = element then [], i, l
+        else let head, index, tail = head_index_tail element l in
+        (e, i) :: head, index, tail
+
+let rec get_permutation indexed_list = function
+    | [] -> []
+    | e :: l -> let head, i, tail = head_index_tail e indexed_list in i :: (get_permutation (head @ tail) l)
+
+let permute_proof proof sequent_below =
+    let sequent = get_conclusion proof in
+    let indexed_sequent = index_list 0 sequent in
+    let permutation = get_permutation indexed_sequent sequent_below in
+    Exchange_proof (sequent, permutation, permutation, proof)
+
+let rec find_shorter_proof original_sequent sorted_sequent max_size l =
+    match l with
     | [] -> None
-    | (s, p) :: tail -> if s = sequent then Some l else find_sublist_starting_with_sequent sequent tail;;
+    | (original, sorted, size, p) :: tail ->
+        if original = original_sequent
+            then Some l
+        else if sorted = sorted_sequent && size < max_size
+            then Some ((original_sequent, sorted, size + 1, permute_proof p original_sequent) :: l)
+        else find_shorter_proof original_sequent sorted_sequent max_size tail
+
+let rec sum = function
+  | [] -> 0
+  | n :: l -> n + (sum l)
 
 let get_first_proof proofs_of_sequent =
-    let _, p = List.hd proofs_of_sequent in p
+    let _, _, _, p = List.hd proofs_of_sequent in p
+
+let get_size proofs_of_sequent =
+    let _, _, size, _ = List.hd proofs_of_sequent in size
 
 let rec get_proofs_of_sequents proof =
     match proof with
-    | Hypothesis_proof s -> [(s, proof)]
+    | Hypothesis_proof s -> [(s, sort s, 1, proof)]
     | _ -> let proofs_by_premises = List.map get_proofs_of_sequents (get_premises proof) in
-        let proofs_of_premises = List.concat proofs_by_premises in
         let s = get_conclusion proof in
-        match find_sublist_starting_with_sequent s proofs_of_premises with
+        let sorted = sort s in
+        let size = 1 + sum (List.map get_size proofs_by_premises) in
+        let proofs_of_premises = List.concat proofs_by_premises in
+        match find_shorter_proof s sorted (size - 1) proofs_of_premises with
         | Some l -> l
         | None -> let p = set_premises proof (List.map get_first_proof proofs_by_premises) in
-            (s, p) :: proofs_of_premises;;
+            (s, sorted, size, p) :: proofs_of_premises
 
 let remove_loop proof =
     get_first_proof (get_proofs_of_sequents proof)
