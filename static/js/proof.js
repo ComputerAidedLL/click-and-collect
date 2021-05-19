@@ -178,7 +178,9 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
 
     // Add premises
     if (premises.length === 0) {
-        markParentSequentsAsProved($sequentTable);
+        if (options.withInteraction) {
+            markParentSequentsAsProved($sequentTable);
+        }
     } else if (premises.length === 1) {
         createSubProof(premises[0], $sequentTable.parent(), options);
     } else {
