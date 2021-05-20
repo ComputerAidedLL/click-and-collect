@@ -85,6 +85,7 @@ type formula_format = {
     litt_format : (string -> string, unit, string) format;
     dual_format : (string -> string, unit, string) format;
     is_dual_atomic : bool;
+    is_unary_atomic : bool;
     one_format : string;
     bottom_format : string;
     top_format : string;
@@ -100,7 +101,7 @@ let rec formula_export_atomic formatting =
   let unary_connective f e =
     let s, atomic = formula_export_atomic formatting e in
     let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
-    Printf.sprintf f s_parenthesis, false in
+    Printf.sprintf f s_parenthesis, formatting.is_unary_atomic in
   let binary_connective f e1 e2 =
     let s1, atomic1 = formula_export_atomic formatting e1 in
     let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
@@ -129,6 +130,7 @@ let coq_format = {
     litt_format = "%s";
     dual_format = "dual %s";
     is_dual_atomic = false;
+    is_unary_atomic = false;
     one_format = "one";
     bottom_format = "bot";
     top_format = "top";
@@ -161,6 +163,7 @@ let latex_format = {
     litt_format = "%s";
     dual_format = "{%s}\\orth";
     is_dual_atomic = true;
+    is_unary_atomic = true;
     one_format = "\\one";
     bottom_format = "\\bot";
     top_format = "\\top";
@@ -186,6 +189,7 @@ let ascii_format = {
     litt_format = "%s";
     dual_format = "%s^";
     is_dual_atomic = true;
+    is_unary_atomic = true;
     one_format = "1";
     bottom_format = "_";
     top_format = "T";
