@@ -23,6 +23,16 @@ opam install ocsigen-start
 cd click-and-collect
 make test.byte
 ```
+If the `opam depext ...` or `opam install ...` command fails, it might be 
+because you are running a version of `ocaml` that is too old (for instance,
+this is the case by default under Debian 10, which ships 4.05.0).
+If so, you can try switching to a newer version:
+```
+opam switch create 4.12.0 # latest version at the time of writing
+opam depext ocsigen-start
+opam install ocsigen-start
+```
+(to get the list of available versions, use `opam switch list-available`).
 
 ### Deploy on server
 Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
