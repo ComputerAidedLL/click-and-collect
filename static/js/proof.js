@@ -17,7 +17,8 @@ const RULES = {
     'dereliction': '?<span class="italic">d</span>',
     'contraction': '?<span class="italic">c</span>',
     'weakening': '?<span class="italic">w</span>',
-    'exchange': '<span class="italic">ech</span>'
+    'exchange': '<span class="italic">ech</span>',
+    'cut': '<span class="italic">cut</span>'
 };
 
 const ABBREVIATIONS = {
@@ -50,23 +51,28 @@ function initProof(proofAsJson, $container, options = {}) {
 
     if (options.autoReverse) {
         createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
-            // Save option
-            let options = $container.data('options');
-            options.autoReverse.value = autoReverse;
-            $container.data('options', options);
+            saveOption($container, 'autoReverse', autoReverse);
 
-            // Apply autoReverse
             if (autoReverse) {
                 autoReverseContainer($container);
             }
 
-            // Apply callback
             options.autoReverse.onToggle(autoReverse);
         }, options.autoReverse.dialog);
 
         if (options.autoReverse.value) {
             autoReverseContainer($container);
         }
+    }
+
+    if (options.cutMode) {
+        createOption($container, options.cutMode.value, 'Cut mode',function (cutMode) {
+            saveOption($container, 'cutMode', cutMode);
+            toggleCutMode($container, cutMode);
+            options.cutMode.onToggle(cutMode);
+        }, options.cutMode.dialog);
+
+        toggleCutMode($container, options.cutMode.value);
     }
 }
 
@@ -113,6 +119,35 @@ function removeSequentTable($sequentTable) {
     $sequentTable.remove();
 
     return $div;
+}
+
+// *******
+// OPTIONS
+// *******
+
+function createOption($container, isChecked, text, onToggle, dialog) {
+    let $input = $('<input type="checkbox">');
+    $input.prop('checked', isChecked);
+    $input.on('change', function() {
+        onToggle(this.checked);
+    });
+
+    let $optionBar = $('<div>', {'class': 'option-bar'})
+        .append($('<span>', {'class': 'option-label'}).text(text))
+        .append($('<span>', {'class': 'option-info', 'title': `Learn about ${text} option`})
+            .text('ⓘ')
+            .on('click', function () { $(`#${dialog}`).dialog('open'); }))
+        .append($('<label>', {'class': 'switch'})
+            .append($input)
+            .append($('<span class="slider"></span>')));
+
+    $container.append($optionBar);
+}
+
+function saveOption($container, optionName, optionValue) {
+    let options = $container.data('options');
+    options[optionName].value = optionValue;
+    $container.data('options', options);
 }
 
 // **********
@@ -366,19 +401,6 @@ function isProved($sequentTable) {
     return $sequentTable.data('proved') === true;
 }
 
-function getParentSequentTable($sequentTable) {
-    if (!$sequentTable.is(':last-child')) {
-        return $sequentTable.next();
-    }
-
-    let $div = $sequentTable.closest('div');
-    if ($div.hasClass('proof')) {
-        return null;
-    }
-
-    return $div.parent().next();
-}
-
 function markParentSequentsAsProved($sequentTable) {
     $sequentTable.data('proved', true);
     undoMarkAsNotProvable($sequentTable);
@@ -398,6 +420,45 @@ function markParentSequentsAsProved($sequentTable) {
         let $container = $sequentTable.closest('.proof-container');
         markAsComplete($container);
     }
+}
+
+function getParentSequentTable($sequentTable) {
+    if (!$sequentTable.is(':last-child')) {
+        return $sequentTable.next();
+    }
+
+    let $div = $sequentTable.closest('div');
+    if ($div.hasClass('proof')) {
+        return null;
+    }
+
+    return $div.parent().next();
+}
+
+function getPremisesSequentTable($sequentTable) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
+    if (ruleRequest === null) {
+        return [];
+    }
+
+    let $prev = $sequentTable.prev();
+
+    if ($prev.prop('tagName') === 'TABLE') {
+        return [$prev];
+    }
+
+    let $premises = [];
+    $prev.children('div.sibling').each(function (i, sibling) {
+        let $siblingTable = $(sibling).children('table').last();
+        $premises = $premises.concat($siblingTable);
+    })
+
+    if ($premises.length < 2) {
+        // Proof has not been completely set up
+        return null;
+    }
+
+    return $premises;
 }
 
 // *************
@@ -622,25 +683,6 @@ function undoMarkAsNotProvable($sequentTable) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function createOption($container, isChecked, text, onToggle, dialog) {
-    let $input = $('<input type="checkbox">');
-    $input.prop('checked', isChecked);
-    $input.on('change', function() {
-        onToggle(this.checked);
-    });
-
-    let $optionBar = $('<div>', {'class': 'option-bar'})
-        .append($('<span>', {'class': 'option-label'}).text(text))
-        .append($('<span>', {'class': 'option-info', 'title': `Learn about ${text} option`})
-            .text('ⓘ')
-            .on('click', function () { $(`#${dialog}`).dialog('open'); }))
-        .append($('<label>', {'class': 'switch'})
-            .append($input)
-            .append($('<span class="slider"></span>')));
-
-    $container.append($optionBar);
-}
-
 function autoReverseContainer($container) {
     let $mainSequentTable = $container.find('table').last();
     autoReverseSequentPremises($mainSequentTable);
@@ -653,32 +695,6 @@ function autoReverseSequentPremises($sequentTable) {
             autoReverseSequent($premiseSequentTable);
         }
     }
-}
-
-function getPremisesSequentTable($sequentTable) {
-    let ruleRequest = $sequentTable.data('ruleRequest') || null;
-    if (ruleRequest === null) {
-        return [];
-    }
-
-    let $prev = $sequentTable.prev();
-
-    if ($prev.prop('tagName') === 'TABLE') {
-        return [$prev];
-    }
-
-    let $premises = [];
-    $prev.children('div.sibling').each(function (i, sibling) {
-        let $siblingTable = $(sibling).children('table').last();
-        $premises = $premises.concat($siblingTable);
-    })
-
-    if ($premises.length < 2) {
-        // Proof has not been completely set up
-        return null;
-    }
-
-    return $premises;
 }
 
 function getLastPremisesSequentTable($sequentTable) {
@@ -723,6 +739,69 @@ function autoReverseSequent($sequentTable) {
         {
             if (data.appliedRule !== null) {
                 addPremises($sequentTable, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+// ********
+// CUT MODE
+// ********
+
+function toggleCutMode($container, cutMode) {
+    let $mainDiv = $container.children('div.proof');
+    if (cutMode) {
+        $mainDiv.addClass('cut-mode');
+    } else {
+        $mainDiv.removeClass('cut-mode');
+    }
+}
+
+function addCutOnClick($commaOrPointSpan, isFirst) {
+    $commaOrPointSpan.on('click', function () {
+        let $sequentTable = $commaOrPointSpan.closest('table');
+        let $container = $sequentTable.closest('.proof-container');
+        let options = $container.data('options');
+
+        if (options.cutMode.value) {
+            openCutPopup(function (formula) {
+                let formulaPosition = 0;
+                if (!isFirst) {
+                    let $li = $commaOrPointSpan.closest('li');
+                    formulaPosition = $li.parent().children().index($li) + 1;
+                }
+                let ruleRequest = { rule: 'cut', formula, formulaPosition };
+                applyRule(ruleRequest, $sequentTable);
+            })
+        }
+    });
+}
+
+function openCutPopup(onFormulaSuccessCallback) {
+    let $cutFormulaDialog = $('#cut-formula-dialog');
+    let $textInput = $cutFormulaDialog.find($('input[name=formulaAsString]'));
+    $textInput.select();
+    $cutFormulaDialog.find('input' + '[type=submit]').off('click')
+        .on('click', function () {
+            let formulaAsString = $textInput.val();
+            parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $cutFormulaDialog);
+        })
+    $cutFormulaDialog.dialog('open');
+}
+
+function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $dialog) {
+    $.ajax({
+        type: 'GET',
+        url: '/parse_formula',
+        data: { formulaAsString },
+        success: function(data)
+        {
+            if (data['is_valid']) {
+                $dialog.dialog('close');
+                onFormulaSuccessCallback(data['formula']);
+            } else {
+                displayPedagogicError(data['error_message'], $dialog);
             }
         },
         error: onAjaxError

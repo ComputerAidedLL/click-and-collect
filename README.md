@@ -63,7 +63,7 @@ Whenever a file in `nanoyalla/` directory package is modified, nanoyalla version
 
 1. Increment version in `nanoyalla/README.md`.
 2. Increment version in `export_as_coq.ml`, in header printed in generated files.
-3. Zip `nanoyalla/` directory `zip -r static/download/nanoyalla.zip nanoyalla/`.
+3. Zip `nanoyalla/` directory: `rm -f static/download/nanoyalla.zip && zip -r static/download/nanoyalla.zip nanoyalla/`
 
 ### Modify parser
 Do not modify `ll_parser.mli` or `ll_parser.ml` neither `ll_lexer.mll`, but just `ll_parser.mly` and `ll_lexer.mll` and then run

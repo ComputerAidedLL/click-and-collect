@@ -1,7 +1,8 @@
 $( function() {
-    let $sequentForm = $('#sequent-form');
-    $sequentForm.on('submit', function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
+    $('form').each(function (i, item) {
+        $(item).on('submit', function(e) {
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
     });
 
     $('.dialog').each(function (i, item) {
@@ -11,6 +12,7 @@ $( function() {
     // Parse URL and auto-complete / auto-submit sequent form
     let sequentParam = getQueryParamInUrl('s');
     if (sequentParam !== null) {
+        let $sequentForm = $('#sequent-form');
         $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
         submitSequent($sequentForm, true);
     }
@@ -59,11 +61,9 @@ function submitSequent(element, autoSubmit = false) {
 }
 
 function parseSequentAsString(sequentAsString, $container) {
-    let apiUrl = '/parse_sequent';
-
     $.ajax({
         type: 'GET',
-        url: apiUrl,
+        url: '/parse_sequent',
         data: { sequentAsString },
         success: function(data)
         {
@@ -84,14 +84,22 @@ function initMainProof(proofAsJson) {
     // We get autoReverse option in URL
     let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
 
+    // We get cut mode option in URL
+    let cutMode = getQueryParamInUrl('cut_mode') === '1';
+
     initProof(proofAsJson, $('#main-proof-container'), {
         withInteraction: true,
         exportButtons: true,
         checkProvability: true,
         autoReverse: {
             value: autoReverse,
-            onToggle: onAutoReverseToggle,
+            onToggle: onOptionToggle('auto_reverse'),
             dialog: 'auto-reverse-dialog'
+        },
+        cutMode: {
+            value: cutMode,
+            onToggle: onOptionToggle('cut_mode'),
+            dialog: 'cut-mode-dialog'
         }
     });
 }
@@ -161,12 +169,15 @@ function hideRules() {
 // AUTO-REVERSE OPTION
 // *******************
 
-function onAutoReverseToggle(autoReverse) {
-    if (autoReverse) {
-        addQueryParamInUrl('auto_reverse', '1', 'Auto reverse mode set to true');
-    } else {
-        addQueryParamInUrl('auto_reverse', null, 'Auto reverse mode set to false');
+function onOptionToggle(param) {
+    return function (value) {
+        if (value) {
+            addQueryParamInUrl(param, '1', `${param} set to true`);
+        } else {
+            addQueryParamInUrl(param, null, `${param} set to false`);
+        }
     }
+
 }
 
 // ****************

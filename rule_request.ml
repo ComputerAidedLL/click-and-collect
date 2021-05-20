@@ -15,7 +15,8 @@ type rule_request =
     | Dereliction of int
     | Weakening of int
     | Contraction of int
-    | Exchange of int list * int list;;
+    | Exchange of int list * int list
+    | Cut of formula * int;;
 
 
 (* JSON -> RULE *)
@@ -46,6 +47,11 @@ let get_int_list d k =
     try List.map Yojson.Basic.Util.to_int (Yojson.Basic.Util.to_list value)
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ k ^ "' must be a list of int"));;
 
+let get_formula d k =
+    let value = get_key d k in
+    try Raw_sequent.formula_from_json value
+    with Raw_sequent.Json_exception m -> raise (Json_exception ("field '" ^ k ^ "' must contain a valid formula: " ^ m));;
+
 let from_json rule_request_as_json =
     let rule = get_string rule_request_as_json "rule" in
     match rule with
@@ -64,6 +70,7 @@ let from_json rule_request_as_json =
         | "weakening" -> Weakening (get_int rule_request_as_json "formulaPosition")
         | "contraction" -> Contraction (get_int rule_request_as_json "formulaPosition")
         | "exchange" -> Exchange (get_int_list rule_request_as_json "displayPermutation", get_int_list rule_request_as_json "permutation")
+        | "cut" -> Cut (get_formula rule_request_as_json "formula", get_int rule_request_as_json "formulaPosition")
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;
 
 (* RULE -> JSON *)
@@ -108,4 +115,9 @@ let to_json = function
     | Exchange (display_permutation, permutation) -> `Assoc [
         ("rule", `String "exchange");
         ("displayPermutation", `List (List.map (fun n -> `Int n) display_permutation));
-        ("permutation", `List (List.map (fun n -> `Int n) permutation))];;
+        ("permutation", `List (List.map (fun n -> `Int n) permutation))]
+    | Cut (formula, formula_position) -> `Assoc [
+        ("rule", `String "cut");
+        ("formula", Raw_sequent.formula_to_json formula);
+        ("formulaPosition", `Int formula_position)
+    ];;
