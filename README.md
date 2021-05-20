@@ -8,21 +8,53 @@ for an online interactive sequent prover for linear logic.
 Some informations are available in the [wiki](https://github.com/etiennecallies/click-and-collect/wiki).
 
 ## Install
-### Deploy on local dev environment
-- Install dependencies
+
+### Install system dependencies
+
+- System dependencies for `ocsigen-start` (excluding PostgreSQL stuff as we rely on SQLite3):
+  `libgdbm-dev libsqlite3-dev debianutils imagemagick libgdbm-dev libgmp-dev libpcre3-dev libssl-dev npm pkg-config ruby-sass zlib1g-dev`
+- System dependencies for `lzma`: `liblzma-dev`
+- System dependencies for the SQLite3 backend of `ocsipersist`: `libsqlite3-dev pkg-config`
+
+To install everything under Debian-like distros:
+```
+sudo apt install libgdbm-dev libsqlite3-dev debianutils imagemagick libgdbm-dev libgmp-dev libpcre3-dev libssl-dev npm pkg-config ruby-sass zlib1g-dev liblzma-dev libsqlite3-dev
+```
+
+### Build using opam
+
+- First initialize opam if necessary
+
 ```
 sudo apt-get install opam
 opam init
-sudo apt-get install libgdbm-dev libsqlite3-dev
-opam depext ocsigen-start
+```
+- Make sure you are running a recent compiler (to get the list of available
+  versions, use `opam switch list-available`).
+```
+opam switch create 4.12.0 # latest version at the time of writing
+```
+- Install [lzma](https://github.com/fccm/ocaml-lzma) package from source, as it is sadly not available on opam
+```
+git clone git@github.com:fccm/ocaml-lzma.git
+opam pin add lzma ocaml-lzma/ -n
+opam install lzma
+```
+- Install `ocsigen-start`
+```
 opam install ocsigen-start
 ```
 - Clone this repository
-- Launch
+```
+git clone https://github.com/etiennecallies/click-and-collect
+```
+- Build and launch
 ```
 cd click-and-collect
 make test.byte
 ```
+
+Now you can visit [http://localhost:8080]() and play with click-and-collect.
 
 ### Deploy on server
 Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
@@ -46,15 +78,6 @@ If you don't have LaTeX environment installed on your machine (or your server), 
 - Install `poppler-utils` (for LaTeX to PNG export)
 ```
 sudo apt-get install poppler-utils
-```
-
-### Make share proof work
-You need to install [lzma](https://github.com/fccm/ocaml-lzma) package, which is sadly not available on opam.
-```
-git clone git@github.com:fccm/ocaml-lzma.git
-opam pin add lzma ocaml-lzma/ -n
-opam depext lzma
-opam install lzma
 ```
 
 ## Contribute
