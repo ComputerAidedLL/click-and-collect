@@ -454,7 +454,7 @@ let sequent_to_focused_sequent sequent =
 
 let proof_from_focused_proof focused_proof =
     let proof = unfocus_proof focused_proof in
-    remove_loop (commute_down_weakenings (remove_loop proof))
+    remove_loop proof
 
 exception NonProvableSequent
 exception NonAutoProvableSequent

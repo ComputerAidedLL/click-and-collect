@@ -59,7 +59,7 @@ let get_premises = function
     | Contraction_proof (_, _, _, p) -> [p]
     | Exchange_proof (_, _, _, p) -> [p]
     | Cut_proof (_, _, _, p1, p2) -> [p1; p2]
-    | Hypothesis_proof s -> raise (Failure "Can not get premises of hypothesis");;
+    | Hypothesis_proof _ -> raise (Failure "Can not get premises of hypothesis");;
 
 let set_premises proof premises = match proof, premises with
     | Axiom_proof _, [] -> proof
@@ -624,7 +624,7 @@ let perm_minus_element n perm =
 let perm_plus_element n perm =
     List.concat (List.map (fun k -> if k = n then [n; n + 1] else if k > n then [k + 1] else [k]) perm)
 
-let rec commute_permutations proof perm =
+let rec rec_commute_up_permutations proof perm =
     let conclusion = get_conclusion proof in
     match proof with
     | Axiom_proof e -> if perm = [0; 1] then proof else Axiom_proof (dual e)
@@ -635,103 +635,47 @@ let rec commute_permutations proof perm =
     | Bottom_proof (head, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
         let new_perm = perm_minus_element (List.length head) perm in
-        Bottom_proof (permute conclusion head_perm, permute conclusion tail_perm, commute_permutations p new_perm)
+        Bottom_proof (permute conclusion head_perm, permute conclusion tail_perm, rec_commute_up_permutations p new_perm)
     | Tensor_proof (head, _, _, tail, p1, p2) ->
-        let new_proof = set_premises proof [commute_permutations p1 (identity (List.length head + 1)); commute_permutations p2 (identity (1 + List.length tail))] in
+        let new_proof = set_premises proof [rec_commute_up_permutations p1 (identity (List.length head + 1)); rec_commute_up_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
     | Par_proof (head, e1, e2, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
         let new_perm = perm_plus_element (List.length head) perm in
-        Par_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p new_perm)
+        Par_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, rec_commute_up_permutations p new_perm)
     | With_proof (head, e1, e2, tail, p1, p2) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        With_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p1 perm, commute_permutations p2 perm)
+        With_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, rec_commute_up_permutations p1 perm, rec_commute_up_permutations p2 perm)
     | Plus_left_proof (head, e1, e2, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        Plus_left_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p perm)
+        Plus_left_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, rec_commute_up_permutations p perm)
     | Plus_right_proof (head, e1, e2, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        Plus_right_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, commute_permutations p perm)
+        Plus_right_proof (permute conclusion head_perm, e1, e2, permute conclusion tail_perm, rec_commute_up_permutations p perm)
     | Promotion_proof (head_without_whynot, formula, tail_without_whynot, p) ->
         let head_perm, tail_perm = head_tail_perm head_without_whynot perm in
         let conclusion_without_whynot = head_without_whynot @ [formula] @ tail_without_whynot in
-        Promotion_proof (permute conclusion_without_whynot head_perm, formula, permute conclusion_without_whynot tail_perm, commute_permutations p perm)
+        Promotion_proof (permute conclusion_without_whynot head_perm, formula, permute conclusion_without_whynot tail_perm, rec_commute_up_permutations p perm)
     | Dereliction_proof (head, formula, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
-        Dereliction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p perm)
+        Dereliction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, rec_commute_up_permutations p perm)
     | Weakening_proof (head, formula, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
         let new_perm = perm_minus_element (List.length head) perm in
-        Weakening_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
+        Weakening_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, rec_commute_up_permutations p new_perm)
     | Contraction_proof (head, formula, tail, p) ->
         let head_perm, tail_perm = head_tail_perm head perm in
         let new_perm = perm_plus_element (List.length head) perm in
-        Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, commute_permutations p new_perm)
-    | Exchange_proof (_, _, permutation, p) -> commute_permutations p (permute permutation perm)
+        Contraction_proof (permute conclusion head_perm, formula, permute conclusion tail_perm, rec_commute_up_permutations p new_perm)
+    | Exchange_proof (_, _, permutation, p) -> rec_commute_up_permutations p (permute permutation perm)
     | Cut_proof (head, _, tail, p1, p2) ->
-        let new_proof = set_premises proof [commute_permutations p1 (identity (List.length head + 1)); commute_permutations p2 (identity (1 + List.length tail))] in
+        let new_proof = set_premises proof [rec_commute_up_permutations p1 (identity (List.length head + 1)); rec_commute_up_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
-    | Hypothesis_proof s -> Hypothesis_proof (permute s perm);;
+    | Hypothesis_proof sequent -> Hypothesis_proof (permute sequent perm);;
 
-
-(* SIMPLIFY : REMOVE LOOP *)
-
-let rec index_list offset = function
-    | [] -> []
-    | e :: tail -> (e, offset) :: index_list (offset + 1) tail
-
-let rec head_index_tail element = function
-    | [] -> raise (Failure "Could not find element in list")
-    | (e, i) :: l -> if e = element then [], i, l
-        else let head, index, tail = head_index_tail element l in
-        (e, i) :: head, index, tail
-
-let rec get_permutation indexed_list = function
-    | [] -> []
-    | e :: l -> let head, i, tail = head_index_tail e indexed_list in i :: (get_permutation (head @ tail) l)
-
-let permute_proof proof sequent_below =
-    let sequent = get_conclusion proof in
-    let indexed_sequent = index_list 0 sequent in
-    let permutation = get_permutation indexed_sequent sequent_below in
-    Exchange_proof (sequent, permutation, permutation, proof)
-
-let rec find_shorter_proof original_sequent sorted_sequent max_size l =
-    match l with
-    | [] -> None
-    | (original, sorted, size, p) :: tail ->
-        if original = original_sequent
-            then Some l
-        else if sorted = sorted_sequent && size < max_size
-            then Some ((original_sequent, sorted, size + 1, permute_proof p original_sequent) :: l)
-        else find_shorter_proof original_sequent sorted_sequent max_size tail
-
-let rec sum = function
-  | [] -> 0
-  | n :: l -> n + (sum l)
-
-let get_first_proof proofs_of_sequent =
-    let _, _, _, p = List.hd proofs_of_sequent in p
-
-let get_size proofs_of_sequent =
-    let _, _, size, _ = List.hd proofs_of_sequent in size
-
-let rec get_proofs_of_sequents proof =
-    match proof with
-    | Hypothesis_proof s -> [(s, sort s, 1, proof)]
-    | _ -> let proofs_by_premises = List.map get_proofs_of_sequents (get_premises proof) in
-        let s = get_conclusion proof in
-        let sorted = sort s in
-        let size = 1 + sum (List.map get_size proofs_by_premises) in
-        let proofs_of_premises = List.concat proofs_by_premises in
-        match find_shorter_proof s sorted (size - 1) proofs_of_premises with
-        | Some l -> l
-        | None -> let p = set_premises proof (List.map get_first_proof proofs_by_premises) in
-            (s, sorted, size, p) :: proofs_of_premises
-
-let remove_loop proof =
+let commute_up_permutations proof =
     let n = List.length (get_conclusion proof) in
-    commute_permutations (get_first_proof (get_proofs_of_sequents proof)) (identity n)
+    rec_commute_up_permutations proof (identity n)
 
 
 (* SIMPLIFY : COMMUTE DOWN WEAKENING *)
@@ -936,7 +880,7 @@ let rec rec_commute_down_weakenings proof =
                 new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 2 in
             let new_proof = get_commuted_proof (rec_commute_down_weakenings (Contraction_proof (new_head, e, new_tail, p))) in
             true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
-    | Exchange_proof (s, display_permutation, permutation, Weakening_proof (head_wk, formula, tail_wk, p)) ->
+    | Exchange_proof (sequent, display_permutation, permutation, Weakening_proof (head_wk, formula, tail_wk, p)) ->
         let n_head_wk = List.length head_wk in
         let n_tail_wk = List.length tail_wk in
         let new_display_permutation = perm_minus_element n_head_wk display_permutation in
@@ -954,3 +898,101 @@ let rec rec_commute_down_weakenings proof =
 
 let commute_down_weakenings proof =
     get_commuted_proof (rec_commute_down_weakenings proof);;
+
+(* SIMPLIFY : REMOVE LOOP *)
+
+let rec index_list offset = function
+    | [] -> []
+    | e :: tail -> (e, offset) :: index_list (offset + 1) tail
+
+let rec head_index_tail element = function
+    | [] -> raise (Failure "Could not find element in list")
+    | (e, i) :: l -> if e = element then [], i, l
+        else let head, index, tail = head_index_tail element l in
+        (e, i) :: head, index, tail
+
+let rec get_permutation indexed_list = function
+    | [] -> []
+    | e :: l -> let head, i, tail = head_index_tail e indexed_list in i :: (get_permutation (head @ tail) l)
+
+let permute_proof proof sequent_below =
+    let sequent = get_conclusion proof in
+    let indexed_sequent = index_list 0 sequent in
+    let permutation = get_permutation indexed_sequent sequent_below in
+    Exchange_proof (sequent, permutation, permutation, proof)
+
+let get_first_proof proofs_of_sequent =
+    let _, _, _, p, _ = List.hd proofs_of_sequent in p
+
+let get_size proofs_of_sequent =
+    let _, _, size, _, _ = List.hd proofs_of_sequent in size
+
+let get_has_simplified proofs_of_sequent =
+    let _, _, _, _, has_simplified = List.hd proofs_of_sequent in has_simplified
+
+let rec find_shorter_proof original_sequent sorted_sequent max_size l =
+    match l with
+    | [] -> None
+    | (original, sorted, size, p, _) :: tail ->
+        if size < max_size && original = original_sequent
+            then Some ((original, sorted, size, p, true) :: tail)
+        else if size < max_size && sorted = sorted_sequent
+            then Some ((original_sequent, sorted, size + 1, permute_proof p original_sequent, true) :: l)
+        else find_shorter_proof original_sequent sorted_sequent max_size tail
+
+let rec get_sequents_and_weakenings head = function
+    | [] -> [[], []]
+    | e :: tail ->
+        let sequents_with_e = get_sequents_and_weakenings (head @ [e]) tail in
+        let without_weakening = List.map (fun (s, w) -> (e :: s, w)) sequents_with_e in
+        match e with
+        | Whynot f ->
+            let sequents_without_e = get_sequents_and_weakenings head tail in
+            let with_weakening = List.map (fun (s, w) -> (s, (head, f, tail) :: w)) sequents_without_e in
+            without_weakening @ with_weakening
+        | _ ->  without_weakening
+
+let rec add_weakenings l = function
+    | [] -> l
+    | (h, f, t) :: tail ->
+        let l' = add_weakenings l tail in
+        let p = get_first_proof l' in
+        let size = get_size l' in
+        let sequent = h @ [Whynot f] @ t in
+        (sequent, sort sequent, size + 1, Weakening_proof (h, f, t, p), true) :: l'
+
+let process_weakened_sequents sequent weakenings size proofs_of_premises =
+    let sorted = sort sequent in
+    match find_shorter_proof sequent sorted (size - 1 - List.length weakenings) proofs_of_premises with
+    | Some l -> Some (add_weakenings l weakenings)
+    | None -> None
+
+let rec sum = function
+  | [] -> 0
+  | n :: l -> n + (sum l)
+
+let rec min = function
+    | [] -> None
+    | e :: [] -> Some e
+    | e :: tail -> match min tail with None -> assert false | Some m -> if (get_size e) <= (get_size m) then Some e else Some m
+
+let rec get_shortest_proofs proof =
+    match proof with
+    | Hypothesis_proof s -> [(s, sort s, 1, proof, false)]
+    | _ -> let shortest_proofs_by_premises = List.map get_shortest_proofs (get_premises proof) in
+        let s = get_conclusion proof in
+        let size = 1 + sum (List.map get_size shortest_proofs_by_premises) in
+        let all_proofs_of_premises = List.concat shortest_proofs_by_premises in
+        let sequents_and_weakenings = get_sequents_and_weakenings [] s in
+        let shorter_proofs = List.filter_map (fun (s, w) -> process_weakened_sequents s w size all_proofs_of_premises) sequents_and_weakenings in
+        match min shorter_proofs with
+        | Some l -> l
+        | None -> let sorted = sort s in
+            let p = set_premises proof (List.map get_first_proof shortest_proofs_by_premises) in
+            let has_simplified = List.exists get_has_simplified shortest_proofs_by_premises in
+            (s, sorted, size, p, has_simplified) :: all_proofs_of_premises
+
+let rec remove_loop proof =
+    let shortest_proofs = get_shortest_proofs (commute_down_weakenings (commute_up_permutations proof)) in
+    let new_proof = get_first_proof shortest_proofs in
+    if get_has_simplified shortest_proofs then remove_loop new_proof else new_proof
