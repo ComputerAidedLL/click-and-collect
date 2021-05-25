@@ -327,26 +327,6 @@ let rec head_tail formula = function
     | e :: formula_list -> if e = formula then [], formula_list
         else let head, tail = head_tail formula formula_list in e :: head, tail
 
-let rec index_list offset = function
-    | [] -> []
-    | e :: tail -> (e, offset) :: index_list (offset + 1) tail
-
-let rec head_index_tail element = function
-    | [] -> raise NotFound
-    | (e, i) :: l -> if e = element then [], i, l
-        else let head, index, tail = head_index_tail element l in
-        (e, i) :: head, index, tail
-
-let rec get_permutation indexed_list = function
-    | [] -> []
-    | e :: l -> let head, i, tail = head_index_tail e indexed_list in i :: (get_permutation (head @ tail) l)
-
-let permute_proof proof sequent_below =
-    let sequent = get_conclusion proof in
-    let indexed_sequent = index_list 0 sequent in
-    let permutation = get_permutation indexed_sequent sequent_below in
-    Exchange_proof (sequent, permutation, permutation, proof)
-
 let rec weaken proof head tail = function
     | [] -> proof
     | e :: l -> Weakening_proof (head, e, map_wn l @ tail, weaken proof head tail l)
@@ -474,8 +454,7 @@ let sequent_to_focused_sequent sequent =
 
 let proof_from_focused_proof focused_proof =
     let proof = unfocus_proof focused_proof in
-    let n = List.length (get_conclusion proof) in
-    remove_loop (commute_down_weakenings (remove_loop (commute_permutations proof (identity n))))
+    remove_loop proof
 
 exception NonProvableSequent
 exception NonAutoProvableSequent

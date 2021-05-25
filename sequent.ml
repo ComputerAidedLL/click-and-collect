@@ -68,6 +68,9 @@ let rec get_variable_names =
 let get_unique_variable_names sequent =
     List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent));;
 
+let sort sequent =
+    List.sort compare sequent;;
+
 
 (* PATTERN MATCHING ON FORMULA *)
 
