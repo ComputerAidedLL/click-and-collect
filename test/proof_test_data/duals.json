@@ -1,1 +1,1 @@
-{"s":{"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"B"}}},{"t":"par","v1":{"t":"dual","v":{"t":"litt","v":"A"}},"v2":{"t":"litt","v":"B"}}]},"ar":{"rr":{"r":"axiom"},"p":[]}}
+{"notations":[],"proof":{"s":{"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"B"}}},{"t":"par","v1":{"t":"dual","v":{"t":"litt","v":"A"}},"v2":{"t":"litt","v":"B"}}]},"ar":{"rr":{"r":"axiom"},"p":[]}}}

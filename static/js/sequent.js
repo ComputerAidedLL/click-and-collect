@@ -78,7 +78,9 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
         let formulaAsJson = sequent[sequentPart][i];
-        let $li = $('<li>').data('initialPosition', i);
+        let $li = $('<li>')
+            .data('initialPosition', i)
+            .data('formula', formulaAsJson);
         $ul.append($li);
 
         // Build formula
@@ -239,8 +241,23 @@ function addEventsAndStyle($li, formulaAsJson) {
 
 function buildApplyRuleCallBack(ruleConfig, $li) {
     return function() {
+        if (ruleConfig.rule === 'axiom') {
+            let formula = $li.data('formula');
+
+            let atomName = formula['value'];
+            if (formula['type'] === 'dual') {
+                // {'type': 'dual', 'value': {'type': 'litt', 'value': ... }
+                atomName = formula['value']['value']
+            }
+
+            if (getNotationByName($li, atomName) !== null) {
+                ruleConfig.rule = `unfold_${formula['type']}`;
+                ruleConfig.needPosition = true;
+            }
+        }
+
         let $sequentTable = $li.closest('table');
-        let ruleRequest = {rule: ruleConfig.rule};
+        let ruleRequest = { rule: ruleConfig.rule };
 
         if (ruleConfig.needPosition) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
@@ -345,6 +362,7 @@ function autoProveSequent($sequentTable) {
     let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+    let notations = getNotations($container);
 
     let $turnstile = $sequentTable.find('.turnstile');
 
@@ -352,7 +370,7 @@ function autoProveSequent($sequentTable) {
         type: 'POST',
         url: '/auto_prove_sequent',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({sequent, notations})),
         beforeSend: function() {
             $turnstile.addClass('loading');
         },
@@ -374,7 +392,7 @@ function autoProveSequent($sequentTable) {
                 }
             }
         },
-        error: onAjaxError
+        error: displayErrorIfNotImplemented($container)
     });
 }
 

@@ -54,7 +54,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 
 /* PROOF */
 .proof.complete { background:#CFC; }
-.proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: auto; }
+.proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: 0 auto 1em; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
 .proof td { padding:0; border:0; margin:0; text-align:center; }
@@ -62,8 +62,9 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .sibling { display: inline-block; vertical-align:bottom; }
 .proof .tagBox { color: #333; vertical-align: top; width: 1.5em; padding-right:2em; }
 .proof .tagBox .tag { position:relative; top:-0.6em; text-align: left; margin-left: 0.2em; font-size: 0.9em; }
-.proof .tagBox .contraction { top:-0.4em; }
-.proof .inference { border-top: 1px solid #000; }
+.proof .tagBox .contraction, .proof .tagBox .unfold_litt, .proof .tagBox .unfold_dual { top: -0.4em; }
+.proof .solid-line { border-top: 1px solid #000; }
+.proof .dashed-line { border-top: 1px dashed #000; }
 .proof .turnstile { margin: 0 0.3em; user-select: none; }
 .turnstile.not-provable { color: red; }
 .turnstile.not-auto-provable { color: orange; }
@@ -86,6 +87,16 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; }
 img.export:hover, .option-info:hover { cursor: pointer; }
 .option-info { font-weight: bold; }
+
+.notation-bar { margin-top: 1em; }
+.notation-label, .notation-add, .notation-new-button { color: #777; vertical-align: middle; }
+.notation-add, .notation-new-button { cursor: pointer; }
+.notation-add { margin-left: 0.5em; font-size: 1.3em; font-weight: bold; }
+.notation-new-form { display: block; }
+.notation-new-form input[type=text] { border: dotted 1px #777; border-radius: 0.3em; padding: 0.1em 0.3em; }
+.notation-new-input-name { text-align: center; }
+.notation-new-button { margin-left: 0.3em; }
+.notation-line { cursor: pointer; display: table; margin: 0.1em auto; }
 
 .dialog { text-align: justify; }
 #export-dialog table td { vertical-align: top; padding-top: 0.3em; }

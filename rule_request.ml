@@ -16,7 +16,9 @@ type rule_request =
     | Weakening of int
     | Contraction of int
     | Exchange of int list * int list
-    | Cut of formula * int;;
+    | Cut of formula * int
+    | Unfold_litt of int
+    | Unfold_dual of int;;
 
 
 (* JSON -> RULE *)
@@ -71,6 +73,8 @@ let from_json rule_request_as_json =
         | "contraction" -> Contraction (get_int rule_request_as_json "formulaPosition")
         | "exchange" -> Exchange (get_int_list rule_request_as_json "displayPermutation", get_int_list rule_request_as_json "permutation")
         | "cut" -> Cut (get_formula rule_request_as_json "formula", get_int rule_request_as_json "formulaPosition")
+        | "unfold_litt" -> Unfold_litt (get_int rule_request_as_json "formulaPosition")
+        | "unfold_dual" -> Unfold_dual (get_int rule_request_as_json "formulaPosition")
         | _ -> raise (Json_exception ("unknown rule '" ^ rule ^ "'"));;
 
 (* RULE -> JSON *)
@@ -119,5 +123,11 @@ let to_json = function
     | Cut (formula, formula_position) -> `Assoc [
         ("rule", `String "cut");
         ("formula", Raw_sequent.formula_to_json formula);
-        ("formulaPosition", `Int formula_position)
-    ];;
+        ("formulaPosition", `Int formula_position)]
+    | Unfold_litt formula_position -> `Assoc [
+        ("rule", `String "unfold_litt");
+        ("formulaPosition", `Int formula_position)]
+    | Unfold_dual formula_position -> `Assoc [
+        ("rule", `String "unfold_dual");
+        ("formulaPosition", `Int formula_position)]
+    ;;

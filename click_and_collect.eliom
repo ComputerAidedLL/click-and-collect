@@ -145,6 +145,26 @@ let _ =
             ] in
         Lwt.return (Yojson.to_string response, "application/json"));;
 
+(*****************)
+(* IS VALID LITT *)
+(*****************)
+
+(* Service declaration *)
+let is_valid_litt_service =
+  Eliom_service.create
+    ~path:(Eliom_service.Path ["is_valid_litt"])
+    ~meth:(Eliom_service.Get (Eliom_parameter.string "litt"))
+    ()
+
+(* Service definition *)
+let _ =
+  Eliom_registration.String.register
+    ~service:is_valid_litt_service
+    (fun formula_as_string () ->
+      let is_valid = safe_is_valid_litt formula_as_string in
+      let response = `Assoc [("is_valid", `Bool is_valid)] in
+      Lwt.return (Yojson.to_string response, "application/json"));;
+
 
 (**************)
 (* APPLY RULE *)
@@ -182,9 +202,9 @@ let export_as_coq_service =
 (* Service definition *)
 let export_as_coq_handler () (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let technical_success, string_response = export_as_coq request_as_json in
-        if technical_success then send_file ~code:200 string_response "text/plain"
-        else send_json ~code:400 string_response)
+        let http_code, string_response = export_as_coq request_as_json in
+        if http_code = 200 then send_file ~code:200 string_response "text/plain"
+        else send_json ~code:http_code string_response)
 
 let () =
   Eliom_registration.Any.register export_as_coq_service export_as_coq_handler;
@@ -271,9 +291,8 @@ let auto_prove_sequent_service =
 (* Service definition *)
 let auto_prove_sequent_handler () (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let technical_success, json_response = auto_prove_sequent request_as_json in
-        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
-        else send_json ~code:400 (Yojson.Basic.to_string json_response))
+        let http_code, json_response = auto_prove_sequent request_as_json in
+        send_json ~code:http_code (Yojson.Basic.to_string json_response))
 
 let () =
   Eliom_registration.Any.register auto_prove_sequent_service auto_prove_sequent_handler;
@@ -320,11 +339,8 @@ let _ =
     (fun compressed_proof () ->
       let success, result = uncompress_proof compressed_proof in
         let response =
-            if success then `Assoc [
-                ("is_valid", `Bool true);
-                ("proof", result)
-            ] else `Assoc [
-                ("is_valid", `Bool false);
+            if success then result
+            else `Assoc [
                 ("error_message", result)
             ] in
         Lwt.return (Yojson.to_string response, "application/json"));;

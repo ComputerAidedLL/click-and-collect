@@ -14,7 +14,9 @@ let apply_rule_with_exceptions request_as_json =
     let rule_request = Rule_request.from_json rule_request_as_json in
     let sequent_as_json = get_key request_as_json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
-    Proof.from_sequent_and_rule_request sequent rule_request
+    let notations_as_json = get_key request_as_json "notations" in
+    let notations = Notations.from_json notations_as_json in
+    Proof.from_sequent_and_rule_request sequent notations rule_request
 
 let apply_rule request_as_json =
     try let proof = apply_rule_with_exceptions request_as_json in
@@ -27,6 +29,7 @@ let apply_rule request_as_json =
         | Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Rule_request.Json_exception m -> false, `String ("Bad rule json: " ^ m)
         | Raw_sequent.Json_exception m -> false, `String ("Bad sequent json: " ^ m)
+        | Notations.Json_exception m -> false, `String ("Bad notations json: " ^ m)
         | Proof.Rule_exception (is_pedagogic, m) -> if is_pedagogic
             then true, `Assoc [("success", `Bool false); ("errorMessage", `String m)]
             else false, `String m

@@ -20,3 +20,10 @@ let safe_parse_formula formula_as_string =
             || Printexc.to_string t = "Failure(\"lexing: empty token\")" then
         false, `String "Syntax error: please read the syntax rules."
         else false, `String ("Technical error: " ^ Printexc.to_string t);;
+
+let safe_is_valid_litt litt =
+    try let sequent = ll_parse litt in
+        match sequent with
+        | [Litt s] -> true
+        | _ -> false
+    with _ -> false;;

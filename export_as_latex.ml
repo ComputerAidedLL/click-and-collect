@@ -26,7 +26,8 @@ let proof_to_latex implicit_exchange proof =
         ^ "\\newcommand*{\\ocv}[1]{\\infer{1}[\\ensuremath{\\oc}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\wkv}[1]{\\infer{1}[\\ensuremath{?\\mathit{w}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\cov}[1]{\\infer{1}[\\ensuremath{?\\mathit{c}}]{\\vdash #1}}\n"
-        ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n\n"
+        ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n"
+        ^ "\\newcommand*{\\defv}[1]{\\infer{1}[\\ensuremath{\\mathit{def}}]{\\vdash #1}}\n\n"
         ^ "\\newcommand{\\adaptpage}[1]{\n"
         ^ "  \\setlength{\\hoffset}{-0.7in}\n"
         ^ "  \\setlength{\\voffset}{-0.7in}\n"
@@ -99,7 +100,8 @@ let get_png_file proof_as_latex =
     read_and_remove_file png_file_name
 
 let export_as_latex implicit_exchange format request_as_json =
-    try let proof = Proof.from_json request_as_json in
+    try let proof_with_notations = Proof_with_notations.from_json request_as_json in
+        let proof = proof_with_notations.proof in
         if format = "ascii" then true, to_ascii implicit_exchange proof, "text/plain"
         else if format = "utf8" then true, to_utf8 implicit_exchange proof, "text/plain"
         else let proof_as_latex = proof_to_latex implicit_exchange proof in
@@ -107,7 +109,4 @@ let export_as_latex implicit_exchange format request_as_json =
         else if format = "pdf" then true, get_pdf_file proof_as_latex, "application/pdf"
         else if format = "png" then true, get_png_file proof_as_latex, "image/png"
         else false, "Unknown format: " ^ format, ""
-    with Proof.Json_exception m -> false, "Bad proof json: " ^ m, ""
-        | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m, ""
-        | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m, ""
-        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m, "";;
+    with Proof_with_notations.Json_exception m -> false, "Bad request: " ^ m, "";;

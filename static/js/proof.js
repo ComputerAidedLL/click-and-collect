@@ -18,7 +18,9 @@ const RULES = {
     'contraction': '?<span class="italic">c</span>',
     'weakening': '?<span class="italic">w</span>',
     'exchange': '<span class="italic">ech</span>',
-    'cut': '<span class="italic">cut</span>'
+    'cut': '<span class="italic">cut</span>',
+    'unfold_litt': '<span class="italic">def</span>',
+    'unfold_dual': '<span class="italic">def</span>'
 };
 
 const ABBREVIATIONS = {
@@ -41,12 +43,14 @@ const ABBREVIATIONS = {
 function initProof(proofAsJson, $container, options = {}) {
     $container.data('options', options);
 
-    let $div = $('<div>', {'class': 'proof'});
-    $container.append($div);
-    createSubProof(proofAsJson, $div, options);
+    let $proofDiv = $('<div>', {'class': 'proof'});
+    $container.append($proofDiv);
+    createSubProof(proofAsJson, $proofDiv, options);
 
-    if (options.exportButtons) {
-        createExportBar($container);
+    if (options.notations) {
+        options.notations.formulasAsString = options.notations.formulasAsString || [];
+        options.notations.formulas = [];
+        createNotationBar($container, options.notations.formulasAsString);
     }
 
     if (options.autoReverse) {
@@ -73,6 +77,10 @@ function initProof(proofAsJson, $container, options = {}) {
         }, options.cutMode.dialog);
 
         toggleCutMode($container, options.cutMode.value);
+    }
+
+    if (options.exportButtons) {
+        createExportBar($container);
     }
 }
 
@@ -163,11 +171,13 @@ function applyRule(ruleRequest, $sequentTable) {
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
+    let notations = getNotations($container);
+
     $.ajax({
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify({ ruleRequest, sequent })),
+        data: compressJson(JSON.stringify({ ruleRequest, sequent, notations })),
         success: function(data)
         {
             if (data.success === true) {
@@ -198,7 +208,8 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
 
     // Add line
     let $td = $sequentTable.find('div.sequent').closest('td');
-    $td.addClass('inference');
+    let dashedLine = ruleRequest.rule === 'unfold_litt' || ruleRequest.rule === 'unfold_dual';
+    $td.addClass(dashedLine ? 'dashed-line' : 'solid-line');
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': `tag ${ruleRequest.rule}`}).html(RULES[ruleRequest.rule]);
@@ -239,7 +250,8 @@ function undoRule($sequentTable) {
 
     // Remove line
     let $td = $sequentTable.find('div.sequent').closest('td');
-    $td.removeClass('inference');
+    $td.removeClass('solid-line');
+    $td.removeClass('dashed-line');
 
     // Remove rule symbol
     $td.next('.tagBox').html('');
@@ -498,13 +510,14 @@ function createExportButton(logoPath, title, onClick) {
 
 function exportAsCoq($container) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/export_as_coq',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
+        data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
             let a = document.createElement('a');
@@ -518,7 +531,7 @@ function exportAsCoq($container) {
             a.remove();
             window.URL.revokeObjectURL(url);
         },
-        error: onAjaxError
+        error: displayErrorIfNotImplemented($container)
     });
 }
 
@@ -550,7 +563,8 @@ function onDownloadClick(exportDialog, $container) {
 
 function exportAsLatex($container, format, implicitExchange) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     let httpRequest = new XMLHttpRequest();
     httpRequest.open('POST', `/export_as_latex?format=${format}&implicitExchange=${implicitExchange}`, true);
@@ -582,7 +596,7 @@ function exportAsLatex($container, format, implicitExchange) {
         onError(httpRequest, event)
     };
 
-    httpRequest.send(compressJson(JSON.stringify(proofAsJson)));
+    httpRequest.send(compressJson(JSON.stringify({ proof, notations })));
 }
 
 // ***********
@@ -591,13 +605,14 @@ function exportAsLatex($container, format, implicitExchange) {
 
 function shareProof($container) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/compress_proof',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
+        data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
             addQueryParamInUrl('p', data, "Add compressed_proof in URL");
@@ -623,12 +638,14 @@ function checkProvability($sequentTable) {
 
     $sequentTable.data('notProvable', false);
     let sequent = $sequentTable.data('sequentWithoutPermutation');
+    let $container = $sequentTable.closest('.proof-container');
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/is_sequent_provable',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({ sequent, notations })),
         success: function(data)
         {
             if (data['is_provable'] === false) {
@@ -637,6 +654,37 @@ function checkProvability($sequentTable) {
         },
         error: onAjaxError
     });
+}
+
+function recheckSequentsProvability($container, onlyStatus) {
+    let $mainSequentTable = $container.find('table').last();
+    recRecheckSequentsProvability($mainSequentTable, onlyStatus);
+}
+
+function recRecheckSequentsProvability($sequentTable, onlyStatus) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
+    if (ruleRequest !== null) {
+        let $prev = $sequentTable.prev();
+
+        if ($prev.length) {
+            if ($prev.prop('tagName') === 'TABLE') {
+                recRecheckSequentsProvability($prev, onlyStatus);
+            } else {
+                $prev.children('div.sibling').each(function (i, sibling) {
+                    let $siblingTable = $(sibling).children('table').last();
+                    recRecheckSequentsProvability($siblingTable, onlyStatus);
+                })
+            }
+        }
+    }
+
+    if ((onlyStatus === 'notProvable' && $sequentTable.data('notProvable') === true)
+        || (onlyStatus === 'provable' && $sequentTable.data('notProvable') === false)
+        || (onlyStatus !== 'notProvable' && onlyStatus !== 'provable')) {
+        undoMarkAsNotProvable($sequentTable);
+        $sequentTable.data('notProvable', null);
+        checkProvability($sequentTable);
+    }
 }
 
 function recMarkAsNotProvable($sequentTable) {
@@ -785,12 +833,15 @@ function openCutPopup(onFormulaSuccessCallback) {
     $cutFormulaDialog.find('input' + '[type=submit]').off('click')
         .on('click', function () {
             let formulaAsString = $textInput.val();
-            parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $cutFormulaDialog);
+            parseFormulaAsString(formulaAsString, function (formula) {
+                $cutFormulaDialog.dialog('close');
+                onFormulaSuccessCallback(formula);
+            }, $cutFormulaDialog);
         })
     $cutFormulaDialog.dialog('open');
 }
 
-function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $dialog) {
+function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $container) {
     $.ajax({
         type: 'GET',
         url: '/parse_formula',
@@ -798,16 +849,260 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $dialog
         success: function(data)
         {
             if (data['is_valid']) {
-                $dialog.dialog('close');
                 onFormulaSuccessCallback(data['formula']);
             } else {
-                displayPedagogicError(data['error_message'], $dialog);
+                displayPedagogicError(data['error_message'], $container);
             }
         },
         error: onAjaxError
     });
 }
 
+
+// *********
+// NOTATIONS
+// *********
+
+function createNotationBar($container, formulasAsString) {
+    let $notationContainer = $('<div>');
+    let $notationBar = $('<div>', {'class': 'notation-bar'});
+    $notationContainer.append($notationBar
+        .append($('<span>', {'class': 'notation-label'}).text('Add notation'))
+        .append($('<span>', {'class': 'notation-add'})
+            .text('+')
+            .on('click', function () {
+                let $form = createNotationForm(null, null);
+                $form.insertBefore($notationBar);
+            })));
+    $container.append($notationContainer);
+
+    for (let [notationName, notationValue] of formulasAsString) {
+        let $form = createNotationForm(notationName, notationValue);
+        $form.insertBefore($notationBar);
+        $form.submit();
+    }
+}
+function createNotationForm(defaultName, defaultFormulaAsString) {
+    let editMode = !!defaultName;
+
+    let $form = $('<form>')
+        .addClass('notation-new-form')
+        .append($('<input type="text" name="notationName" size="1">')
+            .addClass('notation-new-input-name')
+            .val(defaultName))
+        .append($('<span>', {'class': 'notation-new-label'}).text('::='))
+        .append($('<input type="text" name="notationFormulaAsString">')
+            .val(defaultFormulaAsString));
+    $form.append($('<span>', {'class': 'notation-new-button'})
+        .text('✓')
+        .on('click', function () { submitNotation($form, editMode); }));
+    $form.append($('<span>', {'class': 'notation-new-button'})
+        .text('⨯')
+        .on('click', function () { removeNotationForm($form, editMode); }));
+    $form.append('<input type="submit" style="visibility: hidden;position: absolute;" />');
+    $form.on('submit', function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        submitNotation($form, editMode);
+    });
+
+    if (editMode) {
+        $form.addClass('notation-item');
+    }
+
+    return $form;
+}
+
+function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) {
+    $.ajax({
+        type: 'GET',
+        url: '/is_valid_litt',
+        data: { litt: notationName },
+        success: function(data)
+        {
+            if (data['is_valid']) {
+                callbackIfValid();
+            } else {
+                callbackIfNotValid();
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+function submitNotation($form, editMode) {
+    let notationName = $form.find('input[name=notationName]').val();
+
+    if (!editMode) {
+        $form.addClass('notation-item');
+    }
+    let position = $form.parent().children('.notation-item').index($form);
+
+    // For new notation name, we check that name not already exists
+    if (!editMode || notationName !== getNotationNameByPosition($form, position)) {
+        isValidNotationName(notationName, function () {
+            if (getNotationByName($form, notationName) !== null) {
+                displayPedagogicError(`Notation ${notationName} already exists.`, $form);
+            } else {
+                processFormulaAsString($form, notationName, position, editMode);
+            }
+        }, function () {
+            displayPedagogicError(`Notation ${notationName} is not a valid litteral, please read the syntax rules.`, $form);
+        });
+    } else {
+        processFormulaAsString($form, notationName, position, editMode);
+    }
+}
+
+function processFormulaAsString($form, notationName, position, editMode) {
+    let notationFormulaAsString = $form.find('input[name=notationFormulaAsString]').val();
+
+    // For notation edition, we don't parse notationFormulaAsString if it hasn't change
+    if (editMode) {
+        let cachedFormula = getCachedFormula($form, position, notationFormulaAsString);
+        if (cachedFormula !== null) {
+            addNotation($form, notationName, notationFormulaAsString, cachedFormula, position, editMode);
+
+            return;
+        }
+    }
+
+    parseFormulaAsString(notationFormulaAsString, function(formula) {
+        addNotation($form, notationName, notationFormulaAsString, formula, position, editMode);
+    }, $form);
+}
+
+function addNotation($form, notationName, notationFormulaAsString, notationFormula, position, editMode) {
+    // Save notation
+    if (!editMode) {
+        insertNewNotation($form, position, notationName, notationFormulaAsString, notationFormula);
+    } else {
+        setNotationByPosition($form, position, notationName, notationFormulaAsString, notationFormula);
+    }
+
+    // Display line
+    let $notationLine = createNotationLine(notationName, notationFormulaAsString, notationFormula);
+    $form.replaceWith($notationLine);
+}
+
+function createNotationLine(notationName, notationFormulaAsString, notationFormula) {
+    let $notationLine = $('<div>', {'class': 'notation-line'})
+        .addClass('notation-item')
+        .data('notationName', notationName)
+        .data('notationFormulaAsString', notationFormulaAsString)
+        .data('notationFormula', notationFormula)
+        .append($('<span>').text(notationName))
+        .append($('<span>').text(' ::= '))
+        .append($('<span>').html(createFormulaHTML(notationFormula, true)));
+    $notationLine.on('click', function() { editNotationLine($notationLine); })
+
+    return $notationLine;
+}
+
+function removeNotationForm($form, editMode) {
+    if (editMode) {
+        let position = $form.parent().children('.notation-item').index($form);
+        removeNotationByPosition($form, position);
+    }
+
+    $form.remove();
+}
+
+function editNotationLine($notationLine) {
+    let $form = createNotationForm($notationLine.data('notationName'), $notationLine.data('notationFormulaAsString'));
+    $notationLine.replaceWith($form);
+}
+
+function getNotationByName($e, name) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    if (!options.notations) {
+        return null;
+    }
+
+    for (let [notationName, notationFormulaAsString] of options.notations.formulasAsString) {
+        if (name === notationName) {
+            return notationFormulaAsString;
+        }
+    }
+
+    return null;
+}
+
+function getNotationNameByPosition($e, position) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    return options.notations.formulasAsString[position][0];
+}
+
+function getCachedFormula($e, position, formulaAsString) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    if (formulaAsString === options.notations.formulasAsString[position][1]
+        && options.notations.formulas.length > position) {
+        return options.notations.formulas[position][1];
+    }
+
+    return null;
+}
+
+function insertNewNotation($e, position, name, formulaAsString, formula) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    if (position === options.notations.formulasAsString.length) {
+        options.notations.formulasAsString.push([name, formulaAsString]);
+        options.notations.formulas.push([name, formula]);
+        options.notations.onAdd([name, formulaAsString]);
+    } else {
+        options.notations.formulasAsString.splice(position, 0, [name, formulaAsString]);
+        options.notations.formulas.splice(position, 0, [name, formula]);
+        options.notations.onUpdate(options.notations.formulasAsString);
+    }
+
+    $container.data('options', options);
+    recheckSequentsProvability($container, 'notProbable');
+}
+
+function setNotationByPosition($e, position, name, formulaAsString, formula) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    if (name !== options.notations.formulasAsString[position][0]
+        || formulaAsString !== options.notations.formulasAsString[position][1]) {
+        options.notations.formulasAsString[position] = [name, formulaAsString];
+        $container.data('options', options);
+        options.notations.onUpdate(options.notations.formulasAsString);
+    }
+
+    if (position >= options.notations.formulas.length
+        || name !== options.notations.formulas[position][0]
+        || formula !== options.notations.formulas[position][1]) {
+        options.notations.formulas[position] = [name, formula];
+        $container.data('options', options);
+        recheckSequentsProvability($container, null);
+    }
+}
+
+function removeNotationByPosition($e, position) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    options.notations.formulasAsString.splice(position,1);
+    options.notations.formulas.splice(position,1);
+    options.notations.onUpdate(options.notations.formulasAsString);
+    $container.data('options', options);
+    recheckSequentsProvability($container, 'provable');
+}
+
+function getNotations($container) {
+    let options = $container.data('options');
+
+    if (!options.notations?.formulas) {
+        return [];
+    }
+
+    return options.notations.formulas;
+}
 
 // *****
 // UTILS
@@ -824,6 +1119,17 @@ function onAjaxError(jqXHR, textStatus, errorThrown) {
         alertText = 'Sorry, your proof exceeds the limit.';
     }
     alert(alertText);
+}
+
+function displayErrorIfNotImplemented($container) {
+    return function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status === 501) {
+            displayPedagogicError(jqXHR.responseText, $container);
+        }
+        else {
+            onAjaxError(jqXHR, textStatus, errorThrown);
+        }
+    }
 }
 
 function onError(httpRequest, event) {

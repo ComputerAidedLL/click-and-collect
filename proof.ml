@@ -19,6 +19,8 @@ type proof =
     | Contraction_proof of formula list * formula * formula list * proof
     | Exchange_proof of sequent * int list * int list * proof
     | Cut_proof of formula list * formula * formula list * proof * proof
+    | Unfold_litt_proof of formula list * string * formula list * proof
+    | Unfold_dual_proof of formula list * string * formula list * proof
     | Hypothesis_proof of sequent;;
 
 
@@ -59,6 +61,8 @@ let get_premises = function
     | Contraction_proof (_, _, _, p) -> [p]
     | Exchange_proof (_, _, _, p) -> [p]
     | Cut_proof (_, _, _, p1, p2) -> [p1; p2]
+    | Unfold_litt_proof (_, _, _, p) -> [p]
+    | Unfold_dual_proof (_, _, _, p) -> [p]
     | Hypothesis_proof _ -> raise (Failure "Can not get premises of hypothesis");;
 
 let set_premises proof premises = match proof, premises with
@@ -78,6 +82,8 @@ let set_premises proof premises = match proof, premises with
     | Contraction_proof (head, e, tail, _), [p] -> Contraction_proof (head, e, tail, p)
     | Exchange_proof (sequent, display_permutation, permutation, _), [p] -> Exchange_proof (sequent, display_permutation, permutation, p)
     | Cut_proof (head, e, tail, _, _), [p1; p2] -> Cut_proof (head, e, tail, p1, p2)
+    | Unfold_litt_proof (head, s, tail, _), [p] -> Unfold_litt_proof (head, s, tail, p)
+    | Unfold_dual_proof (head, s, tail, _), [p] -> Unfold_dual_proof (head, s, tail, p)
     | Hypothesis_proof sequent, _ -> raise (Failure "Can not set premises of hypothesis")
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
@@ -100,6 +106,8 @@ let get_conclusion = function
     | Contraction_proof (head, e, tail, _) -> head @ [Whynot e] @ tail
     | Exchange_proof (sequent, _, permutation, _) -> permute sequent permutation
     | Cut_proof (head, _, tail, _, _) -> head @ tail
+    | Unfold_litt_proof (head, s, tail, _) -> head @ [Litt s] @ tail
+    | Unfold_dual_proof (head, s, tail, _) -> head @ [Dual s] @ tail
     | Hypothesis_proof sequent -> sequent;;
 
 
@@ -119,7 +127,7 @@ let rec slice l n =
     | [] -> raise (Rule_exception (false, "Argument formula_position is greater than the sequent"))
     | e :: l' -> let head, tail = slice l' (n - 1) in e::head, tail;;
 
-let from_sequent_and_rule_request sequent = function
+let from_sequent_and_rule_request sequent notations = function
         | Axiom -> (
             match sequent with
             | [e1; e2] -> (if dual e1 <> e2
@@ -214,10 +222,28 @@ let from_sequent_and_rule_request sequent = function
         | Cut (formula, n) -> (
             let head, tail = slice sequent n in
             Cut_proof (head, formula, tail, Hypothesis_proof (head @ [formula]), Hypothesis_proof ([dual formula] @ tail))
+        )
+        | Unfold_litt n -> (
+            let head, formula, tail = head_formula_tail n sequent in
+            match formula with
+            | Litt s -> begin
+                try let definition = List.assoc s notations in
+                Unfold_litt_proof (head, s, tail, Hypothesis_proof (head @ [definition] @ tail))
+                with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this litt as it does not belong to definition")) end
+            | _ -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this formula"))
+        )
+        | Unfold_dual n -> (
+            let head, formula, tail = head_formula_tail n sequent in
+            match formula with
+            | Dual s -> begin
+                try let definition = List.assoc s notations in
+                Unfold_dual_proof (head, s, tail, Hypothesis_proof (head @ [dual definition] @ tail))
+                with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this litt as it does not belong to definition")) end
+            | _ -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this formula"))
         );;
 
-let from_sequent_and_rule_request_and_premises sequent rule_request premises =
-    let proof = from_sequent_and_rule_request sequent rule_request in
+let from_sequent_and_rule_request_and_premises sequent notations rule_request premises =
+    let proof = from_sequent_and_rule_request sequent notations rule_request in
     let expected_premises_conclusion = List.map get_conclusion (get_premises proof) in
     let given_premises_conclusion = List.map get_conclusion premises in
     if expected_premises_conclusion <> given_premises_conclusion then
@@ -233,7 +259,8 @@ let rec get_formula_position condition = function
     | f :: tail -> if condition f then 0 else 1 + (get_formula_position condition tail);;
 
 let try_rule_request sequent rule_request =
-    try from_sequent_and_rule_request sequent rule_request
+    (* Auto-reverse ignores notations *)
+    try from_sequent_and_rule_request sequent [] rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
 let apply_reversible_rule proof =
@@ -301,6 +328,8 @@ let get_rule_request = function
     | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
     | Exchange_proof (_, display_permutation, permutation, _) -> Exchange (display_permutation, permutation)
     | Cut_proof (head, formula, _, _, _) -> Cut (formula, List.length head)
+    | Unfold_litt_proof (head, _, _, _) -> Unfold_litt (List.length head)
+    | Unfold_dual_proof (head, _, _, _) -> Unfold_dual (List.length head)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
@@ -326,7 +355,7 @@ let get_json_list json key =
     try Yojson.Basic.Util.to_list value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"));;
 
-let rec from_json json =
+let rec from_json notations json =
     let sequent_as_json = required_field json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
     let applied_ruled_as_json = optional_field json "appliedRule" in
@@ -335,8 +364,8 @@ let rec from_json json =
         | _ -> let rule_request_as_json = required_field applied_ruled_as_json "ruleRequest" in
             let rule_request = Rule_request.from_json rule_request_as_json in
             let premises_as_json = get_json_list applied_ruled_as_json "premises" in
-            let premises = List.map from_json premises_as_json in
-            from_sequent_and_rule_request_and_premises sequent rule_request premises;;
+            let premises = List.map (from_json notations) premises_as_json in
+            from_sequent_and_rule_request_and_premises sequent notations rule_request premises;;
 
 
 (* PROOF -> JSON *)
@@ -422,6 +451,9 @@ let rec to_coq_with_hyps_increment i = function
         let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
         let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
         coq_apply_with_args "cut_r_ext" [formula_list_to_coq head; "(" ^ formula_to_coq cut ^ ")"] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
+    (* TODO notations *)
+    | Unfold_litt_proof _ -> raise (Failure "Unfold litt not implemented yet")
+    | Unfold_dual_proof _ -> raise (Failure "Unfold dual not implemented yet")
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
 let to_coq_with_hyps = to_coq_with_hyps_increment 0
@@ -463,6 +495,8 @@ let rec to_latex_permute implicit_exchange permutation_opt proof =
                 if permutation = identity (List.length permutation) then ""
                 else (latex_apply "exv" conclusion)
     | Cut_proof (_, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "cutv" conclusion)
+    | Unfold_litt_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
+    | Unfold_dual_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 let to_latex implicit_exchange =
@@ -588,6 +622,8 @@ let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
     | Cut_proof (_, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
        ascii_apply1 premise_data "cut" conclusion
+    | Unfold_litt_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "def" conclusion
+    | Unfold_dual_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "def" conclusion
     | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
 
 let to_ascii_utf8 utf8 implicit_exchange proof =
@@ -671,6 +707,9 @@ let rec rec_commute_up_permutations proof perm =
     | Cut_proof (head, _, tail, p1, p2) ->
         let new_proof = set_premises proof [rec_commute_up_permutations p1 (identity (List.length head + 1)); rec_commute_up_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
+    (* TODO notations *)
+    | Unfold_litt_proof _ -> raise (Failure "Unfold litt not implemented yet")
+    | Unfold_dual_proof _ -> raise (Failure "Unfold dual not implemented yet")
     | Hypothesis_proof sequent -> Hypothesis_proof (permute sequent perm);;
 
 let commute_up_permutations proof =

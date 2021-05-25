@@ -27,14 +27,16 @@ let proof_to_coq proof =
     let end_proof_line = "Qed.\n\nEnd TheProof.\n" in
     Printf.sprintf "%s%s%s%s%s%s%s" header start_file_line variable_line goal_line start_proof_line proof_lines end_proof_line;;
 
+exception NotImplemented of string
+
 let export_as_coq_with_exceptions request_as_json =
-    let proof = Proof.from_json request_as_json in
-    proof_to_coq proof;;
+    let proof_with_notations = Proof_with_notations.from_json request_as_json in
+    if List.length proof_with_notations.notations > 0
+    then raise (NotImplemented "Export as coq has not been implemented yet on proof with notations.")
+    else proof_to_coq proof_with_notations.proof;;
 
 let export_as_coq request_as_json =
     try let proof_as_coq = export_as_coq_with_exceptions request_as_json in
-        true, proof_as_coq
-    with Proof.Json_exception m -> false, "Bad proof json: " ^ m
-        | Raw_sequent.Json_exception m -> false, "Bad sequent json: " ^ m
-        | Rule_request.Json_exception m -> false, "Bad rule_request json: " ^ m
-        | Proof.Rule_exception (_, m) -> false, "Invalid proof: " ^ m;;
+        200, proof_as_coq
+    with Proof_with_notations.Json_exception m -> 400, "Bad request: " ^ m
+        | NotImplemented m -> 501, m;;

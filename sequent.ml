@@ -72,6 +72,20 @@ let sort sequent =
     List.sort compare sequent;;
 
 
+let rec replace_in_formula f1 f2 = function
+    | Tensor (e1, e2) -> Tensor (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
+    | Par (e1, e2) -> Par (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
+    | With (e1, e2) -> With (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
+    | Plus (e1, e2) -> Plus (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
+    | Ofcourse e -> Ofcourse (replace_in_formula f1 f2 e)
+    | Whynot e -> Whynot (replace_in_formula f1 f2 e)
+    | f when f = f1 -> f2
+    | f -> f;;
+
+let replace_in_sequent f1 f2 sequent =
+     List.map (replace_in_formula f1 f2) sequent;;
+
+
 (* PATTERN MATCHING ON FORMULA *)
 
 let is_top = function | Top -> true | _ -> false;;
