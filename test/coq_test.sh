@@ -4,6 +4,15 @@ cp ./nanoyalla/nanoll.v .
 coqc -R . NanoYalla nanoll.v
 cp ./nanoyalla/macroll.v .
 coqc -R . NanoYalla macroll.v
+if [ "$1" = "yalla" ]
+then
+    cp ./nanoyalla/yallacut.v nanollcut.v
+else
+    cp ./nanoyalla/axiomcut.v nanollcut.v
+fi;
+coqc -R . NanoYalla nanollcut.v
+cp ./nanoyalla/macrollcut.v .
+coqc -R . NanoYalla macrollcut.v
 
 echo "Executing Coq tests..."
 
@@ -30,5 +39,9 @@ rm nanoll.*
 rm .nanoll.*
 rm macroll.*
 rm .macroll.*
+rm nanollcut.*
+rm .nanollcut.*
+rm macrollcut.*
+rm .macrollcut.*
 rm ccLLproof.*
 rm .ccLLproof.*
