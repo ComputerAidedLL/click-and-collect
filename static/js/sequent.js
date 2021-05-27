@@ -223,12 +223,6 @@ function addEventsAndStyle($li, formulaAsJson) {
             $spanForEvent.addClass('highlightableExpr');
         }
 
-        // Some hover config for tensor
-        if (ruleEvent.onclick[0] === 'tensor') {
-            $li.find('span' + '.left-formula').first().addClass('tensor-left');
-            $li.find('span' + '.right-formula').first().addClass('tensor-right');
-        }
-
         // Add click and double click events
         if (ruleEvent.onclick.length === 1) {
             // Single click
