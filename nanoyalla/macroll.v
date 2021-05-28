@@ -245,13 +245,10 @@ Defined.
 
 Ltac ax_expansion :=
   now cbn;
-  let Hd := fresh "Hd" in
+  let Hax := fresh "Hax" in
   match goal with
   | |- ll (?A :: ?B :: nil) =>
-         apply (ax_r_ext B) ||
-         apply (ex_perm_r (1 :: 0 :: nil)%nat (B :: A :: nil)), (ax_r_ext A) ||
-         (assert (A = dual B) as Hd by (now cbn; rewrite ?bidual);
-          (try rewrite Hd at 1); apply ax_r_ext)
+         assert (Hax := ax_r_ext B); cbn in Hax; rewrite ?bidual in Hax
   end.
 
 Definition one_r_ext := one_r.
