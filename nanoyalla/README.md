@@ -1,4 +1,4 @@
-# This is NanoYalla version 1.1.1
+# This is NanoYalla version 1.1.2
 
 Two different installations are possible which differ only on the treatement of cuts.
 If you have the [Yalla library v2.0.2](https://perso.ens-lyon.fr/olivier.laurent/yalla/) installed, you can use the *Yalla installation* below.

@@ -202,7 +202,7 @@ induction A as [ X | X
 cbn; rewrite ?IHA1, ?IHA2; reflexivity.
 Defined.
 
-Definition ex_perm_r p := ex_transpL (permL_of_perm p).
+Notation ex_perm_r p := (ex_transpL (permL_of_perm (p%nat))).
 
 Lemma ax_r_ext A : ll (dual A :: A :: nil).
 Proof.
