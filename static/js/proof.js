@@ -97,6 +97,7 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
         }
 
         addPremises($sequentTable,
+            proofAsJson.sequent,
             permutationBeforeRule,
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
@@ -184,7 +185,7 @@ function applyRule(ruleRequest, $sequentTable) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
                 let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
 
                 if (!isProved($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
@@ -197,12 +198,13 @@ function applyRule(ruleRequest, $sequentTable) {
     });
 }
 
-function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises, options) {
+function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRule, ruleRequest, premises, options) {
     // Undo previously applied rule if any
     undoRule($sequentTable);
 
     // Save data
     $sequentTable
+        .data('sequentWithPermutation', sequentWithPermutation)
         .data('permutationBeforeRule', permutationBeforeRule)
         .data('ruleRequest', ruleRequest);
 
@@ -244,6 +246,7 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
 function undoRule($sequentTable) {
     // Erase data
     $sequentTable
+        .data('sequentWithPermutation', null)
         .data('permutationBeforeRule', null)
         .data('ruleRequest', null)
         .data('proved', null);
@@ -346,7 +349,7 @@ function recGetProofAsJson($sequentTable) {
         let displayPermutation = getSequentPermutation($sequentTable);
         if (!isIdentitySequentPermutation(permutationBeforeRule)
             || !isIdentitySequentPermutation(displayPermutation)) {
-            let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+            let sequentWithPermutation = $sequentTable.data('sequentWithPermutation');
 
             // Permutation asked by API is from premise to conclusion, and we have the other way
             // We need to invert permutation
@@ -786,7 +789,7 @@ function autoReverseSequent($sequentTable) {
         success: function(data)
         {
             if (data.appliedRule !== null) {
-                addPremises($sequentTable, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
             }
         },
         error: onAjaxError
@@ -859,9 +862,9 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $contai
 }
 
 
-// *********
-// NOTATIONS
-// *********
+// ************
+// NOTATIONS UI
+// ************
 
 function createNotationBar($container, formulasAsString) {
     let $notationContainer = $('<div>');
@@ -876,38 +879,46 @@ function createNotationBar($container, formulasAsString) {
             })));
     $container.append($notationContainer);
 
-    for (let [notationName, notationValue] of formulasAsString) {
-        let $form = createNotationForm(notationName, notationValue);
-        $form.insertBefore($notationBar);
-        $form.submit();
+    if (formulasAsString) {
+        // Notations init
+        for (let [notationName, notationValue] of formulasAsString) {
+            let $form = createNotationForm(notationName, notationValue);
+            $form.insertBefore($notationBar);
+            $form.submit();
+        }
+
+        recheckSequentsProvability($container, 'notProvable');
     }
 }
 function createNotationForm(defaultName, defaultFormulaAsString) {
     let editMode = !!defaultName;
 
     let $form = $('<form>')
-        .addClass('notation-new-form')
-        .append($('<input type="text" name="notationName" size="1">')
+        .addClass('notation-new-form');
+
+    if (editMode) {
+        // in editMode form has to be countable to avoid shift in position
+        $form.addClass('notation-item');
+    }
+
+    $form.append($('<input type="text" name="notationName" size="1">')
             .addClass('notation-new-input-name')
             .val(defaultName))
         .append($('<span>', {'class': 'notation-new-label'}).text('::='))
         .append($('<input type="text" name="notationFormulaAsString">')
-            .val(defaultFormulaAsString));
-    $form.append($('<span>', {'class': 'notation-new-button'})
-        .text('✓')
-        .on('click', function () { submitNotation($form, editMode); }));
-    $form.append($('<span>', {'class': 'notation-new-button'})
-        .text('⨯')
-        .on('click', function () { removeNotationForm($form, editMode); }));
-    $form.append('<input type="submit" style="visibility: hidden;position: absolute;" />');
+            .val(defaultFormulaAsString))
+        .append($('<span>', {'class': 'notation-new-button'})
+            .text('✓')
+            .on('click', function () { submitNotation($form, editMode); }))
+        .append($('<span>', {'class': 'notation-new-button'})
+            .text('⨯')
+            .on('click', function () { removeNotationForm($form, editMode); }))
+        .append('<input type="submit" style="visibility: hidden;position: absolute;" />');
+
     $form.on('submit', function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
         submitNotation($form, editMode);
     });
-
-    if (editMode) {
-        $form.addClass('notation-item');
-    }
 
     return $form;
 }
@@ -932,10 +943,7 @@ function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) 
 function submitNotation($form, editMode) {
     let notationName = $form.find('input[name=notationName]').val();
 
-    if (!editMode) {
-        $form.addClass('notation-item');
-    }
-    let position = $form.parent().children('.notation-item').index($form);
+    let position = $form.prevAll('.notation-item').length;
 
     // For new notation name, we check that name not already exists
     if (!editMode || notationName !== getNotationNameByPosition($form, position)) {
@@ -986,7 +994,7 @@ function addNotation($form, notationName, notationFormulaAsString, notationFormu
 
 function createNotationLine(notationName, notationFormulaAsString, notationFormula) {
     let $notationLine = $('<div>', {'class': 'notation-line'})
-        .addClass('notation-item')
+        .addClass('notation-item') // notation line has to be countable
         .data('notationName', notationName)
         .data('notationFormulaAsString', notationFormulaAsString)
         .data('notationFormula', notationFormula)
@@ -1000,7 +1008,7 @@ function createNotationLine(notationName, notationFormulaAsString, notationFormu
 
 function removeNotationForm($form, editMode) {
     if (editMode) {
-        let position = $form.parent().children('.notation-item').index($form);
+        let position = $form.prevAll('.notation-item').length;
         removeNotationByPosition($form, position);
     }
 
@@ -1010,6 +1018,20 @@ function removeNotationForm($form, editMode) {
 function editNotationLine($notationLine) {
     let $form = createNotationForm($notationLine.data('notationName'), $notationLine.data('notationFormulaAsString'));
     $notationLine.replaceWith($form);
+}
+
+// **************
+// NOTATIONS DATA
+// **************
+
+function getNotations($container) {
+    let options = $container.data('options');
+
+    if (!options.notations?.formulas) {
+        return [];
+    }
+
+    return options.notations.formulas;
 }
 
 function getNotationByName($e, name) {
@@ -1061,7 +1083,7 @@ function insertNewNotation($e, position, name, formulaAsString, formula) {
     }
 
     $container.data('options', options);
-    recheckSequentsProvability($container, 'notProbable');
+    recheckSequentsProvability($container, 'notProvable');
 }
 
 function setNotationByPosition($e, position, name, formulaAsString, formula) {
@@ -1075,9 +1097,14 @@ function setNotationByPosition($e, position, name, formulaAsString, formula) {
         options.notations.onUpdate(options.notations.formulasAsString);
     }
 
-    if (position >= options.notations.formulas.length
-        || name !== options.notations.formulas[position][0]
+    if (position >= options.notations.formulas.length) {
+        // This case appears only at notations init
+        options.notations.formulas[position] = [name, formula];
+        $container.data('options', options);
+    } else if (name !== options.notations.formulas[position][0]
         || formula !== options.notations.formulas[position][1]) {
+        let previousName = options.notations.formulas[position][0];
+        undoRuleAtUnfold($container, previousName);
         options.notations.formulas[position] = [name, formula];
         $container.data('options', options);
         recheckSequentsProvability($container, null);
@@ -1087,6 +1114,8 @@ function setNotationByPosition($e, position, name, formulaAsString, formula) {
 function removeNotationByPosition($e, position) {
     let $container = $e.closest('.proof-container');
     let options = $container.data('options');
+    let notationName = options.notations.formulasAsString[position][0];
+    undoRuleAtUnfold($container, notationName);
     options.notations.formulasAsString.splice(position,1);
     options.notations.formulas.splice(position,1);
     options.notations.onUpdate(options.notations.formulasAsString);
@@ -1094,14 +1123,43 @@ function removeNotationByPosition($e, position) {
     recheckSequentsProvability($container, 'provable');
 }
 
-function getNotations($container) {
-    let options = $container.data('options');
+function undoRuleAtUnfold($container, notationName) {
+    let $mainSequentTable = $container.find('table').last();
+    recUndoRuleAtUnfold($mainSequentTable, notationName);
+}
 
-    if (!options.notations?.formulas) {
-        return [];
+function isUnfoldingNotation(ruleRequest, sequentWithPermutation, notationName) {
+    if (ruleRequest.rule === 'unfold_litt' || ruleRequest.rule === 'unfold_dual') {
+        let formula = sequentWithPermutation['cons'][ruleRequest.formulaPosition].value;
+        if (ruleRequest.rule === 'unfold_dual') {
+            formula = formula.value;
+        }
+        return formula === notationName;
     }
 
-    return options.notations.formulas;
+    return false;
+}
+
+function recUndoRuleAtUnfold($sequentTable, notationName) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
+    if (ruleRequest !== null) {
+        if (isUnfoldingNotation(ruleRequest, $sequentTable.data('sequentWithPermutation'), notationName)) {
+            undoRule($sequentTable);
+        } else {
+            let $prev = $sequentTable.prev();
+
+            if ($prev.length) {
+                if ($prev.prop('tagName') === 'TABLE') {
+                    recUndoRuleAtUnfold($prev, notationName);
+                } else {
+                    $prev.children('div.sibling').each(function (i, sibling) {
+                        let $siblingTable = $(sibling).children('table').last();
+                        recUndoRuleAtUnfold($siblingTable, notationName);
+                    })
+                }
+            }
+        }
+    }
 }
 
 // *****

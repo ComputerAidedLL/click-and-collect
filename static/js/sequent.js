@@ -245,7 +245,8 @@ function addEventsAndStyle($li, formulaAsJson) {
 
 function buildApplyRuleCallBack(ruleConfig, $li) {
     return function() {
-        if (ruleConfig.rule === 'axiom') {
+        let ruleConfigCopy = JSON.parse(JSON.stringify(ruleConfig)); // deep copy element
+        if (ruleConfigCopy.rule === 'axiom') {
             let formula = $li.data('formula');
 
             let atomName = formula['value'];
@@ -255,15 +256,15 @@ function buildApplyRuleCallBack(ruleConfig, $li) {
             }
 
             if (getNotationByName($li, atomName) !== null) {
-                ruleConfig.rule = `unfold_${formula['type']}`;
-                ruleConfig.needPosition = true;
+                ruleConfigCopy.rule = `unfold_${formula['type']}`;
+                ruleConfigCopy.needPosition = true;
             }
         }
 
         let $sequentTable = $li.closest('table');
-        let ruleRequest = { rule: ruleConfig.rule };
+        let ruleRequest = { rule: ruleConfigCopy.rule };
 
-        if (ruleConfig.needPosition) {
+        if (ruleConfigCopy.needPosition) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
         }
 
