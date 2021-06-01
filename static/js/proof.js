@@ -990,7 +990,7 @@ function createNotationLine(notationName, notationFormulaAsString, notationFormu
         .data('notationName', notationName)
         .data('notationFormulaAsString', notationFormulaAsString)
         .data('notationFormula', notationFormula)
-        .append($('<span>').text(notationName))
+        .append($('<span>').html(createLittHTML(notationName)))
         .append($('<span>').text(' ::= '))
         .append($('<span>').html(createFormulaHTML(notationFormula, true)));
     $notationLine.on('click', function() { editNotationLine($notationLine); })

@@ -101,7 +101,7 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case 'litt':
-            return formulaAsJson.value.replace(/\d+/, digits => `<sub>${digits}</sub>`);
+            return createLittHTML(formulaAsJson.value);
 
         case 'one':
         case 'bottom':
@@ -161,6 +161,10 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             console.error('No display rule for type ' + formulaAsJson.type);
             return '';
     }
+}
+
+function createLittHTML(littName) {
+    return littName.replace(/\d+/, digits => `<sub>${digits}</sub>`);
 }
 
 // *****
