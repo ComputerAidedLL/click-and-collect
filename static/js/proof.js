@@ -886,8 +886,6 @@ function createNotationBar($container, formulasAsString) {
             $form.insertBefore($notationBar);
             $form.submit();
         }
-
-        recheckSequentsProvability($container, 'notProvable');
     }
 }
 function createNotationForm(defaultName, defaultFormulaAsString) {
@@ -1101,6 +1099,7 @@ function setNotationByPosition($e, position, name, formulaAsString, formula) {
         // This case appears only at notations init
         options.notations.formulas[position] = [name, formula];
         $container.data('options', options);
+        recheckSequentsProvability($container, 'notProvable');
     } else if (name !== options.notations.formulas[position][0]
         || formula !== options.notations.formulas[position][1]) {
         let previousName = options.notations.formulas[position][0];
