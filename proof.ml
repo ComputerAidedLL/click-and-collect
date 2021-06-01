@@ -366,7 +366,7 @@ let coq_apply_with_args coq_rule args =
     Printf.sprintf "apply (%s %s); cbn.\n" coq_rule args_as_string;;
 
 let permutation_to_coq permutation =
-    Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation)) ^ "%nat";;
+    Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
 
 let indent_line line =
     "  " ^ line;;
