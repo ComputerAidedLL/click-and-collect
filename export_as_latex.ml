@@ -27,7 +27,7 @@ let proof_to_latex implicit_exchange proof =
         ^ "\\newcommand*{\\wkv}[1]{\\infer{1}[\\ensuremath{?\\mathit{w}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\cov}[1]{\\infer{1}[\\ensuremath{?\\mathit{c}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\dev}[1]{\\infer{1}[\\ensuremath{?\\mathit{d}}]{\\vdash #1}}\n"
-        ^ "\\newcommand*{\\defv}[1]{\\infer{1}[\\ensuremath{\\mathit{def}}]{\\vdash #1}}\n\n"
+        ^ "\\newcommand*{\\defv}[1]{\\infer[dashed]{1}[\\ensuremath{\\mathit{def}}]{\\vdash #1}}\n\n"
         ^ "\\newcommand{\\adaptpage}[1]{\n"
         ^ "  \\setlength{\\hoffset}{-0.7in}\n"
         ^ "  \\setlength{\\voffset}{-0.7in}\n"

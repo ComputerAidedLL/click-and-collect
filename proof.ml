@@ -511,11 +511,6 @@ let to_latex implicit_exchange =
 
 type proof_text_list = int * int * string list
 
-let rec string_repeat n s =
-  match n with
-  | 0 -> ""
-  | k -> s ^ (string_repeat (k-1) s)
-
 let left_shift_proof_text n =
   List.map (fun x -> String.make n ' ' ^ x)
 
@@ -539,21 +534,21 @@ let concat_proof_text gap (left_shift1, right_shift1, proof1) (left_shift2, righ
 
 let ascii_apply_hyp conclusion = (0, 0, [ conclusion ])
 
-let ascii_apply0 rule_name conclusion =
+let ascii_apply0 rule_symbol rule_name conclusion =
   let width = String.length conclusion in
   let rule_name_width = String.length rule_name in
   (0, 1 + rule_name_width,
-   [ Printf.sprintf "%s %s" (string_repeat width "-") rule_name;
+   [ Printf.sprintf "%s %s" (String.make width rule_symbol) rule_name;
      Printf.sprintf "%s %s" conclusion (String.make rule_name_width ' ') ])
 
-let ascii_apply1 premise_data rule_name conclusion =
+let ascii_apply1 premise_data rule_symbol rule_name conclusion =
   let left_shift, right_shift, premise_text = premise_data in
   let premise_length = proof_text_width premise_text - (left_shift + right_shift) in
   let conclusion_length = String.length conclusion in
   let rule_length = max premise_length conclusion_length in
   let rule_name_width = String.length rule_name in
   let make_rule_line left right =
-    Printf.sprintf "%s%s %s%s" (String.make left ' ') (string_repeat rule_length "-") rule_name (String.make right ' ') in
+    Printf.sprintf "%s%s %s%s" (String.make left ' ') (String.make rule_length rule_symbol) rule_name (String.make right ' ') in
   let make_conclusion_line left right =
     Printf.sprintf "%s%s%s" (String.make left ' ') conclusion (String.make right ' ') in
   if premise_length > conclusion_length then
@@ -596,34 +591,34 @@ let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
       | None -> sequent_to_ascii utf8 preconclusion
       | Some permutation -> sequent_to_ascii utf8 (permute preconclusion permutation) in
     match proof with
-    | Axiom_proof _ -> ascii_apply0 "ax" conclusion
-    | One_proof -> ascii_apply0 "1" conclusion
-    | Top_proof _ -> ascii_apply0 "T" conclusion
-    | Bottom_proof (_, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "_" conclusion
+    | Axiom_proof _ -> ascii_apply0 '-' "ax" conclusion
+    | One_proof -> ascii_apply0 '-' "1" conclusion
+    | Top_proof _ -> ascii_apply0 '-' "T" conclusion
+    | Bottom_proof (_, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "_" conclusion
     | Tensor_proof (_, _, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "*" conclusion
-    | Par_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "|" conclusion
+       ascii_apply1 premise_data '-' "*" conclusion
+    | Par_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "|" conclusion
     | With_proof (_, _, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "&" conclusion
-    | Plus_left_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+1" conclusion
-    | Plus_right_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+2" conclusion
-    | Promotion_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "!" conclusion
-    | Dereliction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?d" conclusion
-    | Weakening_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?w" conclusion
-    | Contraction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?c" conclusion
+       ascii_apply1 premise_data '-' "&" conclusion
+    | Plus_left_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "+1" conclusion
+    | Plus_right_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "+2" conclusion
+    | Promotion_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "!" conclusion
+    | Dereliction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?d" conclusion
+    | Weakening_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?w" conclusion
+    | Contraction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?c" conclusion
     | Exchange_proof (_, display_permutation, permutation, p) ->
         if implicit_exchange
             then to_ascii_list utf8 implicit_exchange (Some display_permutation) p
             else let premise_data = to_ascii_list utf8 implicit_exchange None p in
                 if permutation = identity (List.length permutation) then premise_data
-                else ascii_apply1 premise_data "ex" conclusion
+                else ascii_apply1 premise_data '-' "ex" conclusion
     | Cut_proof (_, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "cut" conclusion
-    | Unfold_litt_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "def" conclusion
-    | Unfold_dual_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "def" conclusion
+       ascii_apply1 premise_data '-' "cut" conclusion
+    | Unfold_litt_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '~' "def" conclusion
+    | Unfold_dual_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '~' "def" conclusion
     | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
 
 let to_ascii_utf8 utf8 implicit_exchange proof =
@@ -639,9 +634,10 @@ let to_utf8 implicit_exchange proof =
    (Str.global_replace (Str.regexp "|") "⅋"
    (Str.global_replace (Str.regexp "T") "⊤"
    (Str.global_replace (Str.regexp "_") "⊥"
+   (Str.global_replace (Str.regexp "~") "-"
    (Str.global_replace (Str.regexp "-") "─"
    (Str.global_replace (Str.regexp "|-") "⊢ "
-   (to_ascii_utf8 true implicit_exchange proof)))))))
+   (to_ascii_utf8 true implicit_exchange proof))))))))
 
 
 (* SIMPLIFY : COMMUTE UP PERMUTATIONS *)
