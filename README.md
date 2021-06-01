@@ -54,7 +54,7 @@ cd click-and-collect
 make test.byte
 ```
 
-Now you can visit [http://localhost:8080]() and play with click-and-collect.
+Now you can visit [http://localhost:8080](http://localhost:8080) and play with click-and-collect.
 
 ### Deploy on server
 Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
