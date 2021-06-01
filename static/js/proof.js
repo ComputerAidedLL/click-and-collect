@@ -244,12 +244,21 @@ function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRul
 }
 
 function undoRule($sequentTable) {
+    if (isProved($sequentTable)) {
+        // Mark all conclusions as provable
+        markParentSequentsAsProvable($sequentTable);
+
+        // Mark proof as incomplete
+        let $container = $sequentTable.closest('.proof-container');
+        markAsIncomplete($container);
+    }
+
     // Erase data
     $sequentTable
         .data('sequentWithPermutation', null)
         .data('permutationBeforeRule', null)
         .data('ruleRequest', null)
-        .data('proved', null);
+        .data('provabilityCheckStatus', null);
 
     // Remove line
     let $td = $sequentTable.find('div.sequent').closest('td');
@@ -264,10 +273,6 @@ function undoRule($sequentTable) {
         e.remove();
     });
     $sequentTable.removeClass('binary-rule');
-
-    // Mark proof as incomplete
-    let $container = $sequentTable.closest('.proof-container');
-    markAsIncomplete($container);
 }
 
 // ***************
@@ -413,13 +418,11 @@ function isBinary($sequentTable) {
 }
 
 function isProved($sequentTable) {
-    return $sequentTable.data('proved') === true;
+    return $sequentTable.data('status') === 'proved';
 }
 
 function markParentSequentsAsProved($sequentTable) {
-    $sequentTable.data('proved', true);
-    undoMarkAsNotProvable($sequentTable);
-    undoMarkAsNotAutoProvable($sequentTable);
+    markAsProved($sequentTable);
 
     let $parentSequentTable = getParentSequentTable($sequentTable);
     if ($parentSequentTable !== null) {
@@ -434,6 +437,15 @@ function markParentSequentsAsProved($sequentTable) {
     } else {
         let $container = $sequentTable.closest('.proof-container');
         markAsComplete($container);
+    }
+}
+
+function markParentSequentsAsProvable($sequentTable) {
+    markAsProvable($sequentTable);
+
+    let $parentSequentTable = getParentSequentTable($sequentTable);
+    if ($parentSequentTable !== null) {
+        markParentSequentsAsProvable($parentSequentTable);
     }
 }
 
@@ -635,14 +647,16 @@ function clearSavedProof() {
 // *****************
 
 function checkProvability($sequentTable) {
-    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notProvable') === false) {
+    if ($sequentTable.data('provabilityCheckStatus') === 'pending') {
+        $sequentTable.data('provabilityCheckStatus', 'needsRecheck');
         return;
     }
 
-    $sequentTable.data('notProvable', false);
     let sequent = $sequentTable.data('sequentWithoutPermutation');
     let $container = $sequentTable.closest('.proof-container');
     let notations = getNotations($container);
+
+    $sequentTable.data('provabilityCheckStatus', 'pending');
 
     $.ajax({
         type: 'POST',
@@ -651,8 +665,16 @@ function checkProvability($sequentTable) {
         data: compressJson(JSON.stringify({ sequent, notations })),
         success: function(data)
         {
+            if ($sequentTable.data('provabilityCheckStatus') === 'needsRecheck') {
+                checkProvability($sequentTable);
+                return;
+            }
+
+            $sequentTable.data('provabilityCheckStatus', null);
             if (data['is_provable'] === false) {
                 recMarkAsNotProvable($sequentTable);
+            } else {
+                markAsProvable($sequentTable);
             }
         },
         error: onAjaxError
@@ -681,11 +703,7 @@ function recRecheckSequentsProvability($sequentTable, onlyStatus) {
         }
     }
 
-    if ((onlyStatus === 'notProvable' && $sequentTable.data('notProvable') === true)
-        || (onlyStatus === 'provable' && $sequentTable.data('notProvable') === false)
-        || (onlyStatus !== 'notProvable' && onlyStatus !== 'provable')) {
-        undoMarkAsNotProvable($sequentTable);
-        $sequentTable.data('notProvable', null);
+    if (!onlyStatus || !$sequentTable.data('status') || onlyStatus === $sequentTable.data('status')) {
         checkProvability($sequentTable);
     }
 }
@@ -713,20 +731,6 @@ function isReversible(ruleRequest) {
         default:
             return false;
     }
-}
-
-function markAsNotProvable($sequentTable) {
-    $sequentTable.data('notProvable', true);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.addClass('not-provable');
-    $turnstile.attr('title', 'This sequent is not provable');
-}
-
-function undoMarkAsNotProvable($sequentTable) {
-    $sequentTable.data('notProvable', false);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.removeClass('not-provable');
-    $turnstile.removeAttr('title');
 }
 
 

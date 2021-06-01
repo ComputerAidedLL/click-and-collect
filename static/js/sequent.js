@@ -356,7 +356,8 @@ function permute(formulasWithoutPermutation, formulasPermutation) {
 // ******************
 
 function autoProveSequent($sequentTable) {
-    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notAutoProvable') === true) {
+    if ($sequentTable.data('status') === 'notProvable') {
+        // We can not autoProve a sequent whose non-provability has been verified
         return;
     }
 
@@ -401,16 +402,38 @@ function autoProveSequent($sequentTable) {
     });
 }
 
-function markAsNotAutoProvable($sequentTable) {
-    $sequentTable.data('notAutoProvable', true);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.addClass('not-auto-provable');
-    $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
-}
+// **************
+// SEQUENT STATUS
+// **************
 
-function undoMarkAsNotAutoProvable($sequentTable) {
-    $sequentTable.data('notAutoProvable', null);
+function markAsProved($sequentTable) {
+    $sequentTable.data('status', 'proved');
     let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
     $turnstile.removeClass('not-auto-provable');
     $turnstile.removeAttr('title');
+}
+
+function markAsProvable($sequentTable) {
+    $sequentTable.data('status', 'provable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
+    $turnstile.removeClass('not-auto-provable');
+    $turnstile.removeAttr('title');
+}
+
+function markAsNotProvable($sequentTable) {
+    $sequentTable.data('status', 'notProvable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.addClass('not-provable');
+    $turnstile.removeClass('not-auto-provable');
+    $turnstile.attr('title', 'This sequent is not provable');
+}
+
+function markAsNotAutoProvable($sequentTable) {
+    $sequentTable.data('status', 'notAutoProvable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
+    $turnstile.addClass('not-auto-provable');
+    $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
 }
