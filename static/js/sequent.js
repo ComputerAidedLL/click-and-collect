@@ -398,7 +398,7 @@ function autoProveSequent($sequentTable) {
                 }
             }
         },
-        error: displayErrorIfNotImplemented($container)
+        error: onAjaxError
     });
 }
 

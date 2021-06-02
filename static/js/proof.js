@@ -689,29 +689,29 @@ function checkProvability($sequentTable) {
     });
 }
 
-function recheckSequentsProvability($container, onlyStatus) {
+function recheckSequentsProvability($container, onlyStatuses) {
     let $mainSequentTable = $container.find('table').last();
-    recRecheckSequentsProvability($mainSequentTable, onlyStatus);
+    recRecheckSequentsProvability($mainSequentTable, onlyStatuses);
 }
 
-function recRecheckSequentsProvability($sequentTable, onlyStatus) {
+function recRecheckSequentsProvability($sequentTable, onlyStatuses) {
     let ruleRequest = $sequentTable.data('ruleRequest') || null;
     if (ruleRequest !== null) {
         let $prev = $sequentTable.prev();
 
         if ($prev.length) {
             if ($prev.prop('tagName') === 'TABLE') {
-                recRecheckSequentsProvability($prev, onlyStatus);
+                recRecheckSequentsProvability($prev, onlyStatuses);
             } else {
                 $prev.children('div.sibling').each(function (i, sibling) {
                     let $siblingTable = $(sibling).children('table').last();
-                    recRecheckSequentsProvability($siblingTable, onlyStatus);
+                    recRecheckSequentsProvability($siblingTable, onlyStatuses);
                 })
             }
         }
     }
 
-    if (!onlyStatus || !$sequentTable.data('status') || onlyStatus === $sequentTable.data('status')) {
+    if (!onlyStatuses || !$sequentTable.data('status') || onlyStatuses.includes($sequentTable.data('status'))) {
         checkProvability($sequentTable);
     }
 }
@@ -1112,7 +1112,7 @@ function insertNewNotation($e, position, name, formulaAsString, formula) {
     }
 
     $container.data('options', options);
-    recheckSequentsProvability($container, 'notProvable');
+    recheckSequentsProvability($container, ['notProvable']);
 }
 
 function setNotationByPosition($e, position, name, formulaAsString, formula) {
@@ -1149,7 +1149,7 @@ function removeNotationByPosition($e, position) {
     options.notations.formulas.splice(position,1);
     options.notations.onUpdate(options.notations.formulasAsString);
     $container.data('options', options);
-    recheckSequentsProvability($container, 'provable');
+    recheckSequentsProvability($container, ['provable', 'notAutoProvable']);
 }
 
 function undoRuleAtUnfold($container, notationName) {

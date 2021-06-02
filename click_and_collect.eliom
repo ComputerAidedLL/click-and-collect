@@ -291,8 +291,9 @@ let auto_prove_sequent_service =
 (* Service definition *)
 let auto_prove_sequent_handler () (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let http_code, json_response = auto_prove_sequent request_as_json in
-        send_json ~code:http_code (Yojson.Basic.to_string json_response))
+        let technical_success, json_response = auto_prove_sequent request_as_json in
+        if technical_success then send_json ~code:200 (Yojson.Basic.to_string json_response)
+        else send_json ~code:400 (Yojson.Basic.to_string json_response))
 
 let () =
   Eliom_registration.Any.register auto_prove_sequent_service auto_prove_sequent_handler;
