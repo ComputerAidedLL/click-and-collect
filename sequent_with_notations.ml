@@ -33,4 +33,4 @@ let split_cyclic_acyclic sequent_with_notations =
 let rec replace_all_notations_in_sequent sequent = function
     | [] -> sequent
     | (s, raw_formula) :: tail -> let formula = Raw_sequent.to_formula raw_formula in
-        replace_all_notations_in_sequent (replace_in_sequent (Litt s) formula (replace_in_sequent (Dual s) (dual formula) sequent)) tail
+        replace_all_notations_in_sequent (replace_in_sequent s formula sequent) tail

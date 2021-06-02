@@ -89,18 +89,19 @@ let rec count_notation notation_name = function
 let sort sequent =
     List.sort compare sequent;;
 
-let rec replace_in_formula f1 f2 = function
-    | Tensor (e1, e2) -> Tensor (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
-    | Par (e1, e2) -> Par (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
-    | With (e1, e2) -> With (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
-    | Plus (e1, e2) -> Plus (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)
-    | Ofcourse e -> Ofcourse (replace_in_formula f1 f2 e)
-    | Whynot e -> Whynot (replace_in_formula f1 f2 e)
-    | f when f = f1 -> f2
+let rec replace_in_formula alias formula = function
+    | Litt s when s = alias -> formula
+    | Dual s when s = alias -> dual formula
+    | Tensor (e1, e2) -> Tensor (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Par (e1, e2) -> Par (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | With (e1, e2) -> With (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Plus (e1, e2) -> Plus (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Ofcourse e -> Ofcourse (replace_in_formula alias formula e)
+    | Whynot e -> Whynot (replace_in_formula alias formula e)
     | f -> f;;
 
-let replace_in_sequent f1 f2 sequent =
-     List.map (replace_in_formula f1 f2) sequent;;
+let replace_in_sequent alias formula sequent =
+     List.map (replace_in_formula alias formula) sequent;;
 
 
 (* PATTERN MATCHING ON FORMULA *)
