@@ -634,7 +634,7 @@
   ],
   "call_auto_reverse": [
     {
-      "request": {"hyp":[],"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},{"t":"litt","v":"A"}]},
+      "request": {"notations":[],"sequent":{"hyp":[],"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},{"t":"litt","v":"A"}]}},
       "expected_proof": {
         "sequent":{"cons":[
           {"type":"dual","value":{"type":"litt","value":"A"}},
@@ -643,7 +643,7 @@
         "appliedRule":null}
     },
     {
-      "request": {"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"A"}]},
+      "request": {"notations":[],"sequent":{"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"A"}]}},
       "expected_proof": {
         "sequent":{"cons":[{"type":"dual","value":{"type":"litt","value":"A"}},{"type":"litt","value":"A"}]},
         "appliedRule":{
@@ -652,7 +652,7 @@
         }}
     },
     {
-      "request": {"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"}]},
+      "request": {"notations":[],"sequent":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"}]}},
       "expected_proof": {
         "sequent":{"cons":[
           {"type":"litt","value":"A"},

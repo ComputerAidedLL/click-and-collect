@@ -101,7 +101,7 @@ let call_api_apply_rule_logic_exception () =
     List.iter run_test test_samples
 
 let call_api_auto_reverse_full_response () =
-    let body_as_string = "{\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]}" in
+    let body_as_string = "{\"sequent\":{\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]},\"notations\":[]}" in
     let response_as_string = call_api_post "auto_reverse_sequent" body_as_string 200 in
     let expected_response_as_string = "{\"sequent\":{\"cons\":[{\"type\":\"par\",\"value1\":{\"type\":\"litt\",\"value\":\"a\"},\"value2\":{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"par\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}]}}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string

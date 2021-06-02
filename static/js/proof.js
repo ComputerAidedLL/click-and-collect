@@ -792,12 +792,13 @@ function autoReverseSequent($sequentTable) {
     let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/auto_reverse_sequent',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({ sequent, notations })),
         success: function(data)
         {
             if (data.appliedRule !== null) {

@@ -263,7 +263,12 @@ let try_rule_request sequent rule_request =
     try from_sequent_and_rule_request sequent [] rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
-let apply_reversible_rule proof =
+let starts_with_notation notations = function
+    | Litt s :: tail -> List.mem_assoc s notations
+    | Dual s :: tail -> List.mem_assoc s notations
+    | _ -> false;;
+
+let apply_reversible_rule notations proof =
     let sequent = get_conclusion proof in
     try try_rule_request sequent (Top (get_formula_position is_top sequent))
         with NotApplicable ->
@@ -279,16 +284,16 @@ let apply_reversible_rule proof =
         with NotApplicable ->
     try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
         with NotApplicable ->
-    try try_rule_request sequent Axiom
+    try if not (starts_with_notation notations sequent) then try_rule_request sequent Axiom else raise NotApplicable
         with NotApplicable ->
     proof;;
 
-let rec rec_apply_reversible_rule proof =
-    let new_proof = apply_reversible_rule proof in
+let rec rec_apply_reversible_rule notations proof =
+    let new_proof = apply_reversible_rule notations proof in
     match new_proof with
         | Hypothesis_proof _ -> new_proof
         | _ -> let premises = get_premises new_proof in
-            let new_premises = List.map rec_apply_reversible_rule premises in
+            let new_premises = List.map (rec_apply_reversible_rule notations) premises in
             set_premises new_proof new_premises;;
 
 (* AUTO WEAK MODE *)
