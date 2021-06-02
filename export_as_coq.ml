@@ -18,12 +18,12 @@ let proof_variables = function
 let rec proof_definitions = function
     | [] -> ""
     | (s, f) :: tail -> proof_definitions tail
-        ^ Printf.sprintf "Definition %s := %s.\n" s (Sequent.formula_to_coq f)
+        ^ Printf.sprintf "Definition %s := %s.\n" s (Sequent.formula_to_coq (Raw_sequent.to_formula f))
 
 let rec proof_hypotheses = function
     | [] -> ""
     | (s, f) :: tail -> proof_hypotheses tail
-        ^ Printf.sprintf "Hypothesis Hyp_%s : %s = %s.\n" s s (Sequent.formula_to_coq f)
+        ^ Printf.sprintf "Hypothesis Hyp_%s : %s = %s.\n" s s (Sequent.formula_to_coq (Raw_sequent.to_formula f))
 
 let list_of_intros k =
   String.concat " " (List.init k (fun n -> "Hyp" ^ (string_of_int n)))

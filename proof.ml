@@ -237,7 +237,7 @@ let from_sequent_and_rule_request sequent notations = function
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             | Litt s -> begin
-                try let definition = List.assoc s notations in
+                try let definition = Raw_sequent.to_formula (List.assoc s notations) in
                 Unfold_litt_proof (head, s, tail, Hypothesis_proof (head @ [definition] @ tail))
                 with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this litt as it does not belong to definition")) end
             | _ -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this formula"))
@@ -246,7 +246,7 @@ let from_sequent_and_rule_request sequent notations = function
             let head, formula, tail = head_formula_tail n sequent in
             match formula with
             | Dual s -> begin
-                try let definition = List.assoc s notations in
+                try let definition = Raw_sequent.to_formula (List.assoc s notations) in
                 Unfold_dual_proof (head, s, tail, Hypothesis_proof (head @ [dual definition] @ tail))
                 with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this litt as it does not belong to definition")) end
             | _ -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this formula"))

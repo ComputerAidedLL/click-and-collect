@@ -22,7 +22,7 @@ type raw_sequent = {hyp: raw_formula list; cons: raw_formula list};;
 
 (* RAW_SEQUENT -> SEQUENT *)
 
-let rec to_formula raw_formula = match raw_formula with
+let rec to_formula = function
     | One -> Sequent.One
     | Bottom -> Sequent.Bottom
     | Top -> Sequent.Top
@@ -151,3 +151,23 @@ let formula_from_json raw_formula_as_json =
 
 let formula_to_json formula =
     raw_formula_to_json (to_raw_formula formula);;
+
+(* OPERATIONS *)
+let rec get_variable_names =
+    function
+    | One -> []
+    | Bottom -> []
+    | Top -> []
+    | Zero -> []
+    | Litt x -> [x]
+    | Dual e -> get_variable_names e
+    | Tensor (e1, e2) -> get_variable_names e1 @ get_variable_names e2
+    | Par (e1, e2) -> get_variable_names e1 @ get_variable_names e2
+    | With (e1, e2) -> get_variable_names e1 @ get_variable_names e2
+    | Plus (e1, e2) -> get_variable_names e1 @ get_variable_names e2
+    | Lollipop (e1, e2) -> get_variable_names e1 @ get_variable_names e2
+    | Ofcourse e -> get_variable_names e
+    | Whynot e -> get_variable_names e;;
+
+let get_unique_variable_names raw_sequent =
+    List.sort_uniq String.compare (List.concat (List.map get_variable_names raw_sequent));;

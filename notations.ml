@@ -1,6 +1,6 @@
-open Sequent
+open Raw_sequent
 
-type notations = (string * formula) list;;
+type notations = (string * raw_formula) list;;
 
 exception Json_exception of string;;
 
@@ -8,13 +8,13 @@ let pair_from_json pair_as_json =
     try let pair_as_list = Yojson.Basic.Util.to_list pair_as_json in
         (if List.length pair_as_list <> 2 then raise (Json_exception "a notation pair must be a list of exactly two elements"));
         let notation_name = Yojson.Basic.Util.to_string (List.hd pair_as_list) in
-        let formula = Raw_sequent.formula_from_json (List.nth pair_as_list 1) in
-        notation_name, formula
+        let raw_formula = json_to_raw_formula (List.nth pair_as_list 1) in
+        notation_name, raw_formula
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception "a notation pair must be a list of a string and a formula")
 
 let pair_to_json pair =
     let notation_name, formula = pair in
-    `List [`String notation_name; Raw_sequent.formula_to_json formula]
+    `List [`String notation_name; raw_formula_to_json formula]
 
 let from_json notations_as_json =
     try List.map pair_from_json (Yojson.Basic.Util.to_list notations_as_json)
@@ -26,7 +26,7 @@ let to_json notations =
 (* VARIABLES *)
 
 let get_variable_names notations =
-    List.concat (List.map (fun (_, f) -> Sequent.get_variable_names f) notations);;
+    List.concat (List.map (fun (_, f) -> get_variable_names f) notations);;
 
 (* GET CYCLIC / ACYCLIC NOTATIONS *)
 
@@ -46,12 +46,12 @@ let get_affected_indices notations matrix variable =
     | None -> []
 
 let stack_variables notations stack notation =
-    let notation_name, formula = notation in
+    let notation_name, raw_formula = notation in
     let notation_position =
         match position_of_notation notation_name 0 notations with
         | Some n -> n
         | None -> raise (Failure "Notation not found") in
-    let variable_names = get_unique_variable_names [formula] in
+    let variable_names = get_unique_variable_names [raw_formula] in
     List.iter (stack_variable notations stack notation_position) variable_names
 
 (* Get a notation list and returns two lists of notations: *)
