@@ -45,13 +45,21 @@ function initProof(proofAsJson, $container, options = {}) {
 
     let $proofDiv = $('<div>', {'class': 'proof'});
     $container.append($proofDiv);
-    createSubProof(proofAsJson, $proofDiv, options);
 
     if (options.notations) {
-        options.notations.formulasAsString = options.notations.formulasAsString || [];
-        options.notations.formulas = [];
-        createNotationBar($container, options.notations.formulasAsString);
+        createNotationBar($container, function () {
+            buildProof(proofAsJson, $container);
+        });
+    } else {
+        buildProof(proofAsJson, $container);
     }
+}
+
+function buildProof(proofAsJson, $container) {
+    let options = $container.data('options');
+    let $proofDiv = $container.children('div.proof');
+
+    createSubProof(proofAsJson, $proofDiv, options);
 
     if (options.autoReverse) {
         createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
@@ -870,7 +878,7 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $contai
 // NOTATIONS UI
 // ************
 
-function createNotationBar($container, formulasAsString) {
+function createNotationBar($container, callback) {
     let $notationContainer = $('<div>');
     let $notationBar = $('<div>', {'class': 'notation-bar'});
     $notationContainer.append($notationBar
@@ -883,15 +891,30 @@ function createNotationBar($container, formulasAsString) {
             })));
     $container.append($notationContainer);
 
-    if (formulasAsString) {
-        // Notations init
-        for (let [notationName, notationValue] of formulasAsString) {
-            let $form = createNotationForm(notationName, notationValue);
-            $form.insertBefore($notationBar);
-            $form.submit();
-        }
-    }
+    // Init options
+    let options = $container.data('options');
+    options.notations.formulasAsString = options.notations.formulasAsString || [];
+    options.notations.formulas = [];
+    $container.data('options', options);
+    let formulasAsString = JSON.parse(JSON.stringify(options.notations.formulasAsString)); // deep copy
+    initNotations($notationBar, formulasAsString, callback);
 }
+
+function initNotations($notationBar, formulasAsString, callback) {
+    if (formulasAsString.length === 0) {
+        callback();
+
+        return;
+    }
+
+    let [notationName, formulaAsString] = formulasAsString.shift();
+    let $form = createNotationForm(notationName, formulaAsString);
+    $form.insertBefore($notationBar);
+    submitNotation($form, true, function () {
+        initNotations($notationBar, formulasAsString, callback);
+    });
+}
+
 function createNotationForm(defaultName, defaultFormulaAsString) {
     let editMode = !!defaultName;
 
@@ -911,7 +934,7 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
             .val(defaultFormulaAsString))
         .append($('<span>', {'class': 'notation-new-button'})
             .text('✓')
-            .on('click', function () { submitNotation($form, editMode); }))
+            .on('click', function () { submitNotation($form, editMode, function () {}); }))
         .append($('<span>', {'class': 'notation-new-button'})
             .text('⨯')
             .on('click', function () { removeNotationForm($form, editMode); }))
@@ -919,7 +942,7 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
 
     $form.on('submit', function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
-        submitNotation($form, editMode);
+        submitNotation($form, editMode, function () {});
     });
 
     return $form;
@@ -942,7 +965,7 @@ function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) 
     });
 }
 
-function submitNotation($form, editMode) {
+function submitNotation($form, editMode, callback) {
     let notationName = $form.find('input[name=notationName]').val();
 
     let position = $form.prevAll('.notation-item').length;
@@ -953,35 +976,35 @@ function submitNotation($form, editMode) {
             if (getNotationByName($form, notationName) !== null) {
                 displayPedagogicError(`Notation ${notationName} already exists.`, $form);
             } else {
-                processFormulaAsString($form, notationName, position, editMode);
+                processFormulaAsString($form, notationName, position, editMode, callback);
             }
         }, function () {
             displayPedagogicError(`Notation ${notationName} is not a valid litteral, please read the syntax rules.`, $form);
         });
     } else {
-        processFormulaAsString($form, notationName, position, editMode);
+        processFormulaAsString($form, notationName, position, editMode, callback);
     }
 }
 
-function processFormulaAsString($form, notationName, position, editMode) {
+function processFormulaAsString($form, notationName, position, editMode, callback) {
     let notationFormulaAsString = $form.find('input[name=notationFormulaAsString]').val();
 
     // For notation edition, we don't parse notationFormulaAsString if it hasn't change
     if (editMode) {
         let cachedFormula = getCachedFormula($form, position, notationFormulaAsString);
         if (cachedFormula !== null) {
-            addNotation($form, notationName, notationFormulaAsString, cachedFormula, position, editMode);
+            addNotation($form, notationName, notationFormulaAsString, cachedFormula, position, editMode, callback);
 
             return;
         }
     }
 
     parseFormulaAsString(notationFormulaAsString, function(formula) {
-        addNotation($form, notationName, notationFormulaAsString, formula, position, editMode);
+        addNotation($form, notationName, notationFormulaAsString, formula, position, editMode, callback);
     }, $form);
 }
 
-function addNotation($form, notationName, notationFormulaAsString, notationFormula, position, editMode) {
+function addNotation($form, notationName, notationFormulaAsString, notationFormula, position, editMode, callback) {
     // Save notation
     if (!editMode) {
         insertNewNotation($form, position, notationName, notationFormulaAsString, notationFormula);
@@ -992,6 +1015,9 @@ function addNotation($form, notationName, notationFormulaAsString, notationFormu
     // Display line
     let $notationLine = createNotationLine(notationName, notationFormulaAsString, notationFormula);
     $form.replaceWith($notationLine);
+
+    // We finally run callback
+    callback();
 }
 
 function createNotationLine(notationName, notationFormulaAsString, notationFormula) {
@@ -1103,7 +1129,6 @@ function setNotationByPosition($e, position, name, formulaAsString, formula) {
         // This case appears only at notations init
         options.notations.formulas[position] = [name, formula];
         $container.data('options', options);
-        recheckSequentsProvability($container, 'notProvable');
     } else if (name !== options.notations.formulas[position][0]
         || formula !== options.notations.formulas[position][1]) {
         let previousName = options.notations.formulas[position][0];
