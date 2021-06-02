@@ -1,7 +1,7 @@
 open Sequent
 open Notations
 
-type proof_with_notations = {sequent: sequent; notations: notations}
+type sequent_with_notations = {sequent: sequent; notations: notations}
 
 exception Json_exception of string
 
