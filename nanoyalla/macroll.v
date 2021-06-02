@@ -318,6 +318,7 @@ apply (ex_transp_middle1 nil), co_r.
 now apply (ex_transp_middle2 (wn A :: nil)), (ex_transp_middle2 nil l1).
 Defined.
 
+Ltac cbn_sequent := cbn beta iota delta[app map dual]; rewrite ?bidual.
 
 Declare Scope ll_scope.
 Bind Scope ll_scope with formula.

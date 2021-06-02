@@ -403,17 +403,16 @@ let rec to_json proof =
 (* PROOF -> COQ *)
 
 let coq_apply coq_rule =
-    Printf.sprintf "apply %s; cbn.\n" coq_rule;;
+    Printf.sprintf "apply %s; cbn_sequent.\n" coq_rule;;
 
 let coq_apply_with_args coq_rule args =
     let args_as_string = (String.concat " " args) in
-    Printf.sprintf "apply (%s %s); cbn.\n" coq_rule args_as_string;;
+    Printf.sprintf "apply (%s %s); cbn_sequent.\n" coq_rule args_as_string;;
 
-let coq_unfold_at_position cyclic_notations notation_name head is_dual =
+let coq_unfold_at_position cyclic_notations notation_name head =
     let unfold_command = if List.mem_assoc notation_name cyclic_notations then "rewrite Hyp_" else "unfold " in
     let position = Sequent.count_notation notation_name head + 1 in
-    let bidual_command = if is_dual then "; rewrite ?bidual; cbn" else "" in
-    Printf.sprintf "%s%s at %d%s.\n" unfold_command notation_name position bidual_command;;
+    Printf.sprintf "%s%s at %d; cbn_sequent.\n" unfold_command notation_name position;;
 
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
@@ -474,10 +473,10 @@ let rec to_coq_with_hyps_increment cyclic_notations i = function
         coq_apply_with_args "cut_r_ext" [formula_list_to_coq head; "(" ^ formula_to_coq cut ^ ")"] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Unfold_litt_proof (head, notation_name, _, p) ->
         let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
-        coq_unfold_at_position cyclic_notations notation_name head false ^ s, n, hyps
+        coq_unfold_at_position cyclic_notations notation_name head ^ s, n, hyps
     | Unfold_dual_proof (head, notation_name, _, p) ->
         let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
-        coq_unfold_at_position cyclic_notations notation_name head true ^ s, n, hyps
+        coq_unfold_at_position cyclic_notations notation_name head ^ s, n, hyps
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
 let to_coq_with_hyps cyclic_notations = to_coq_with_hyps_increment cyclic_notations 0
