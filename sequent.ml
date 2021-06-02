@@ -68,9 +68,26 @@ let rec get_variable_names =
 let get_unique_variable_names sequent =
     List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent));;
 
+let rec count_notation_in_formula notation_name = function
+    | One -> 0
+    | Bottom -> 0
+    | Top -> 0
+    | Zero -> 0
+    | Litt x -> 0
+    | Dual x -> 0
+    | Tensor (e1, e2) -> count_notation_in_formula notation_name e1 + count_notation_in_formula notation_name e2
+    | Par (e1, e2) -> count_notation_in_formula notation_name e1 + count_notation_in_formula notation_name e2
+    | With (e1, e2) -> count_notation_in_formula notation_name e1 + count_notation_in_formula notation_name e2
+    | Plus (e1, e2) -> count_notation_in_formula notation_name e1 + count_notation_in_formula notation_name e2
+    | Ofcourse e -> count_notation_in_formula notation_name e
+    | Whynot e -> count_notation_in_formula notation_name e;;
+
+let rec count_notation notation_name = function
+    | [] -> 0
+    | f :: tail -> count_notation_in_formula notation_name f + count_notation notation_name tail;;
+
 let sort sequent =
     List.sort compare sequent;;
-
 
 let rec replace_in_formula f1 f2 = function
     | Tensor (e1, e2) -> Tensor (replace_in_formula f1 f2 e1, replace_in_formula f1 f2 e2)

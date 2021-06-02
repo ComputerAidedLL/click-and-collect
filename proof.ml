@@ -111,6 +111,16 @@ let get_conclusion = function
     | Hypothesis_proof sequent -> sequent;;
 
 
+(* VARIABLES *)
+let rec get_variable_names proof =
+    let variables = Sequent.get_unique_variable_names (get_conclusion proof) in
+    match proof with
+        | Hypothesis_proof _ -> variables
+        | _ -> variables @ List.concat (List.map get_variable_names (get_premises proof));;
+
+let get_unique_variable_names proof =
+    List.sort_uniq String.compare (get_variable_names proof);;
+
 (* SEQUENT & RULE_REQUEST -> PROOF *)
 
 exception Rule_exception of bool * string;;
@@ -399,6 +409,12 @@ let coq_apply_with_args coq_rule args =
     let args_as_string = (String.concat " " args) in
     Printf.sprintf "apply (%s %s); cbn.\n" coq_rule args_as_string;;
 
+let coq_unfold_at_position cyclic_notations notation_name head is_dual =
+    let unfold_command = if List.mem_assoc notation_name cyclic_notations then "rewrite Hyp_" else "unfold " in
+    let position = Sequent.count_notation notation_name head + 1 in
+    let bidual_command = if is_dual then "; rewrite ?bidual; cbn" else "" in
+    Printf.sprintf "%s%s at %d%s.\n" unfold_command notation_name position bidual_command;;
+
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
 
@@ -413,55 +429,58 @@ let add_indent_and_brace proof_as_coq =
       | first_line :: other_lines -> first_line :: List.map indent_line other_lines
     in Printf.sprintf "{ %s }\n" (String.concat "\n" indented_lines)
 
-let rec to_coq_with_hyps_increment i = function
+let rec to_coq_with_hyps_increment cyclic_notations i = function
     | Axiom_proof _ -> "ax_expansion.\n", i, []
     | One_proof -> coq_apply "one_r_ext", i, []
     | Top_proof (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head], i, []
     | Bottom_proof (head, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Tensor_proof (head, _, _, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Par_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | With_proof (head, _, _, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Plus_left_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Plus_right_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; "(" ^ formula_to_coq e ^ ")"; formula_list_to_coq tail_without_whynot] ^ s, n, hyps
     | Dereliction_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Weakening_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Contraction_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Exchange_proof (sequent, _, permutation, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent] ^ s, n, hyps
     | Cut_proof (head, cut, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "cut_r_ext" [formula_list_to_coq head; "(" ^ formula_to_coq cut ^ ")"] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
-    (* TODO notations *)
-    | Unfold_litt_proof _ -> raise (Failure "Unfold litt not implemented yet")
-    | Unfold_dual_proof _ -> raise (Failure "Unfold dual not implemented yet")
+    | Unfold_litt_proof (head, notation_name, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
+        coq_unfold_at_position cyclic_notations notation_name head false ^ s, n, hyps
+    | Unfold_dual_proof (head, notation_name, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
+        coq_unfold_at_position cyclic_notations notation_name head true ^ s, n, hyps
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
-let to_coq_with_hyps = to_coq_with_hyps_increment 0
+let to_coq_with_hyps cyclic_notations = to_coq_with_hyps_increment cyclic_notations 0
 
 
 (* PROOF -> LATEX *)

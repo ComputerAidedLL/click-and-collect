@@ -554,7 +554,7 @@ function exportAsCoq($container) {
             a.remove();
             window.URL.revokeObjectURL(url);
         },
-        error: displayErrorIfNotImplemented($container)
+        error: onAjaxError
     });
 }
 
@@ -1206,17 +1206,6 @@ function onAjaxError(jqXHR, textStatus, errorThrown) {
         alertText = 'Sorry, your proof exceeds the limit.';
     }
     alert(alertText);
-}
-
-function displayErrorIfNotImplemented($container) {
-    return function (jqXHR, textStatus, errorThrown) {
-        if (jqXHR.status === 501) {
-            displayPedagogicError(jqXHR.responseText, $container);
-        }
-        else {
-            onAjaxError(jqXHR, textStatus, errorThrown);
-        }
-    }
 }
 
 function onError(httpRequest, event) {

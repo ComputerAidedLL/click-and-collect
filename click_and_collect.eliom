@@ -202,9 +202,9 @@ let export_as_coq_service =
 (* Service definition *)
 let export_as_coq_handler () (content_type, raw_content_opt) =
     post_handler raw_content_opt (function request_as_json ->
-        let http_code, string_response = export_as_coq request_as_json in
-        if http_code = 200 then send_file ~code:200 string_response "text/plain"
-        else send_json ~code:http_code string_response)
+        let technical_success, string_response = export_as_coq request_as_json in
+        if technical_success then send_file ~code:200 string_response "text/plain"
+        else send_json ~code:400 string_response)
 
 let () =
   Eliom_registration.Any.register export_as_coq_service export_as_coq_handler;
