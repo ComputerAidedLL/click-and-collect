@@ -131,3 +131,6 @@ let to_json = function
         ("rule", `String "unfold_dual");
         ("formulaPosition", `Int formula_position)]
     ;;
+
+let to_string rule_request =
+    Yojson.Basic.to_string (to_json rule_request);;
