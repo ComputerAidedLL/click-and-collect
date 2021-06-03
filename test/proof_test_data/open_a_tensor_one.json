@@ -1,1 +1,1 @@
-{"s":{"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"one"}}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"cons":[{"t":"litt","v":"A"}]},"ar":null},{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one","fp":0},"p":[]}}]}}
+{"notations":[],"proof":{"s":{"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"one"}}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"cons":[{"t":"litt","v":"A"}]},"ar":null},{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one","fp":0},"p":[]}}]}}}

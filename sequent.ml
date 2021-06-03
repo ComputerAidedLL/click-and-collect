@@ -68,8 +68,33 @@ let rec get_variable_names =
 let get_unique_variable_names sequent =
     List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent));;
 
+let rec count_notation_in_formula notation_name = function
+    | Litt x when x = notation_name -> 1
+    | Dual x when x = notation_name -> 1
+    | Tensor (e1, e2) | Par (e1, e2) | With (e1, e2) | Plus (e1, e2) ->
+        count_notation_in_formula notation_name e1 + count_notation_in_formula notation_name e2
+    | Ofcourse e | Whynot e -> count_notation_in_formula notation_name e
+    | _ -> 0;;
+
+let count_notation notation_name sequent =
+    List.fold_right (fun f n -> count_notation_in_formula notation_name f + n) sequent 0
+
 let sort sequent =
     List.sort compare sequent;;
+
+let rec replace_in_formula alias formula = function
+    | Litt s when s = alias -> formula
+    | Dual s when s = alias -> dual formula
+    | Tensor (e1, e2) -> Tensor (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Par (e1, e2) -> Par (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | With (e1, e2) -> With (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Plus (e1, e2) -> Plus (replace_in_formula alias formula e1, replace_in_formula alias formula e2)
+    | Ofcourse e -> Ofcourse (replace_in_formula alias formula e)
+    | Whynot e -> Whynot (replace_in_formula alias formula e)
+    | f -> f;;
+
+let replace_in_sequent alias formula sequent =
+     List.map (replace_in_formula alias formula) sequent;;
 
 
 (* PATTERN MATCHING ON FORMULA *)

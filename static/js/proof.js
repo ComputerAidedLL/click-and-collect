@@ -18,7 +18,9 @@ const RULES = {
     'contraction': '?<span class="italic">c</span>',
     'weakening': '?<span class="italic">w</span>',
     'exchange': '<span class="italic">ech</span>',
-    'cut': '<span class="italic">cut</span>'
+    'cut': '<span class="italic">cut</span>',
+    'unfold_litt': '<span class="italic">def</span>',
+    'unfold_dual': '<span class="italic">def</span>'
 };
 
 const ABBREVIATIONS = {
@@ -41,13 +43,23 @@ const ABBREVIATIONS = {
 function initProof(proofAsJson, $container, options = {}) {
     $container.data('options', options);
 
-    let $div = $('<div>', {'class': 'proof'});
-    $container.append($div);
-    createSubProof(proofAsJson, $div, options);
+    let $proofDiv = $('<div>', {'class': 'proof'});
+    $container.append($proofDiv);
 
-    if (options.exportButtons) {
-        createExportBar($container);
+    if (options.notations) {
+        createNotationBar($container, function () {
+            buildProof(proofAsJson, $container);
+        });
+    } else {
+        buildProof(proofAsJson, $container);
     }
+}
+
+function buildProof(proofAsJson, $container) {
+    let options = $container.data('options');
+    let $proofDiv = $container.children('div.proof');
+
+    createSubProof(proofAsJson, $proofDiv, options);
 
     if (options.autoReverse) {
         createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
@@ -74,6 +86,10 @@ function initProof(proofAsJson, $container, options = {}) {
 
         toggleCutMode($container, options.cutMode.value);
     }
+
+    if (options.exportButtons) {
+        createExportBar($container);
+    }
 }
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
@@ -89,6 +105,7 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
         }
 
         addPremises($sequentTable,
+            proofAsJson.sequent,
             permutationBeforeRule,
             proofAsJson.appliedRule.ruleRequest,
             proofAsJson.appliedRule.premises,
@@ -163,18 +180,20 @@ function applyRule(ruleRequest, $sequentTable) {
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
 
+    let notations = getNotations($container);
+
     $.ajax({
         type: 'POST',
         url: '/apply_rule',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify({ ruleRequest, sequent })),
+        data: compressJson(JSON.stringify({ ruleRequest, sequent, notations })),
         success: function(data)
         {
             if (data.success === true) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
                 let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentTable, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
 
                 if (!isProved($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
@@ -187,18 +206,20 @@ function applyRule(ruleRequest, $sequentTable) {
     });
 }
 
-function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises, options) {
+function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRule, ruleRequest, premises, options) {
     // Undo previously applied rule if any
     undoRule($sequentTable);
 
     // Save data
     $sequentTable
+        .data('sequentWithPermutation', sequentWithPermutation)
         .data('permutationBeforeRule', permutationBeforeRule)
         .data('ruleRequest', ruleRequest);
 
     // Add line
     let $td = $sequentTable.find('div.sequent').closest('td');
-    $td.addClass('inference');
+    let dashedLine = ruleRequest.rule === 'unfold_litt' || ruleRequest.rule === 'unfold_dual';
+    $td.addClass(dashedLine ? 'dashed-line' : 'solid-line');
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': `tag ${ruleRequest.rule}`}).html(RULES[ruleRequest.rule]);
@@ -231,15 +252,26 @@ function addPremises($sequentTable, permutationBeforeRule, ruleRequest, premises
 }
 
 function undoRule($sequentTable) {
+    if (isProved($sequentTable)) {
+        // Mark all conclusions as provable
+        markParentSequentsAsProvable($sequentTable);
+
+        // Mark proof as incomplete
+        let $container = $sequentTable.closest('.proof-container');
+        markAsIncomplete($container);
+    }
+
     // Erase data
     $sequentTable
+        .data('sequentWithPermutation', null)
         .data('permutationBeforeRule', null)
         .data('ruleRequest', null)
-        .data('proved', null);
+        .data('provabilityCheckStatus', null);
 
     // Remove line
     let $td = $sequentTable.find('div.sequent').closest('td');
-    $td.removeClass('inference');
+    $td.removeClass('solid-line');
+    $td.removeClass('dashed-line');
 
     // Remove rule symbol
     $td.next('.tagBox').html('');
@@ -249,10 +281,6 @@ function undoRule($sequentTable) {
         e.remove();
     });
     $sequentTable.removeClass('binary-rule');
-
-    // Mark proof as incomplete
-    let $container = $sequentTable.closest('.proof-container');
-    markAsIncomplete($container);
 }
 
 // ***************
@@ -334,7 +362,7 @@ function recGetProofAsJson($sequentTable) {
         let displayPermutation = getSequentPermutation($sequentTable);
         if (!isIdentitySequentPermutation(permutationBeforeRule)
             || !isIdentitySequentPermutation(displayPermutation)) {
-            let sequentWithPermutation = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+            let sequentWithPermutation = $sequentTable.data('sequentWithPermutation');
 
             // Permutation asked by API is from premise to conclusion, and we have the other way
             // We need to invert permutation
@@ -398,13 +426,11 @@ function isBinary($sequentTable) {
 }
 
 function isProved($sequentTable) {
-    return $sequentTable.data('proved') === true;
+    return $sequentTable.data('status') === 'proved';
 }
 
 function markParentSequentsAsProved($sequentTable) {
-    $sequentTable.data('proved', true);
-    undoMarkAsNotProvable($sequentTable);
-    undoMarkAsNotAutoProvable($sequentTable);
+    markAsProved($sequentTable);
 
     let $parentSequentTable = getParentSequentTable($sequentTable);
     if ($parentSequentTable !== null) {
@@ -419,6 +445,15 @@ function markParentSequentsAsProved($sequentTable) {
     } else {
         let $container = $sequentTable.closest('.proof-container');
         markAsComplete($container);
+    }
+}
+
+function markParentSequentsAsProvable($sequentTable) {
+    markAsProvable($sequentTable);
+
+    let $parentSequentTable = getParentSequentTable($sequentTable);
+    if ($parentSequentTable !== null) {
+        markParentSequentsAsProvable($parentSequentTable);
     }
 }
 
@@ -498,13 +533,14 @@ function createExportButton(logoPath, title, onClick) {
 
 function exportAsCoq($container) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/export_as_coq',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
+        data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
             let a = document.createElement('a');
@@ -550,7 +586,8 @@ function onDownloadClick(exportDialog, $container) {
 
 function exportAsLatex($container, format, implicitExchange) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     let httpRequest = new XMLHttpRequest();
     httpRequest.open('POST', `/export_as_latex?format=${format}&implicitExchange=${implicitExchange}`, true);
@@ -582,7 +619,7 @@ function exportAsLatex($container, format, implicitExchange) {
         onError(httpRequest, event)
     };
 
-    httpRequest.send(compressJson(JSON.stringify(proofAsJson)));
+    httpRequest.send(compressJson(JSON.stringify({ proof, notations })));
 }
 
 // ***********
@@ -591,13 +628,14 @@ function exportAsLatex($container, format, implicitExchange) {
 
 function shareProof($container) {
     // We get proof stored in HTML
-    let proofAsJson = getProofAsJson($container);
+    let proof = getProofAsJson($container);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/compress_proof',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(proofAsJson)),
+        data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
             addQueryParamInUrl('p', data, "Add compressed_proof in URL");
@@ -617,26 +655,65 @@ function clearSavedProof() {
 // *****************
 
 function checkProvability($sequentTable) {
-    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notProvable') === false) {
+    if ($sequentTable.data('provabilityCheckStatus') === 'pending') {
+        $sequentTable.data('provabilityCheckStatus', 'needsRecheck');
         return;
     }
 
-    $sequentTable.data('notProvable', false);
     let sequent = $sequentTable.data('sequentWithoutPermutation');
+    let $container = $sequentTable.closest('.proof-container');
+    let notations = getNotations($container);
+
+    $sequentTable.data('provabilityCheckStatus', 'pending');
 
     $.ajax({
         type: 'POST',
         url: '/is_sequent_provable',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({ sequent, notations })),
         success: function(data)
         {
+            if ($sequentTable.data('provabilityCheckStatus') === 'needsRecheck') {
+                checkProvability($sequentTable);
+                return;
+            }
+
+            $sequentTable.data('provabilityCheckStatus', null);
             if (data['is_provable'] === false) {
                 recMarkAsNotProvable($sequentTable);
+            } else {
+                markAsProvable($sequentTable);
             }
         },
         error: onAjaxError
     });
+}
+
+function recheckSequentsProvability($container, onlyStatuses) {
+    let $mainSequentTable = $container.find('table').last();
+    recRecheckSequentsProvability($mainSequentTable, onlyStatuses);
+}
+
+function recRecheckSequentsProvability($sequentTable, onlyStatuses) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
+    if (ruleRequest !== null) {
+        let $prev = $sequentTable.prev();
+
+        if ($prev.length) {
+            if ($prev.prop('tagName') === 'TABLE') {
+                recRecheckSequentsProvability($prev, onlyStatuses);
+            } else {
+                $prev.children('div.sibling').each(function (i, sibling) {
+                    let $siblingTable = $(sibling).children('table').last();
+                    recRecheckSequentsProvability($siblingTable, onlyStatuses);
+                })
+            }
+        }
+    }
+
+    if (!onlyStatuses || !$sequentTable.data('status') || onlyStatuses.includes($sequentTable.data('status'))) {
+        checkProvability($sequentTable);
+    }
 }
 
 function recMarkAsNotProvable($sequentTable) {
@@ -662,20 +739,6 @@ function isReversible(ruleRequest) {
         default:
             return false;
     }
-}
-
-function markAsNotProvable($sequentTable) {
-    $sequentTable.data('notProvable', true);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.addClass('not-provable');
-    $turnstile.attr('title', 'This sequent is not provable');
-}
-
-function undoMarkAsNotProvable($sequentTable) {
-    $sequentTable.data('notProvable', false);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.removeClass('not-provable');
-    $turnstile.removeAttr('title');
 }
 
 
@@ -729,16 +792,17 @@ function autoReverseSequent($sequentTable) {
     let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+    let notations = getNotations($container);
 
     $.ajax({
         type: 'POST',
         url: '/auto_reverse_sequent',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({ sequent, notations })),
         success: function(data)
         {
             if (data.appliedRule !== null) {
-                addPremises($sequentTable, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
             }
         },
         error: onAjaxError
@@ -785,12 +849,15 @@ function openCutPopup(onFormulaSuccessCallback) {
     $cutFormulaDialog.find('input' + '[type=submit]').off('click')
         .on('click', function () {
             let formulaAsString = $textInput.val();
-            parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $cutFormulaDialog);
+            parseFormulaAsString(formulaAsString, function (formula) {
+                $cutFormulaDialog.dialog('close');
+                onFormulaSuccessCallback(formula);
+            }, $cutFormulaDialog);
         })
     $cutFormulaDialog.dialog('open');
 }
 
-function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $dialog) {
+function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $container) {
     $.ajax({
         type: 'GET',
         url: '/parse_formula',
@@ -798,16 +865,331 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $dialog
         success: function(data)
         {
             if (data['is_valid']) {
-                $dialog.dialog('close');
                 onFormulaSuccessCallback(data['formula']);
             } else {
-                displayPedagogicError(data['error_message'], $dialog);
+                displayPedagogicError(data['error_message'], $container);
             }
         },
         error: onAjaxError
     });
 }
 
+
+// ************
+// NOTATIONS UI
+// ************
+
+function createNotationBar($container, callback) {
+    let $notationContainer = $('<div>');
+    let $notationBar = $('<div>', {'class': 'notation-bar'});
+    $notationContainer.append($notationBar
+        .append($('<span>', {'class': 'notation-label'}).text('Add notation'))
+        .append($('<span>', {'class': 'notation-add'})
+            .text('+')
+            .on('click', function () {
+                let $form = createNotationForm(null, null);
+                $form.insertBefore($notationBar);
+            })));
+    $container.append($notationContainer);
+
+    // Init options
+    let options = $container.data('options');
+    options.notations.formulasAsString = options.notations.formulasAsString || [];
+    options.notations.formulas = [];
+    $container.data('options', options);
+    let formulasAsString = JSON.parse(JSON.stringify(options.notations.formulasAsString)); // deep copy
+    initNotations($notationBar, formulasAsString, callback);
+}
+
+function initNotations($notationBar, formulasAsString, callback) {
+    if (formulasAsString.length === 0) {
+        callback();
+
+        return;
+    }
+
+    let [notationName, formulaAsString] = formulasAsString.shift();
+    let $form = createNotationForm(notationName, formulaAsString);
+    $form.insertBefore($notationBar);
+    submitNotation($form, true, function () {
+        initNotations($notationBar, formulasAsString, callback);
+    });
+}
+
+function createNotationForm(defaultName, defaultFormulaAsString) {
+    let editMode = !!defaultName;
+
+    let $form = $('<form>')
+        .addClass('notation-new-form');
+
+    if (editMode) {
+        // in editMode form has to be countable to avoid shift in position
+        $form.addClass('notation-item');
+    }
+
+    $form.append($('<input type="text" name="notationName" size="1">')
+            .addClass('notation-new-input-name')
+            .val(defaultName))
+        .append($('<span>', {'class': 'notation-new-label'}).text('::='))
+        .append($('<input type="text" name="notationFormulaAsString">')
+            .val(defaultFormulaAsString))
+        .append($('<span>', {'class': 'notation-new-button'})
+            .text('✓')
+            .on('click', function () { submitNotation($form, editMode, function () {}); }))
+        .append($('<span>', {'class': 'notation-new-button'})
+            .text('⨯')
+            .on('click', function () { removeNotationForm($form, editMode); }))
+        .append('<input type="submit" style="visibility: hidden;position: absolute;" />');
+
+    $form.on('submit', function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        submitNotation($form, editMode, function () {});
+    });
+
+    return $form;
+}
+
+function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) {
+    $.ajax({
+        type: 'GET',
+        url: '/is_valid_litt',
+        data: { litt: notationName },
+        success: function(data)
+        {
+            if (data['is_valid']) {
+                callbackIfValid();
+            } else {
+                callbackIfNotValid();
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+function submitNotation($form, editMode, callback) {
+    let notationName = $form.find('input[name=notationName]').val();
+
+    let position = $form.prevAll('.notation-item').length;
+
+    // For new notation name, we check that name not already exists
+    if (!editMode || notationName !== getNotationNameByPosition($form, position)) {
+        isValidNotationName(notationName, function () {
+            if (getNotationByName($form, notationName) !== null) {
+                displayPedagogicError(`Notation ${notationName} already exists.`, $form);
+            } else {
+                processFormulaAsString($form, notationName, position, editMode, callback);
+            }
+        }, function () {
+            displayPedagogicError(`Notation ${notationName} is not a valid litteral, please read the syntax rules.`, $form);
+        });
+    } else {
+        processFormulaAsString($form, notationName, position, editMode, callback);
+    }
+}
+
+function processFormulaAsString($form, notationName, position, editMode, callback) {
+    let notationFormulaAsString = $form.find('input[name=notationFormulaAsString]').val();
+
+    // For notation edition, we don't parse notationFormulaAsString if it hasn't change
+    if (editMode) {
+        let cachedFormula = getCachedFormula($form, position, notationFormulaAsString);
+        if (cachedFormula !== null) {
+            addNotation($form, notationName, notationFormulaAsString, cachedFormula, position, editMode, callback);
+
+            return;
+        }
+    }
+
+    parseFormulaAsString(notationFormulaAsString, function(formula) {
+        addNotation($form, notationName, notationFormulaAsString, formula, position, editMode, callback);
+    }, $form);
+}
+
+function addNotation($form, notationName, notationFormulaAsString, notationFormula, position, editMode, callback) {
+    // Save notation
+    if (!editMode) {
+        insertNewNotation($form, position, notationName, notationFormulaAsString, notationFormula);
+    } else {
+        setNotationByPosition($form, position, notationName, notationFormulaAsString, notationFormula);
+    }
+
+    // Display line
+    let $notationLine = createNotationLine(notationName, notationFormulaAsString, notationFormula);
+    $form.replaceWith($notationLine);
+
+    // We finally run callback
+    callback();
+}
+
+function createNotationLine(notationName, notationFormulaAsString, notationFormula) {
+    let $notationLine = $('<div>', {'class': 'notation-line'})
+        .addClass('notation-item') // notation line has to be countable
+        .data('notationName', notationName)
+        .data('notationFormulaAsString', notationFormulaAsString)
+        .data('notationFormula', notationFormula)
+        .append($('<span>').html(createLittHTML(notationName)))
+        .append($('<span>').text(' ::= '))
+        .append($('<span>').html(createFormulaHTML(notationFormula, true)));
+    $notationLine.on('click', function() { editNotationLine($notationLine); })
+
+    return $notationLine;
+}
+
+function removeNotationForm($form, editMode) {
+    if (editMode) {
+        let position = $form.prevAll('.notation-item').length;
+        removeNotationByPosition($form, position);
+    }
+
+    $form.remove();
+}
+
+function editNotationLine($notationLine) {
+    let $form = createNotationForm($notationLine.data('notationName'), $notationLine.data('notationFormulaAsString'));
+    $notationLine.replaceWith($form);
+}
+
+// **************
+// NOTATIONS DATA
+// **************
+
+function getNotations($container) {
+    let options = $container.data('options');
+
+    if (!options.notations?.formulas) {
+        return [];
+    }
+
+    return options.notations.formulas;
+}
+
+function getNotationByName($e, name) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    if (!options.notations) {
+        return null;
+    }
+
+    for (let [notationName, notationFormulaAsString] of options.notations.formulasAsString) {
+        if (name === notationName) {
+            return notationFormulaAsString;
+        }
+    }
+
+    return null;
+}
+
+function getNotationNameByPosition($e, position) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    return options.notations.formulasAsString[position][0];
+}
+
+function getCachedFormula($e, position, formulaAsString) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    if (formulaAsString === options.notations.formulasAsString[position][1]
+        && options.notations.formulas.length > position) {
+        return options.notations.formulas[position][1];
+    }
+
+    return null;
+}
+
+function insertNewNotation($e, position, name, formulaAsString, formula) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    if (position === options.notations.formulasAsString.length) {
+        options.notations.formulasAsString.push([name, formulaAsString]);
+        options.notations.formulas.push([name, formula]);
+        options.notations.onAdd([name, formulaAsString]);
+    } else {
+        options.notations.formulasAsString.splice(position, 0, [name, formulaAsString]);
+        options.notations.formulas.splice(position, 0, [name, formula]);
+        options.notations.onUpdate(options.notations.formulasAsString);
+    }
+
+    $container.data('options', options);
+    recheckSequentsProvability($container, ['notProvable']);
+}
+
+function setNotationByPosition($e, position, name, formulaAsString, formula) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+
+    if (name !== options.notations.formulasAsString[position][0]
+        || formulaAsString !== options.notations.formulasAsString[position][1]) {
+        options.notations.formulasAsString[position] = [name, formulaAsString];
+        $container.data('options', options);
+        options.notations.onUpdate(options.notations.formulasAsString);
+    }
+
+    if (position >= options.notations.formulas.length) {
+        // This case appears only at notations init
+        options.notations.formulas[position] = [name, formula];
+        $container.data('options', options);
+    } else if (name !== options.notations.formulas[position][0]
+        || formula !== options.notations.formulas[position][1]) {
+        let previousName = options.notations.formulas[position][0];
+        undoRuleAtUnfold($container, previousName);
+        options.notations.formulas[position] = [name, formula];
+        $container.data('options', options);
+        recheckSequentsProvability($container, null);
+    }
+}
+
+function removeNotationByPosition($e, position) {
+    let $container = $e.closest('.proof-container');
+    let options = $container.data('options');
+    let notationName = options.notations.formulasAsString[position][0];
+    undoRuleAtUnfold($container, notationName);
+    options.notations.formulasAsString.splice(position,1);
+    options.notations.formulas.splice(position,1);
+    options.notations.onUpdate(options.notations.formulasAsString);
+    $container.data('options', options);
+    recheckSequentsProvability($container, ['provable', 'notAutoProvable']);
+}
+
+function undoRuleAtUnfold($container, notationName) {
+    let $mainSequentTable = $container.find('table').last();
+    recUndoRuleAtUnfold($mainSequentTable, notationName);
+}
+
+function isUnfoldingNotation(ruleRequest, sequentWithPermutation, notationName) {
+    if (ruleRequest.rule === 'unfold_litt' || ruleRequest.rule === 'unfold_dual') {
+        let formula = sequentWithPermutation['cons'][ruleRequest.formulaPosition].value;
+        if (ruleRequest.rule === 'unfold_dual') {
+            formula = formula.value;
+        }
+        return formula === notationName;
+    }
+
+    return false;
+}
+
+function recUndoRuleAtUnfold($sequentTable, notationName) {
+    let ruleRequest = $sequentTable.data('ruleRequest') || null;
+    if (ruleRequest !== null) {
+        if (isUnfoldingNotation(ruleRequest, $sequentTable.data('sequentWithPermutation'), notationName)) {
+            undoRule($sequentTable);
+        } else {
+            let $prev = $sequentTable.prev();
+
+            if ($prev.length) {
+                if ($prev.prop('tagName') === 'TABLE') {
+                    recUndoRuleAtUnfold($prev, notationName);
+                } else {
+                    $prev.children('div.sibling').each(function (i, sibling) {
+                        let $siblingTable = $(sibling).children('table').last();
+                        recUndoRuleAtUnfold($siblingTable, notationName);
+                    })
+                }
+            }
+        }
+    }
+}
 
 // *****
 // UTILS

@@ -78,7 +78,9 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
         let formulaAsJson = sequent[sequentPart][i];
-        let $li = $('<li>').data('initialPosition', i);
+        let $li = $('<li>')
+            .data('initialPosition', i)
+            .data('formula', formulaAsJson);
         $ul.append($li);
 
         // Build formula
@@ -99,7 +101,7 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
 function createFormulaHTML(formulaAsJson, isMainFormula = true) {
     switch (formulaAsJson.type) {
         case 'litt':
-            return formulaAsJson.value.replace(/\d+/, digits => `<sub>${digits}</sub>`);
+            return createLittHTML(formulaAsJson.value);
 
         case 'one':
         case 'bottom':
@@ -159,6 +161,10 @@ function createFormulaHTML(formulaAsJson, isMainFormula = true) {
             console.error('No display rule for type ' + formulaAsJson.type);
             return '';
     }
+}
+
+function createLittHTML(littName) {
+    return littName.replace(/\d+/, digits => `<sub>${digits}</sub>`);
 }
 
 // *****
@@ -239,10 +245,26 @@ function addEventsAndStyle($li, formulaAsJson) {
 
 function buildApplyRuleCallBack(ruleConfig, $li) {
     return function() {
-        let $sequentTable = $li.closest('table');
-        let ruleRequest = {rule: ruleConfig.rule};
+        let ruleConfigCopy = JSON.parse(JSON.stringify(ruleConfig)); // deep copy element
+        if (ruleConfigCopy.rule === 'axiom') {
+            let formula = $li.data('formula');
 
-        if (ruleConfig.needPosition) {
+            let atomName = formula['value'];
+            if (formula['type'] === 'dual') {
+                // {'type': 'dual', 'value': {'type': 'litt', 'value': ... }
+                atomName = formula['value']['value']
+            }
+
+            if (getNotationByName($li, atomName) !== null) {
+                ruleConfigCopy.rule = `unfold_${formula['type']}`;
+                ruleConfigCopy.needPosition = true;
+            }
+        }
+
+        let $sequentTable = $li.closest('table');
+        let ruleRequest = { rule: ruleConfigCopy.rule };
+
+        if (ruleConfigCopy.needPosition) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
         }
 
@@ -334,7 +356,8 @@ function permute(formulasWithoutPermutation, formulasPermutation) {
 // ******************
 
 function autoProveSequent($sequentTable) {
-    if ($sequentTable.data('notProvable') === true || $sequentTable.data('notAutoProvable') === true) {
+    if ($sequentTable.data('status') === 'notProvable') {
+        // We can not autoProve a sequent whose non-provability has been verified
         return;
     }
 
@@ -345,6 +368,7 @@ function autoProveSequent($sequentTable) {
     let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
     let permutationBeforeRule = getSequentPermutation($sequentTable);
     let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+    let notations = getNotations($container);
 
     let $turnstile = $sequentTable.find('.turnstile');
 
@@ -352,7 +376,7 @@ function autoProveSequent($sequentTable) {
         type: 'POST',
         url: '/auto_prove_sequent',
         contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify(sequent)),
+        data: compressJson(JSON.stringify({sequent, notations})),
         beforeSend: function() {
             $turnstile.addClass('loading');
         },
@@ -378,16 +402,38 @@ function autoProveSequent($sequentTable) {
     });
 }
 
-function markAsNotAutoProvable($sequentTable) {
-    $sequentTable.data('notAutoProvable', true);
-    let $turnstile = $sequentTable.find('span.turnstile');
-    $turnstile.addClass('not-auto-provable');
-    $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
-}
+// **************
+// SEQUENT STATUS
+// **************
 
-function undoMarkAsNotAutoProvable($sequentTable) {
-    $sequentTable.data('notAutoProvable', null);
+function markAsProved($sequentTable) {
+    $sequentTable.data('status', 'proved');
     let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
     $turnstile.removeClass('not-auto-provable');
     $turnstile.removeAttr('title');
+}
+
+function markAsProvable($sequentTable) {
+    $sequentTable.data('status', 'provable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
+    $turnstile.removeClass('not-auto-provable');
+    $turnstile.removeAttr('title');
+}
+
+function markAsNotProvable($sequentTable) {
+    $sequentTable.data('status', 'notProvable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.addClass('not-provable');
+    $turnstile.removeClass('not-auto-provable');
+    $turnstile.attr('title', 'This sequent is not provable');
+}
+
+function markAsNotAutoProvable($sequentTable) {
+    $sequentTable.data('status', 'notAutoProvable');
+    let $turnstile = $sequentTable.find('span.turnstile');
+    $turnstile.removeClass('not-provable');
+    $turnstile.addClass('not-auto-provable');
+    $turnstile.attr('title', 'The automatic prover did not make it on this sequent');
 }

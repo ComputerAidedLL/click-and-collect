@@ -145,6 +145,26 @@ let _ =
             ] in
         Lwt.return (Yojson.to_string response, "application/json"));;
 
+(*****************)
+(* IS VALID LITT *)
+(*****************)
+
+(* Service declaration *)
+let is_valid_litt_service =
+  Eliom_service.create
+    ~path:(Eliom_service.Path ["is_valid_litt"])
+    ~meth:(Eliom_service.Get (Eliom_parameter.string "litt"))
+    ()
+
+(* Service definition *)
+let _ =
+  Eliom_registration.String.register
+    ~service:is_valid_litt_service
+    (fun formula_as_string () ->
+      let is_valid = safe_is_valid_litt formula_as_string in
+      let response = `Assoc [("is_valid", `Bool is_valid)] in
+      Lwt.return (Yojson.to_string response, "application/json"));;
+
 
 (**************)
 (* APPLY RULE *)
@@ -320,11 +340,8 @@ let _ =
     (fun compressed_proof () ->
       let success, result = uncompress_proof compressed_proof in
         let response =
-            if success then `Assoc [
-                ("is_valid", `Bool true);
-                ("proof", result)
-            ] else `Assoc [
-                ("is_valid", `Bool false);
+            if success then result
+            else `Assoc [
                 ("error_message", result)
             ] in
         Lwt.return (Yojson.to_string response, "application/json"));;

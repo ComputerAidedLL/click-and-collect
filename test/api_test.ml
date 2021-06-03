@@ -101,7 +101,7 @@ let call_api_apply_rule_logic_exception () =
     List.iter run_test test_samples
 
 let call_api_auto_reverse_full_response () =
-    let body_as_string = "{\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]}" in
+    let body_as_string = "{\"sequent\":{\"cons\": [{\"t\": \"par\", \"v1\":{\"t\": \"litt\", \"v\":\"a\"},\"v2\":{\"t\": \"dual\", \"v\":{\"t\": \"litt\", \"v\":\"a\"}}}]},\"notations\":[]}" in
     let response_as_string = call_api_post "auto_reverse_sequent" body_as_string 200 in
     let expected_response_as_string = "{\"sequent\":{\"cons\":[{\"type\":\"par\",\"value1\":{\"type\":\"litt\",\"value\":\"a\"},\"value2\":{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"par\",\"formulaPosition\":0},\"premises\":[{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"},{\"type\":\"dual\",\"value\":{\"type\":\"litt\",\"value\":\"a\"}}]},\"appliedRule\":{\"ruleRequest\":{\"rule\":\"axiom\"},\"premises\":[]}}]}}" in
     Alcotest.(check string) "valid" expected_response_as_string response_as_string
@@ -117,7 +117,7 @@ let call_api_auto_reverse () =
     List.iter run_test test_samples
 
 let call_api_test_png () =
-    let body_as_string = "{\"s\":{\"cons\": [{\"t\":\"litt\",\"v\":\"a\"},{\"t\":\"dual\",\"v\":{\"t\":\"litt\",\"v\":\"a\"}}]},\"ar\":{\"rr\":{\"r\":\"axiom\"},\"p\":[]}}" in
+    let body_as_string = "{\"notations\":[],\"proof\":{\"s\":{\"cons\": [{\"t\":\"litt\",\"v\":\"a\"},{\"t\":\"dual\",\"v\":{\"t\":\"litt\",\"v\":\"a\"}}]},\"ar\":{\"rr\":{\"r\":\"axiom\"},\"p\":[]}}}" in
     let response_as_string = call_api_post "export_as_latex?format=png" body_as_string 200 in
     Alcotest.(check bool) "not empty response" true (response_as_string <> "")
 
@@ -125,9 +125,9 @@ let call_api_sequent_is_provable () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
     let test_samples = json_file |> member "call_api_sequent_is_provable" |> to_list in
     let run_test test_sample =
-        let sequent_as_json = test_sample |> member "sequent_as_json" in
+        let request_as_json = test_sample |> member "request" in
         let expected_provability = test_sample |> member "expected_provability" |> to_bool in
-        let response_as_string = call_api_post "is_sequent_provable" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let response_as_string = call_api_post "is_sequent_provable" (Yojson.Basic.to_string request_as_json) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let provable = response_as_json |> member "is_provable" |> to_bool in
         Alcotest.(check bool) "check provability" provable expected_provability in
@@ -142,12 +142,14 @@ let parse_auto_prove_and_verify () =
         let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
         let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
-        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let request = `Assoc [ ("sequent", sequent_as_json); ("notations", `List [])] in
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string request) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" success true;
         let proof_as_json = response_as_json |> member "proof" in
-        let _ = call_api_post "export_as_coq" (Yojson.Basic.to_string proof_as_json) 200 in
+        let request_as_json = `Assoc [("notations", `List []); ("proof", proof_as_json)] in
+        let _ = call_api_post "export_as_coq" (Yojson.Basic.to_string request_as_json) 200 in
         () in
     List.iter run_test test_samples
 
@@ -160,7 +162,8 @@ let parse_auto_prove_non_provable () =
         let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
         let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
-        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let request = `Assoc [ ("sequent", sequent_as_json); ("notations", `List [])] in
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string request) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" success false;
@@ -174,7 +177,8 @@ let auto_prove_and_check_simplified_proof () =
     let run_test test_sample =
         let sequent_as_json = test_sample |> member "sequent" in
         let expected_proof = test_sample |> member "proof" in
-        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string sequent_as_json) 200 in
+        let request = `Assoc [ ("sequent", sequent_as_json); ("notations", `List [])] in
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string request) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         let proof = response_as_json |> member "proof" in
@@ -183,19 +187,18 @@ let auto_prove_and_check_simplified_proof () =
     List.iter run_test test_samples
 
 let test_compress_and_uncompress () =
-    let big_proof_as_json = Yojson.Basic.from_file "test/proof_test_data/lcm23.json" in
-    let proof_as_coq = call_api_post "export_as_coq" (Yojson.Basic.to_string big_proof_as_json) 200 in
-    let response_as_string = call_api_post "compress_proof" (Yojson.Basic.to_string big_proof_as_json) 200 in
-    Alcotest.(check bool) "less than 2000 characters long" true (String.length response_as_string < 2000);
-    (* There is no way to construct a Uri ocaml object with a correctly encoded = sign in query parameter *)
-    let safe_compressed_proof = Str.global_replace (Str.regexp "=") "~" response_as_string in
-    let body = call_api_get "uncompress_proof" "compressedProof" safe_compressed_proof in
-    let data = Yojson.Basic.from_string body in
-    let is_valid = data |> member "is_valid" |> to_bool in
-    Alcotest.(check bool) "is_valid" is_valid true;
-    let uncompressed_proof = data |> member "proof" in
-    let uncompressed_proof_as_coq = call_api_post "export_as_coq" (Yojson.Basic.to_string uncompressed_proof) 200 in
-    Alcotest.(check string) "check proof as coq" proof_as_coq uncompressed_proof_as_coq
+    let check_json_file json_file =
+        let big_proof_as_json = Yojson.Basic.from_file json_file in
+        let proof_as_latex = call_api_post "export_as_latex?format=tex" (Yojson.Basic.to_string big_proof_as_json) 200 in
+        let response_as_string = call_api_post "compress_proof" (Yojson.Basic.to_string big_proof_as_json) 200 in
+        Alcotest.(check bool) "less than 2000 characters long" true (String.length response_as_string < 2000);
+        (* There is no way to construct a Uri ocaml object with a correctly encoded = sign in query parameter *)
+        let safe_compressed_proof = Str.global_replace (Str.regexp "=") "~" response_as_string in
+        let uncompressed_proof_as_string = call_api_get "uncompress_proof" "compressedProof" safe_compressed_proof in
+        let uncompressed_proof_as_latex = call_api_post "export_as_latex?format=tex" uncompressed_proof_as_string 200 in
+        Alcotest.(check string) "check proof as latex" proof_as_latex uncompressed_proof_as_latex in
+    check_json_file "test/proof_test_data/lcm23.json";
+    check_json_file "test/proof_test_data/axiom_with_notations.json"
 
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;

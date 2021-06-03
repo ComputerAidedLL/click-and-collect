@@ -9,16 +9,18 @@ $( function() {
         $(item).dialog({autoOpen: false, width: 500});
     })
 
-    // Parse URL and auto-complete / auto-submit sequent form
     let sequentParam = getQueryParamInUrl('s');
+    let compressedProofParam = getQueryParamInUrl('p');
+
     if (sequentParam !== null) {
         let $sequentForm = $('#sequent-form');
         $sequentForm.find($('input[name=sequentAsString]')).val(sequentParam);
-        submitSequent($sequentForm, true);
+
+        if (compressedProofParam === null) {
+            submitSequent($sequentForm, true);
+        }
     }
 
-    // Parse URL and auto-complete / auto-submit sequent form
-    let compressedProofParam = getQueryParamInUrl('p');
     if (compressedProofParam !== null) {
         uncompressProof(compressedProofParam, $('#main-proof-container'));
     }
@@ -87,6 +89,9 @@ function initMainProof(proofAsJson) {
     // We get cut mode option in URL
     let cutMode = getQueryParamInUrl('cut_mode') === '1';
 
+    // We get notations from URL
+    let notations = getQueryPairListParamInUrl('n');
+
     initProof(proofAsJson, $('#main-proof-container'), {
         withInteraction: true,
         exportButtons: true,
@@ -100,6 +105,11 @@ function initMainProof(proofAsJson) {
             value: cutMode,
             onToggle: onOptionToggle('cut_mode'),
             dialog: 'cut-mode-dialog'
+        },
+        notations: {
+            formulasAsString: notations,
+            onAdd: onNotationAdd,
+            onUpdate: onNotationUpdate
         }
     });
 }
@@ -165,9 +175,9 @@ function hideRules() {
     cleanUrlHash('Hide rules');
 }
 
-// *******************
-// AUTO-REVERSE OPTION
-// *******************
+// *******
+// OPTIONS
+// *******
 
 function onOptionToggle(param) {
     return function (value) {
@@ -177,7 +187,17 @@ function onOptionToggle(param) {
             addQueryParamInUrl(param, null, `${param} set to false`);
         }
     }
+}
 
+function onNotationAdd(notation) {
+    addQueryPairInUrl('n', notation, 'Add notation');
+}
+
+function onNotationUpdate(notationFormulasAsString) {
+    addQueryParamInUrl('n', null, 'Remove all notations');
+    for (let notation of notationFormulasAsString) {
+        addQueryPairInUrl('n', notation, 'Add notation');
+    }
 }
 
 // ****************
@@ -193,7 +213,7 @@ function uncompressProof(compressedProof, $container) {
         data: { compressedProof },
         success: function(data)
         {
-            if (data['is_valid']) {
+            if (data['proof']) {
                 initMainProof(data['proof']);
             } else {
                 cleanMainProof();
@@ -224,6 +244,29 @@ function getQueryParamInUrl (key) {
     let searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has(key)) {
         return searchParams.get(key);
+    }
+
+    return null;
+}
+
+function addQueryPairInUrl (key, pair, title) {
+    let currentUrl = new URL(window.location.href);
+
+    currentUrl.searchParams.append(key, pair);
+    currentUrl.hash = '';
+    window.history.pushState(pair, title, currentUrl.toString());
+}
+
+function getQueryPairListParamInUrl (key) {
+    let searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has(key)) {
+        let pairList = [];
+
+        for (let pair of searchParams.getAll(key)) {
+            pairList.push(pair.split(','));
+        }
+
+        return pairList;
     }
 
     return null;

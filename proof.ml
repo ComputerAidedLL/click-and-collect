@@ -19,6 +19,8 @@ type proof =
     | Contraction_proof of formula list * formula * formula list * proof
     | Exchange_proof of sequent * int list * int list * proof
     | Cut_proof of formula list * formula * formula list * proof * proof
+    | Unfold_litt_proof of formula list * string * formula list * proof
+    | Unfold_dual_proof of formula list * string * formula list * proof
     | Hypothesis_proof of sequent;;
 
 
@@ -59,6 +61,8 @@ let get_premises = function
     | Contraction_proof (_, _, _, p) -> [p]
     | Exchange_proof (_, _, _, p) -> [p]
     | Cut_proof (_, _, _, p1, p2) -> [p1; p2]
+    | Unfold_litt_proof (_, _, _, p) -> [p]
+    | Unfold_dual_proof (_, _, _, p) -> [p]
     | Hypothesis_proof _ -> raise (Failure "Can not get premises of hypothesis");;
 
 let set_premises proof premises = match proof, premises with
@@ -78,6 +82,8 @@ let set_premises proof premises = match proof, premises with
     | Contraction_proof (head, e, tail, _), [p] -> Contraction_proof (head, e, tail, p)
     | Exchange_proof (sequent, display_permutation, permutation, _), [p] -> Exchange_proof (sequent, display_permutation, permutation, p)
     | Cut_proof (head, e, tail, _, _), [p1; p2] -> Cut_proof (head, e, tail, p1, p2)
+    | Unfold_litt_proof (head, s, tail, _), [p] -> Unfold_litt_proof (head, s, tail, p)
+    | Unfold_dual_proof (head, s, tail, _), [p] -> Unfold_dual_proof (head, s, tail, p)
     | Hypothesis_proof sequent, _ -> raise (Failure "Can not set premises of hypothesis")
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
@@ -100,8 +106,20 @@ let get_conclusion = function
     | Contraction_proof (head, e, tail, _) -> head @ [Whynot e] @ tail
     | Exchange_proof (sequent, _, permutation, _) -> permute sequent permutation
     | Cut_proof (head, _, tail, _, _) -> head @ tail
+    | Unfold_litt_proof (head, s, tail, _) -> head @ [Litt s] @ tail
+    | Unfold_dual_proof (head, s, tail, _) -> head @ [Dual s] @ tail
     | Hypothesis_proof sequent -> sequent;;
 
+
+(* VARIABLES *)
+let rec get_variable_names proof =
+    let variables = Sequent.get_unique_variable_names (get_conclusion proof) in
+    match proof with
+        | Hypothesis_proof _ -> variables
+        | _ -> variables @ List.concat (List.map get_variable_names (get_premises proof));;
+
+let get_unique_variable_names proof =
+    List.sort_uniq String.compare (get_variable_names proof);;
 
 (* SEQUENT & RULE_REQUEST -> PROOF *)
 
@@ -119,7 +137,7 @@ let rec slice l n =
     | [] -> raise (Rule_exception (false, "Argument formula_position is greater than the sequent"))
     | e :: l' -> let head, tail = slice l' (n - 1) in e::head, tail;;
 
-let from_sequent_and_rule_request sequent = function
+let from_sequent_and_rule_request sequent notations = function
         | Axiom -> (
             match sequent with
             | [e1; e2] -> (if dual e1 <> e2
@@ -214,10 +232,28 @@ let from_sequent_and_rule_request sequent = function
         | Cut (formula, n) -> (
             let head, tail = slice sequent n in
             Cut_proof (head, formula, tail, Hypothesis_proof (head @ [formula]), Hypothesis_proof ([dual formula] @ tail))
+        )
+        | Unfold_litt n -> (
+            let head, formula, tail = head_formula_tail n sequent in
+            match formula with
+            | Litt s -> begin
+                try let definition = Raw_sequent.to_formula (List.assoc s notations) in
+                Unfold_litt_proof (head, s, tail, Hypothesis_proof (head @ [definition] @ tail))
+                with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this litt as it does not belong to definition")) end
+            | _ -> raise (Rule_exception (false, "Cannot apply unfold_litt rule on this formula"))
+        )
+        | Unfold_dual n -> (
+            let head, formula, tail = head_formula_tail n sequent in
+            match formula with
+            | Dual s -> begin
+                try let definition = Raw_sequent.to_formula (List.assoc s notations) in
+                Unfold_dual_proof (head, s, tail, Hypothesis_proof (head @ [dual definition] @ tail))
+                with Not_found -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this litt as it does not belong to definition")) end
+            | _ -> raise (Rule_exception (false, "Cannot apply unfold_dual rule on this formula"))
         );;
 
-let from_sequent_and_rule_request_and_premises sequent rule_request premises =
-    let proof = from_sequent_and_rule_request sequent rule_request in
+let from_sequent_and_rule_request_and_premises sequent notations rule_request premises =
+    let proof = from_sequent_and_rule_request sequent notations rule_request in
     let expected_premises_conclusion = List.map get_conclusion (get_premises proof) in
     let given_premises_conclusion = List.map get_conclusion premises in
     if expected_premises_conclusion <> given_premises_conclusion then
@@ -233,10 +269,16 @@ let rec get_formula_position condition = function
     | f :: tail -> if condition f then 0 else 1 + (get_formula_position condition tail);;
 
 let try_rule_request sequent rule_request =
-    try from_sequent_and_rule_request sequent rule_request
+    (* Auto-reverse ignores notations *)
+    try from_sequent_and_rule_request sequent [] rule_request
     with Rule_exception _ -> raise NotApplicable;;
 
-let apply_reversible_rule proof =
+let starts_with_notation notations = function
+    | Litt s :: tail -> List.mem_assoc s notations
+    | Dual s :: tail -> List.mem_assoc s notations
+    | _ -> false;;
+
+let apply_reversible_rule notations proof =
     let sequent = get_conclusion proof in
     try try_rule_request sequent (Top (get_formula_position is_top sequent))
         with NotApplicable ->
@@ -252,16 +294,16 @@ let apply_reversible_rule proof =
         with NotApplicable ->
     try if List.length sequent = 1 then try_rule_request sequent (Tensor 0) else raise NotApplicable
         with NotApplicable ->
-    try try_rule_request sequent Axiom
+    try if not (starts_with_notation notations sequent) then try_rule_request sequent Axiom else raise NotApplicable
         with NotApplicable ->
     proof;;
 
-let rec rec_apply_reversible_rule proof =
-    let new_proof = apply_reversible_rule proof in
+let rec rec_apply_reversible_rule notations proof =
+    let new_proof = apply_reversible_rule notations proof in
     match new_proof with
         | Hypothesis_proof _ -> new_proof
         | _ -> let premises = get_premises new_proof in
-            let new_premises = List.map rec_apply_reversible_rule premises in
+            let new_premises = List.map (rec_apply_reversible_rule notations) premises in
             set_premises new_proof new_premises;;
 
 (* AUTO WEAK MODE *)
@@ -301,6 +343,8 @@ let get_rule_request = function
     | Contraction_proof (head, _, _, _) -> Contraction (List.length head)
     | Exchange_proof (_, display_permutation, permutation, _) -> Exchange (display_permutation, permutation)
     | Cut_proof (head, formula, _, _, _) -> Cut (formula, List.length head)
+    | Unfold_litt_proof (head, _, _, _) -> Unfold_litt (List.length head)
+    | Unfold_dual_proof (head, _, _, _) -> Unfold_dual (List.length head)
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
@@ -326,7 +370,7 @@ let get_json_list json key =
     try Yojson.Basic.Util.to_list value
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ key ^ "' must be a list"));;
 
-let rec from_json json =
+let rec from_json notations json =
     let sequent_as_json = required_field json "sequent" in
     let sequent = Raw_sequent.sequent_from_json sequent_as_json in
     let applied_ruled_as_json = optional_field json "appliedRule" in
@@ -335,8 +379,8 @@ let rec from_json json =
         | _ -> let rule_request_as_json = required_field applied_ruled_as_json "ruleRequest" in
             let rule_request = Rule_request.from_json rule_request_as_json in
             let premises_as_json = get_json_list applied_ruled_as_json "premises" in
-            let premises = List.map from_json premises_as_json in
-            from_sequent_and_rule_request_and_premises sequent rule_request premises;;
+            let premises = List.map (from_json notations) premises_as_json in
+            from_sequent_and_rule_request_and_premises sequent notations rule_request premises;;
 
 
 (* PROOF -> JSON *)
@@ -359,11 +403,16 @@ let rec to_json proof =
 (* PROOF -> COQ *)
 
 let coq_apply coq_rule =
-    Printf.sprintf "apply %s; cbn.\n" coq_rule;;
+    Printf.sprintf "apply %s; cbn_sequent.\n" coq_rule;;
 
 let coq_apply_with_args coq_rule args =
     let args_as_string = (String.concat " " args) in
-    Printf.sprintf "apply (%s %s); cbn.\n" coq_rule args_as_string;;
+    Printf.sprintf "apply (%s %s); cbn_sequent.\n" coq_rule args_as_string;;
+
+let coq_unfold_at_position cyclic_notations notation_name head =
+    let unfold_command = if List.mem_assoc notation_name cyclic_notations then "rewrite Hyp_" else "unfold " in
+    let position = Sequent.count_notation notation_name head + 1 in
+    Printf.sprintf "%s%s at %d; cbn_sequent.\n" unfold_command notation_name position;;
 
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
@@ -379,52 +428,58 @@ let add_indent_and_brace proof_as_coq =
       | first_line :: other_lines -> first_line :: List.map indent_line other_lines
     in Printf.sprintf "{ %s }\n" (String.concat "\n" indented_lines)
 
-let rec to_coq_with_hyps_increment i = function
+let rec to_coq_with_hyps_increment cyclic_notations i = function
     | Axiom_proof _ -> "ax_expansion.\n", i, []
     | One_proof -> coq_apply "one_r_ext", i, []
     | Top_proof (head, _) -> coq_apply_with_args "top_r_ext" [formula_list_to_coq head], i, []
     | Bottom_proof (head, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "bot_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Tensor_proof (head, _, _, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "tens_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Par_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "parr_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | With_proof (head, _, _, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "with_r_ext" [formula_list_to_coq head] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
     | Plus_left_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "plus_r1_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Plus_right_proof (head, _, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "plus_r2_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "oc_r_ext" [formula_list_to_coq head_without_whynot; "(" ^ formula_to_coq e ^ ")"; formula_list_to_coq tail_without_whynot] ^ s, n, hyps
     | Dereliction_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "de_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Weakening_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "wk_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Contraction_proof (head, _, _, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "co_r_ext" [formula_list_to_coq head] ^ s, n, hyps
     | Exchange_proof (sequent, _, permutation, p) ->
-        let s, n, hyps = to_coq_with_hyps_increment i p in
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
         coq_apply_with_args "ex_perm_r" [permutation_to_coq permutation; formula_list_to_coq sequent] ^ s, n, hyps
     | Cut_proof (head, cut, _, p1, p2) ->
-        let s1, n1, hyps1 = to_coq_with_hyps_increment i p1 in
-        let s2, n2, hyps2 = to_coq_with_hyps_increment n1 p2 in
+        let s1, n1, hyps1 = to_coq_with_hyps_increment cyclic_notations i p1 in
+        let s2, n2, hyps2 = to_coq_with_hyps_increment cyclic_notations n1 p2 in
         coq_apply_with_args "cut_r_ext" [formula_list_to_coq head; "(" ^ formula_to_coq cut ^ ")"] ^ add_indent_and_brace s1 ^ add_indent_and_brace s2, n2, hyps1 @ hyps2
+    | Unfold_litt_proof (head, notation_name, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
+        coq_unfold_at_position cyclic_notations notation_name head ^ s, n, hyps
+    | Unfold_dual_proof (head, notation_name, _, p) ->
+        let s, n, hyps = to_coq_with_hyps_increment cyclic_notations i p in
+        coq_unfold_at_position cyclic_notations notation_name head ^ s, n, hyps
     | Hypothesis_proof sequent -> coq_apply ("Hyp" ^ string_of_int i), i + 1, [Sequent.sequent_to_coq sequent];;
 
-let to_coq_with_hyps = to_coq_with_hyps_increment 0
+let to_coq_with_hyps cyclic_notations = to_coq_with_hyps_increment cyclic_notations 0
 
 
 (* PROOF -> LATEX *)
@@ -463,6 +518,8 @@ let rec to_latex_permute implicit_exchange permutation_opt proof =
                 if permutation = identity (List.length permutation) then ""
                 else (latex_apply "exv" conclusion)
     | Cut_proof (_, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "cutv" conclusion)
+    | Unfold_litt_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
+    | Unfold_dual_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
     | Hypothesis_proof _ -> latex_apply "hypv" conclusion;;
 
 let to_latex implicit_exchange =
@@ -476,11 +533,6 @@ let to_latex implicit_exchange =
    and ascii can be converted to utf8 *)
 
 type proof_text_list = int * int * string list
-
-let rec string_repeat n s =
-  match n with
-  | 0 -> ""
-  | k -> s ^ (string_repeat (k-1) s)
 
 let left_shift_proof_text n =
   List.map (fun x -> String.make n ' ' ^ x)
@@ -505,21 +557,21 @@ let concat_proof_text gap (left_shift1, right_shift1, proof1) (left_shift2, righ
 
 let ascii_apply_hyp conclusion = (0, 0, [ conclusion ])
 
-let ascii_apply0 rule_name conclusion =
+let ascii_apply0 rule_symbol rule_name conclusion =
   let width = String.length conclusion in
   let rule_name_width = String.length rule_name in
   (0, 1 + rule_name_width,
-   [ Printf.sprintf "%s %s" (string_repeat width "-") rule_name;
+   [ Printf.sprintf "%s %s" (String.make width rule_symbol) rule_name;
      Printf.sprintf "%s %s" conclusion (String.make rule_name_width ' ') ])
 
-let ascii_apply1 premise_data rule_name conclusion =
+let ascii_apply1 premise_data rule_symbol rule_name conclusion =
   let left_shift, right_shift, premise_text = premise_data in
   let premise_length = proof_text_width premise_text - (left_shift + right_shift) in
   let conclusion_length = String.length conclusion in
   let rule_length = max premise_length conclusion_length in
   let rule_name_width = String.length rule_name in
   let make_rule_line left right =
-    Printf.sprintf "%s%s %s%s" (String.make left ' ') (string_repeat rule_length "-") rule_name (String.make right ' ') in
+    Printf.sprintf "%s%s %s%s" (String.make left ' ') (String.make rule_length rule_symbol) rule_name (String.make right ' ') in
   let make_conclusion_line left right =
     Printf.sprintf "%s%s%s" (String.make left ' ') conclusion (String.make right ' ') in
   if premise_length > conclusion_length then
@@ -562,32 +614,34 @@ let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
       | None -> sequent_to_ascii utf8 preconclusion
       | Some permutation -> sequent_to_ascii utf8 (permute preconclusion permutation) in
     match proof with
-    | Axiom_proof _ -> ascii_apply0 "ax" conclusion
-    | One_proof -> ascii_apply0 "1" conclusion
-    | Top_proof _ -> ascii_apply0 "T" conclusion
-    | Bottom_proof (_, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "_" conclusion
+    | Axiom_proof _ -> ascii_apply0 '-' "ax" conclusion
+    | One_proof -> ascii_apply0 '-' "1" conclusion
+    | Top_proof _ -> ascii_apply0 '-' "T" conclusion
+    | Bottom_proof (_, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "_" conclusion
     | Tensor_proof (_, _, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "*" conclusion
-    | Par_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "|" conclusion
+       ascii_apply1 premise_data '-' "*" conclusion
+    | Par_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "|" conclusion
     | With_proof (_, _, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "&" conclusion
-    | Plus_left_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+1" conclusion
-    | Plus_right_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "+2" conclusion
-    | Promotion_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "!" conclusion
-    | Dereliction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?d" conclusion
-    | Weakening_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?w" conclusion
-    | Contraction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) "?c" conclusion
+       ascii_apply1 premise_data '-' "&" conclusion
+    | Plus_left_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "+1" conclusion
+    | Plus_right_proof (_, _, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "+2" conclusion
+    | Promotion_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "!" conclusion
+    | Dereliction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?d" conclusion
+    | Weakening_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?w" conclusion
+    | Contraction_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '-' "?c" conclusion
     | Exchange_proof (_, display_permutation, permutation, p) ->
         if implicit_exchange
             then to_ascii_list utf8 implicit_exchange (Some display_permutation) p
             else let premise_data = to_ascii_list utf8 implicit_exchange None p in
                 if permutation = identity (List.length permutation) then premise_data
-                else ascii_apply1 premise_data "ex" conclusion
+                else ascii_apply1 premise_data '-' "ex" conclusion
     | Cut_proof (_, _, _, p1, p2) ->
        let premise_data = concat_proof_text vertical_gap_ascii (to_ascii_list_clear_exchange p1) (to_ascii_list_clear_exchange p2) in
-       ascii_apply1 premise_data "cut" conclusion
+       ascii_apply1 premise_data '-' "cut" conclusion
+    | Unfold_litt_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '~' "def" conclusion
+    | Unfold_dual_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '~' "def" conclusion
     | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
 
 let to_ascii_utf8 utf8 implicit_exchange proof =
@@ -603,9 +657,10 @@ let to_utf8 implicit_exchange proof =
    (Str.global_replace (Str.regexp "|") "⅋"
    (Str.global_replace (Str.regexp "T") "⊤"
    (Str.global_replace (Str.regexp "_") "⊥"
+   (Str.global_replace (Str.regexp "~") "-"
    (Str.global_replace (Str.regexp "-") "─"
    (Str.global_replace (Str.regexp "|-") "⊢ "
-   (to_ascii_utf8 true implicit_exchange proof)))))))
+   (to_ascii_utf8 true implicit_exchange proof))))))))
 
 
 (* SIMPLIFY : COMMUTE UP PERMUTATIONS *)
@@ -671,6 +726,9 @@ let rec rec_commute_up_permutations proof perm =
     | Cut_proof (head, _, tail, p1, p2) ->
         let new_proof = set_premises proof [rec_commute_up_permutations p1 (identity (List.length head + 1)); rec_commute_up_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
+    (* TODO notations *)
+    | Unfold_litt_proof _ -> raise (Failure "Unfold litt not implemented yet")
+    | Unfold_dual_proof _ -> raise (Failure "Unfold dual not implemented yet")
     | Hypothesis_proof sequent -> Hypothesis_proof (permute sequent perm);;
 
 let commute_up_permutations proof =
