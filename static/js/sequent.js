@@ -255,7 +255,7 @@ function buildApplyRuleCallBack(ruleConfig, $li) {
                 atomName = formula['value']['value']
             }
 
-            if (getNotationByName($li, atomName) !== null) {
+            if (notationNameExists($li, atomName, null)) {
                 ruleConfigCopy.rule = `unfold_${formula['type']}`;
                 ruleConfigCopy.needPosition = true;
             }

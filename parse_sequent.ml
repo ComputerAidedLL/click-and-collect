@@ -24,6 +24,6 @@ let safe_parse_formula formula_as_string =
 let safe_is_valid_litt litt =
     try let raw_sequent = ll_parse litt in
         match raw_sequent with
-        | {hyp=[]; cons=[Litt s]} -> true
-        | _ -> false
-    with _ -> false;;
+        | {hyp=[]; cons=[Litt s]} -> true, s
+        | _ -> false, "Input must contain exactly one litteral."
+    with _ -> false, "Syntax error: please read the syntax rules.";;

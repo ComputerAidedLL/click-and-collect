@@ -161,8 +161,10 @@ let _ =
   Eliom_registration.String.register
     ~service:is_valid_litt_service
     (fun formula_as_string () ->
-      let is_valid = safe_is_valid_litt formula_as_string in
-      let response = `Assoc [("is_valid", `Bool is_valid)] in
+      let is_valid, value = safe_is_valid_litt formula_as_string in
+      let response = if is_valid
+        then `Assoc [("is_valid", `Bool is_valid); ("value", `String value)]
+        else `Assoc [("is_valid", `Bool is_valid); ("error_message", `String value)] in
       Lwt.return (Yojson.to_string response, "application/json"));;
 
 

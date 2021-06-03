@@ -957,9 +957,9 @@ function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) 
         success: function(data)
         {
             if (data['is_valid']) {
-                callbackIfValid();
+                callbackIfValid(data['value']);
             } else {
-                callbackIfNotValid();
+                callbackIfNotValid(data['error_message']);
             }
         },
         error: onAjaxError
@@ -973,14 +973,14 @@ function submitNotation($form, editMode, callback) {
 
     // For new notation name, we check that name not already exists
     if (!editMode || notationName !== getNotationNameByPosition($form, position)) {
-        isValidNotationName(notationName, function () {
-            if (getNotationByName($form, notationName) !== null) {
-                displayPedagogicError(`Notation ${notationName} already exists.`, $form);
+        isValidNotationName(notationName, function (validNotationName) {
+            if (notationNameExists($form, validNotationName, editMode ? position : null)) {
+                displayPedagogicError(`Notation ${validNotationName} already exists.`, $form);
             } else {
-                processFormulaAsString($form, notationName, position, editMode, callback);
+                processFormulaAsString($form, validNotationName, position, editMode, callback);
             }
-        }, function () {
-            displayPedagogicError(`Notation ${notationName} is not a valid litteral, please read the syntax rules.`, $form);
+        }, function (errorMessage) {
+            displayPedagogicError(`Notation "${notationName}" is not a valid litteral. ${errorMessage}`, $form);
         });
     } else {
         processFormulaAsString($form, notationName, position, editMode, callback);
@@ -1063,21 +1063,21 @@ function getNotations($container) {
     return options.notations.formulas;
 }
 
-function getNotationByName($e, name) {
+function notationNameExists($e, name, excludePosition) {
     let $container = $e.closest('.proof-container');
     let options = $container.data('options');
 
     if (!options.notations) {
-        return null;
+        return false;
     }
 
-    for (let [notationName, notationFormulaAsString] of options.notations.formulasAsString) {
-        if (name === notationName) {
-            return notationFormulaAsString;
+    for (let i = 0; i < options.notations.formulasAsString.length; i++) {
+        if (i !== excludePosition && name === options.notations.formulasAsString[i][0]) {
+            return true;
         }
     }
 
-    return null;
+    return false;
 }
 
 function getNotationNameByPosition($e, position) {
