@@ -1006,5 +1006,8 @@
                                 {"sequent":{"cons":[{"type":"litt","value":"A"},{"type":"dual","value":{"type":"litt","value":"A"}}]},
                                   "appliedRule":{"ruleRequest":{"rule":"axiom"},"premises":[]}}]}}]}}]}}]}}]}}]}}
     }
+  ],
+  "auto_prove_with_notations": [
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]}
   ]
 }

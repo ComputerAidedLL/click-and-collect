@@ -186,6 +186,16 @@ let auto_prove_and_check_simplified_proof () =
         Alcotest.(check string) "check proof" (Yojson.Basic.to_string expected_proof) (Yojson.Basic.to_string proof) in
     List.iter run_test test_samples
 
+let auto_prove_with_notations () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "auto_prove_with_notations" |> to_list in
+    let run_test test_sample =
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string test_sample) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let success = response_as_json |> member "success" |> to_bool in
+        Alcotest.(check bool) "success" success true in
+    List.iter run_test test_samples
+
 let test_compress_and_uncompress () =
     let check_json_file json_file =
         let big_proof_as_json = Yojson.Basic.from_file json_file in
@@ -229,6 +239,7 @@ let test_auto_prove_sequent = [
     "Test parse, auto-prove and verify", `Quick, parse_auto_prove_and_verify;
     "Test parse, auto-prove on non provable sequent", `Quick, parse_auto_prove_non_provable;
     "Test auto-prove and check simplified proof", `Quick, auto_prove_and_check_simplified_proof;
+    "Test auto-prove with notations", `Quick, auto_prove_with_notations;
 ]
 
 let test_compress_uncompress = [
