@@ -410,9 +410,12 @@ let coq_apply_with_args coq_rule args =
     Printf.sprintf "apply (%s %s); cbn_sequent.\n" coq_rule args_as_string;;
 
 let coq_unfold_at_position cyclic_notations notation_name head =
-    let unfold_command = if List.mem_assoc notation_name cyclic_notations then "rewrite Hyp_" else "unfold " in
     let position = Sequent.count_notation notation_name head + 1 in
-    Printf.sprintf "%s%s at %d; cbn_sequent.\n" unfold_command notation_name position;;
+    let unfold_command =
+      if List.mem_assoc notation_name cyclic_notations
+      then Printf.sprintf "pattern %s at %d; rewrite Hyp_%s" notation_name position notation_name
+      else Printf.sprintf "unfold %s at %d" notation_name position in
+    Printf.sprintf "%s; cbn_sequent.\n" unfold_command;;
 
 let permutation_to_coq permutation =
     Printf.sprintf "[%s]" (String.concat "; " (List.map string_of_int permutation));;
