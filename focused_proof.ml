@@ -433,28 +433,31 @@ let rec unfocus_proof = function
 let sequent_to_focused_sequent sequent =
     Async (Set_formula.empty, [], sequent)
 
-let proof_from_focused_proof focused_proof notations sequent =
+let proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent =
     let proof = unfocus_proof focused_proof in
     let simplified_proof = remove_loop proof in
-    Proof.from_fully_replaced_proof notations sequent simplified_proof
+    Proof.from_fully_replaced_proof cyclic_notations acyclic_notations original_sequent simplified_proof
 
-let rec iterate_on_notations_list sequent exponential_bound ttl = function
+let rec iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl = function
     | [] -> None
-    | notations :: tail ->
-        let fully_replaced_sequent = replace_all_notations_in_sequent sequent notations in
-        let focused_sequent = sequent_to_focused_sequent fully_replaced_sequent in
+    | replaced_sequent :: tail ->
+        let focused_sequent = sequent_to_focused_sequent replaced_sequent in
         match prove focused_sequent [] exponential_bound ttl with
-           | Some focused_proof -> Some (proof_from_focused_proof focused_proof notations sequent)
-           | None -> iterate_on_notations_list sequent exponential_bound ttl tail
+           | Some focused_proof -> Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent)
+           | None -> iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl tail
 
-let rec prove_with_increasing_bound sequent cyclic_notations acyclic_notations cyclic_notations_possibilities exponential_bound ttl =
-    let notations_possibilities = List.map (fun l -> acyclic_notations @ l) cyclic_notations_possibilities in
+let rec prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
     has_reached_exponential_bound := false;
-    match iterate_on_notations_list sequent exponential_bound ttl notations_possibilities with
-        | None -> if !has_reached_exponential_bound || List.length cyclic_notations > 0
-            then let new_cyclic_notations_possibilities = cyclic_notations_possibilities
-                @ List.concat (List.map (fun n -> List.map (fun l -> n :: l) cyclic_notations_possibilities) cyclic_notations) in
-                prove_with_increasing_bound sequent cyclic_notations acyclic_notations new_cyclic_notations_possibilities (exponential_bound + 1) ttl
+    match iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents with
+        | None ->
+            let new_replaced_sequents = List.sort_uniq compare (replaced_sequents @
+                List.concat (List.map (fun (s, rf) ->
+                    List.concat (List.map (fun sequent ->
+                        partial_replace_in_sequent s (Raw_sequent.to_formula rf) sequent)
+                    replaced_sequents))
+                cyclic_notations)) in
+            if !has_reached_exponential_bound || new_replaced_sequents <> replaced_sequents
+            then prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations (exponential_bound + 1) ttl new_replaced_sequents
             else (None, false)
         | Some proof -> (Some proof, true)
 
@@ -467,5 +470,6 @@ let prove_sequent sequent_with_notations =
     let cyclic_notations, acyclic_notations = split_cyclic_acyclic sequent_with_notations in
     let max_execution_time_in_seconds = 3. in
     let ttl = Sys.time () +. max_execution_time_in_seconds in
-    try prove_with_increasing_bound sequent_with_notations.sequent cyclic_notations acyclic_notations [[]] 0 ttl
-    with Ttl_exceeded | Stack_overflow -> (None, true)
+    let replaced_sequents = [replace_all_notations_in_sequent sequent_with_notations.sequent acyclic_notations] in
+    try prove_with_increasing_bound sequent_with_notations.sequent cyclic_notations acyclic_notations 0 ttl replaced_sequents
+    with Ttl_exceeded -> (None, true)

@@ -153,17 +153,11 @@ let parse_auto_prove_and_verify () =
         () in
     List.iter run_test test_samples
 
-let parse_auto_prove_non_provable () =
+let auto_prove_non_provable () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
-    let test_samples = json_file |> member "parse_auto_prove_non_provable" |> to_list in
+    let test_samples = json_file |> member "auto_prove_non_provable" |> to_list in
     let run_test test_sample =
-        let sequent_as_string = test_sample |> to_string in
-        let parse_sequent_data = Yojson.Basic.from_string (call_api_get "parse_sequent" "sequentAsString" sequent_as_string) in
-        let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
-        Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
-        let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
-        let request = `Assoc [ ("sequent", sequent_as_json); ("notations", `List [])] in
-        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string request) 200 in
+        let response_as_string = call_api_post "auto_prove_sequent" (Yojson.Basic.to_string test_sample) 200 in
         let response_as_json = Yojson.Basic.from_string response_as_string in
         let success = response_as_json |> member "success" |> to_bool in
         Alcotest.(check bool) "success" success false;
@@ -237,7 +231,7 @@ let test_auto_reverse_sequent = [
 
 let test_auto_prove_sequent = [
     "Test parse, auto-prove and verify", `Quick, parse_auto_prove_and_verify;
-    "Test parse, auto-prove on non provable sequent", `Quick, parse_auto_prove_non_provable;
+    "Test parse, auto-prove on non provable sequent", `Quick, auto_prove_non_provable;
     "Test auto-prove and check simplified proof", `Quick, auto_prove_and_check_simplified_proof;
     "Test auto-prove with notations", `Quick, auto_prove_with_notations;
 ]
