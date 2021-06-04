@@ -70,7 +70,7 @@ function buildProof(proofAsJson, $container) {
             }
 
             options.autoReverse.onToggle(autoReverse);
-        }, options.autoReverse.dialog);
+        }, 'auto-reverse-dialog');
 
         if (options.autoReverse.value) {
             autoReverseContainer($container);
@@ -82,7 +82,7 @@ function buildProof(proofAsJson, $container) {
             saveOption($container, 'cutMode', cutMode);
             toggleCutMode($container, cutMode);
             options.cutMode.onToggle(cutMode);
-        }, options.cutMode.dialog);
+        }, 'cut-mode-dialog');
 
         toggleCutMode($container, options.cutMode.value);
     }
@@ -142,7 +142,7 @@ function removeSequentTable($sequentTable) {
 // OPTIONS
 // *******
 
-function createOption($container, isChecked, text, onToggle, dialog) {
+function createOption($container, isChecked, text, onToggle, dialogId) {
     let $input = $('<input type="checkbox">');
     $input.prop('checked', isChecked);
     $input.on('change', function() {
@@ -151,14 +151,18 @@ function createOption($container, isChecked, text, onToggle, dialog) {
 
     let $optionBar = $('<div>', {'class': 'option-bar'})
         .append($('<span>', {'class': 'option-label'}).text(text))
-        .append($('<span>', {'class': 'option-info', 'title': `Learn about ${text} option`})
-            .text('ⓘ')
-            .on('click', function () { $(`#${dialog}`).dialog('open'); }))
         .append($('<label>', {'class': 'switch'})
             .append($input)
-            .append($('<span class="slider"></span>')));
+            .append($('<span class="slider"></span>')))
+        .append(createInfo(`Learn about ${text} option`, dialogId));
 
     $container.append($optionBar);
+}
+
+function createInfo(title, dialogId) {
+    return $('<span>', {'class': 'option-info', 'title': title})
+        .text('ⓘ')
+        .on('click', function () { $(`#${dialogId}`).dialog('open'); })
 }
 
 function saveOption($container, optionName, optionValue) {
@@ -884,12 +888,12 @@ function createNotationBar($container, callback) {
     let $notationBar = $('<div>', {'class': 'notation-bar'});
     $notationContainer.append($notationBar
         .append($('<span>', {'class': 'notation-label'}).text('Add notation'))
-        .append($('<span>', {'class': 'notation-add'})
-            .text('+')
+        .append($('<span>', {'class': 'notation-add'}).text('+')
             .on('click', function () {
                 let $form = createNotationForm(null, null);
                 $form.insertBefore($notationBar);
-            })));
+            }))
+        .append(createInfo('Learn about notations', 'notations-dialog')));
     $container.append($notationContainer);
 
     // Init options
@@ -930,13 +934,13 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
     $form.append($('<input type="text" name="notationName" size="1">')
             .addClass('notation-new-input-name')
             .val(defaultName))
-        .append($('<span>', {'class': 'notation-new-label'}).text('::='))
+        .append($('<span>').text('::='))
         .append($('<input type="text" name="notationFormulaAsString">')
             .val(defaultFormulaAsString))
-        .append($('<span>', {'class': 'notation-new-button'})
+        .append($('<span>', {'class': 'notation-button'})
             .text('✓')
             .on('click', function () { submitNotation($form, editMode, function () {}); }))
-        .append($('<span>', {'class': 'notation-new-button'})
+        .append($('<span>', {'class': 'notation-button'})
             .text('⨯')
             .on('click', function () { removeNotationForm($form, editMode); }))
         .append('<input type="submit" style="visibility: hidden;position: absolute;" />');
