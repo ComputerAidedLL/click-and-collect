@@ -1008,6 +1008,7 @@
     }
   ],
   "auto_prove_with_notations": [
-    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]}
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]},
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"lollipop","v1":{"t":"litt","v":"A"},"v2":{"t":"litt","v":"A"}}]]}
   ]
 }
