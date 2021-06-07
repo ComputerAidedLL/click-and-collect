@@ -116,7 +116,7 @@ let rec get_variable_names proof =
     let variables = Sequent.get_unique_variable_names (get_conclusion proof) in
     match proof with
         | Hypothesis_proof _ -> variables
-        | _ -> variables @ List.concat (List.map get_variable_names (get_premises proof));;
+        | _ -> variables @ List.concat_map get_variable_names (get_premises proof);;
 
 let get_unique_variable_names proof =
     List.sort_uniq String.compare (get_variable_names proof);;
@@ -680,7 +680,7 @@ let perm_minus_element n perm =
     List.map (fun k -> if k > n then k - 1 else k) (List.filter (fun k -> k <> n) perm)
 
 let perm_plus_element n perm =
-    List.concat (List.map (fun k -> if k = n then [n; n + 1] else if k > n then [k + 1] else [k]) perm)
+    List.concat_map (fun k -> if k = n then [n; n + 1] else if k > n then [k + 1] else [k]) perm
 
 let rec rec_commute_up_permutations proof perm =
     let conclusion = get_conclusion proof in
