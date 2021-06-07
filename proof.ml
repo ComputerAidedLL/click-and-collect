@@ -647,14 +647,20 @@ let rec to_ascii_list utf8 implicit_exchange permutation_opt proof =
     | Unfold_dual_proof (_, _, _, p) -> ascii_apply1 (to_ascii_list_clear_exchange p) '~' "def" conclusion
     | Hypothesis_proof _ -> ascii_apply_hyp conclusion;;
 
-let to_ascii_utf8 utf8 implicit_exchange proof =
+let to_ascii_utf8 utf8 implicit_exchange notations proof =
     let _, _, proof_text = to_ascii_list utf8 implicit_exchange None proof in
-    (String.concat "\n" proof_text) ^ "\n"
+    let max_name_width = List.fold_left (fun n (x, _) -> max n (String.length x)) 0 notations in
+    let lines_list =
+      List.map
+        (fun (x, f) -> x ^ (String.make (max_name_width - String.length x) ' ') ^ " ::= " ^ Raw_sequent.raw_formula_to_ascii utf8 f)
+        notations in
+    (String.concat "\n" proof_text) ^ "\n" ^ 
+    (if notations = [] then "" else "\n\n" ^ (String.concat "\n" lines_list) ^ "\n")
 
 let to_ascii =
     to_ascii_utf8 false
 
-let to_utf8 implicit_exchange proof =
+let to_utf8 implicit_exchange notations proof =
     Str.global_replace (Str.regexp "+") "⊕"
    (Str.global_replace (Str.regexp "*") "⊗"
    (Str.global_replace (Str.regexp "|") "⅋"
@@ -662,8 +668,9 @@ let to_utf8 implicit_exchange proof =
    (Str.global_replace (Str.regexp "_") "⊥"
    (Str.global_replace (Str.regexp "~") "-"
    (Str.global_replace (Str.regexp "-") "─"
+   (Str.global_replace (Str.regexp "-o") " ⊸"
    (Str.global_replace (Str.regexp "|-") "⊢ "
-   (to_ascii_utf8 true implicit_exchange proof))))))))
+   (to_ascii_utf8 true implicit_exchange notations proof)))))))))
 
 
 (* SIMPLIFY : COMMUTE UP PERMUTATIONS *)

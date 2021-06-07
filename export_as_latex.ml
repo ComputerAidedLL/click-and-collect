@@ -1,16 +1,21 @@
 open Proof
 
-let proof_to_latex implicit_exchange proof =
+let notations_to_latex notations =
+    let lines_list = List.map (fun (x, f) -> x ^ " & ::= & " ^ Raw_sequent.raw_formula_to_latex f) notations in
+    String.concat "\\\\\n" lines_list
+
+let proof_to_latex implicit_exchange notations proof =
     let header = "% This LaTeX file has been generated using the Click&coLLect tool.\n"
         ^ "% https://click-and-collect.linear-logic.org/\n\n" in
     let packages = "\\documentclass{article}\n\n"
-        ^ "\\usepackage{cmll}\n"
+        ^ "\\usepackage{amssymb,cmll}\n"
         ^ "\\usepackage{ebproof}\n\n" in
     let macros = "\\newcommand*{\\orth}{^\\perp}\n"
         ^ "\\newcommand*{\\tensor}{\\otimes}\n"
         ^ "\\newcommand*{\\one}{1}\n"
         ^ "\\newcommand*{\\plus}{\\oplus}\n"
-        ^ "\\newcommand*{\\zero}{0}\n\n"
+        ^ "\\newcommand*{\\zero}{0}\n"
+        ^ "\\newcommand*{\\limp}{\\multimap}\n\n"
         ^ "\\newcommand*{\\hypv}[1]{\\hypo{\\vdash #1}}\n"
         ^ "\\newcommand*{\\exv}[1]{\\infer{1}[\\ensuremath{\\mathit{ex}}]{\\vdash #1}}\n"
         ^ "\\newcommand*{\\axv}[1]{\\infer{0}[\\ensuremath{\\mathit{ax}}]{\\vdash #1}}\n"
@@ -39,8 +44,16 @@ let proof_to_latex implicit_exchange proof =
         ^ "}\n\n" in
     let start_proof = "\\begin{document}\n\n\\adaptpage{\n\\begin{prooftree}\n" in
     let proof_lines = Proof.to_latex implicit_exchange proof in
-    let end_proof = "\\end{prooftree}\n}\n\n\\end{document}\n\n" in
-    Printf.sprintf "%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof;;
+    let end_proof = "\\end{prooftree}\n" in
+    let notations_part =
+      if notations = [] then "" else
+     (let start_notations = "\n\\hspace{2cm}\n\\framebox{$\\begin{array}{rcl}\n" in
+      let notation_lines = notations_to_latex notations in
+      let end_notations = "\n\\end{array}$}\n" in
+      start_notations ^ notation_lines ^ end_notations
+     ) in
+    let end_file = "}\n\n\\end{document}\n\n" in
+    Printf.sprintf "%s%s%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof notations_part end_file;;
 
 let temp_directory = "local/var/temp";;
 
@@ -102,9 +115,10 @@ let get_png_file proof_as_latex =
 let export_as_latex implicit_exchange format request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let proof = proof_with_notations.proof in
-        if format = "ascii" then true, to_ascii implicit_exchange proof, "text/plain"
-        else if format = "utf8" then true, to_utf8 implicit_exchange proof, "text/plain"
-        else let proof_as_latex = proof_to_latex implicit_exchange proof in
+        let notations = proof_with_notations.notations in
+        if format = "ascii" then true, to_ascii implicit_exchange notations proof, "text/plain"
+        else if format = "utf8" then true, to_utf8 implicit_exchange notations proof, "text/plain"
+        else let proof_as_latex = proof_to_latex implicit_exchange notations proof in
         if format = "tex" then true, proof_as_latex, "text/plain"
         else if format = "pdf" then true, get_pdf_file proof_as_latex, "application/pdf"
         else if format = "png" then true, get_png_file proof_as_latex, "image/png"
