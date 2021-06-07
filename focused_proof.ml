@@ -439,18 +439,20 @@ let proof_from_focused_proof focused_proof cyclic_notations acyclic_notations or
     Proof.from_fully_replaced_proof cyclic_notations acyclic_notations original_sequent simplified_proof
 
 let iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
-    let replaced_sequents = ref replaced_sequents in
+    let continue = ref true in
     let proof = ref None in
-    try while !proof = None do
-        let replaced_sequent = List.hd !replaced_sequents in
-        let focused_sequent = sequent_to_focused_sequent replaced_sequent in
-        match prove focused_sequent [] exponential_bound ttl with
-           | Some focused_proof ->
-                proof := Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent);
-           | None -> replaced_sequents := List.tl !replaced_sequents;
+    while !continue do
+        match replaced_sequents with
+            | [] -> continue := false;
+            | replaced_sequent :: tail ->
+                let focused_sequent = sequent_to_focused_sequent replaced_sequent in
+                match prove focused_sequent [] exponential_bound ttl with
+                   | Some focused_proof ->
+                        proof := Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent);
+                        continue := false
+                   | None -> ()
     done;
     !proof
-    with Failure m when m = "hd" -> None
 
 
 let rec prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
