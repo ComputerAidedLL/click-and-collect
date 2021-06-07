@@ -98,13 +98,11 @@ function initMainProof(proofAsJson) {
         checkProvability: true,
         autoReverse: {
             value: autoReverse,
-            onToggle: onOptionToggle('auto_reverse'),
-            dialog: 'auto-reverse-dialog'
+            onToggle: onOptionToggle('auto_reverse')
         },
         cutMode: {
             value: cutMode,
-            onToggle: onOptionToggle('cut_mode'),
-            dialog: 'cut-mode-dialog'
+            onToggle: onOptionToggle('cut_mode')
         },
         notations: {
             formulasAsString: notations,

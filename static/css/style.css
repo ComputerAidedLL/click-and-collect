@@ -49,8 +49,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .tutorial ul.examples {list-style: none; margin: 1em 0; padding: 0; }
 .tutorial ul.examples li { margin: 0.3em; text-align: center; }
 
-.close-section:hover { cursor: pointer; }
-.close-section { color: #777; display: flex; justify-content: flex-end; margin-right: 1em; }
+.close-section { cursor: pointer; color: #777; display: flex; justify-content: flex-end; margin-right: 1em; }
 
 /* PROOF */
 .proof.complete { background:#CFC; }
@@ -73,8 +72,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .commaList li span.comma:after { content: ','; margin-left: 0.2em; }
 .proof .commaList li:last-child span.comma:after { content: ''; }
 .proof.cut-mode span.first-point:after, .proof.cut-mode .commaList li:last-child span.comma:after { content: '.'; }
-.proof.cut-mode span.first-point, .proof.cut-mode .commaList li span.comma { margin-left: 0.3em; margin-right: 0.3em; }
-.proof.cut-mode span.first-point:hover, .proof.cut-mode .commaList li span.comma:hover { cursor: pointer; }
+.proof.cut-mode span.first-point, .proof.cut-mode .commaList li span.comma { cursor: pointer; margin-left: 0.3em; margin-right: 0.3em; }
 .proof .binary-connector { margin-left: 3px; margin-right: 3px; }
 .proof .clickable:hover { cursor:pointer; }
 .proof .highlightableExpr:hover { background: #e0ecf8; }
@@ -83,20 +81,18 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .export-bar, .option-bar { margin-left: auto; margin-right: auto; display: table; }
 .export-bar { margin-top: 1em; }
 .option-bar { margin-top: 0.5em; }
-.export-bar span, .option-label, .option-info { color: #777; margin-right: 0.5em; }
-img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; }
-img.export:hover, .option-info:hover { cursor: pointer; }
-.option-info { font-weight: bold; }
+.export-bar span, .option-label, .option-info { color: #777; margin-left: 0.5em; vertical-align: middle; }
+img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; cursor: pointer; }
+.option-info { font-weight: bold; cursor: pointer; }
 
 .notation-bar { margin-top: 1em; }
-.notation-label, .notation-add, .notation-new-button { color: #777; vertical-align: middle; }
-.notation-add, .notation-new-button { cursor: pointer; }
-.notation-add { margin-left: 0.5em; font-size: 1.3em; font-weight: bold; }
+.notation-label, .notation-add { vertical-align: middle; color: #777; }
+.notation-add { margin-left: 0.5em; font-size: 1.2em; font-weight: bold; cursor: pointer; }
 .notation-new-form { display: block; }
 .notation-new-form input[type=text] { border: dotted 1px #777; border-radius: 0.3em; padding: 0.1em 0.3em; }
 .notation-new-input-name { text-align: center; }
-.notation-new-button { margin-left: 0.3em; }
-.notation-line { cursor: pointer; display: table; margin: 0.1em auto; }
+.notation-button { margin-left: 0.3em; color: #777; cursor: pointer; }
+.notation-line { cursor: pointer; display: table; margin: 0.2em auto; }
 
 .dialog { text-align: justify; }
 #export-dialog table td { vertical-align: top; padding-top: 0.3em; }
@@ -116,7 +112,7 @@ img.export:hover, .option-info:hover { cursor: pointer; }
 .section.footer .subsection { display: table; margin: auto; font-size: 0.8em; max-width: none; text-align: center; text-indent: 0; }
 
 /* SWITCH BUTTON */
-.switch { position: relative; display: inline-block; width: 2.2em; height: 1em; vertical-align: text-top; }
+.switch { position: relative; display: inline-block; width: 2.2em; height: 1em; vertical-align: middle; margin-left: 0.5em; }
 .switch input { opacity: 0; width: 0; height: 1em; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 1em; }
 .slider:before { position: absolute; content: ""; height: 0.8em; width: 0.8em; left: 0.2em; bottom: 0.1em; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
