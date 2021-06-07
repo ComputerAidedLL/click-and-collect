@@ -931,7 +931,7 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
         $form.addClass('notation-item');
     }
 
-    $form.append($('<input type="text" name="notationName" size="1">')
+    $form.append($('<input type="text" name="notationName" size="2">')
             .addClass('notation-new-input-name')
             .val(defaultName))
         .append($('<span>').text('::='))
