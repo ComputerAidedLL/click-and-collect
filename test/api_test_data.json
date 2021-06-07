@@ -696,8 +696,9 @@
     "?A^,(A|A)&1,?(B*B),?(_*_)",
     "?A^,?!?A"
   ],
-  "parse_auto_prove_non_provable": [
-    "1+_,1,1"
+  "auto_prove_non_provable": [
+    {"s":{"hyp":[],"cons":[{"t":"plus","v1":{"t":"one"},"v2":{"t":"bottom"}},{"t":"one"},{"t":"one"}]},"notations":[]},
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"litt","v":"B"}],["B",{"t":"litt","v":"A"}]]}
   ],
   "auto_prove_and_check_simplified_proof": [
     {
@@ -1008,6 +1009,9 @@
     }
   ],
   "auto_prove_with_notations": [
-    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]}
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]},
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"lollipop","v1":{"t":"litt","v":"A"},"v2":{"t":"litt","v":"A"}}]]},
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"B"}]},"notations":[["A",{"t":"dual","v":{"t":"litt","v":"A"}}],["B",{"t":"litt","v":"A"}]]},
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["A",{"t":"dual","v":{"t":"litt","v":"A"}}]]}
   ]
 }

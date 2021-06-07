@@ -1,6 +1,7 @@
 (*** Backward proof search in LL (LLF) ***)
 
 open Sequent
+open Sequent_with_notations
 open Proof
 
 type llf_rule =
@@ -295,26 +296,6 @@ let rec prove sequent select_d2 max_d2 ttl =
               None
       | _ -> None
 
-let rec prove_with_increasing_bound focused_sequent exponential_bound ttl =
-    has_reached_exponential_bound := false;
-    match prove focused_sequent [] exponential_bound ttl with
-        | None -> if !has_reached_exponential_bound
-            then prove_with_increasing_bound focused_sequent (exponential_bound + 1) ttl
-            else (Some false, None)
-        | Some proof -> (Some true, Some proof)
-
-(* [prove_sequent sequent] attempts to prove [sequent] and returns
-   the result [(res, proof)].
-   [res] = None if max execution time is reached, and [res] = (Some b)
-   when the proof search has been finished and b indicates the provability of
-   [sequent]. When the sequent is provable, [proof] contains the proof found.
-   *)
-let prove_focused_sequent focused_sequent =
-  let max_execution_time_in_seconds = 3. in
-  let ttl = Sys.time () +. max_execution_time_in_seconds in
-  try prove_with_increasing_bound focused_sequent 0 ttl
-  with Ttl_exceeded -> (None, None)
-
 (* FOCUSED <-> NOT FOCUSED *)
 exception NotFound
 
@@ -452,16 +433,52 @@ let rec unfocus_proof = function
 let sequent_to_focused_sequent sequent =
     Async (Set_formula.empty, [], sequent)
 
-let proof_from_focused_proof focused_proof =
+let proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent =
     let proof = unfocus_proof focused_proof in
-    remove_loop proof
+    let simplified_proof = remove_loop proof in
+    Proof.from_fully_replaced_proof cyclic_notations acyclic_notations original_sequent simplified_proof
 
-exception NonProvableSequent
-exception NonAutoProvableSequent
+let iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
+    let continue = ref true in
+    let proof = ref None in
+    while !continue do
+        match replaced_sequents with
+            | [] -> continue := false;
+            | replaced_sequent :: tail ->
+                let focused_sequent = sequent_to_focused_sequent replaced_sequent in
+                match prove focused_sequent [] exponential_bound ttl with
+                   | Some focused_proof ->
+                        proof := Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent);
+                        continue := false
+                   | None -> ()
+    done;
+    !proof
 
-let prove_sequent sequent =
-    let focused_sequent = sequent_to_focused_sequent sequent in
-    match prove_focused_sequent focused_sequent with
-    | Some true, Some focused_proof -> proof_from_focused_proof focused_proof
-    | Some false, _ -> raise NonProvableSequent
-    | _ -> raise NonAutoProvableSequent
+
+let rec prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
+    has_reached_exponential_bound := false;
+    match iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents with
+        | None ->
+            let new_replaced_sequents = List.sort_uniq compare (replaced_sequents @
+                List.concat (List.map (fun (s, rf) ->
+                    List.concat (List.map (fun sequent ->
+                        partial_replace_in_sequent s (Raw_sequent.to_formula rf) sequent)
+                    replaced_sequents))
+                cyclic_notations)) in
+            if !has_reached_exponential_bound || new_replaced_sequents <> replaced_sequents
+            then prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations (exponential_bound + 1) ttl new_replaced_sequents
+            else (None, false)
+        | Some proof -> (Some proof, true)
+
+(* [prove_sequent sequent_with_notations] attempts to prove [sequent_with_notations.sequent]
+   and returns the result [(proof opt, is_provable)].
+   If proof option is None, then:
+   * is_provable is false if auto_prover performed an exhaustive research
+   * is_provable is true if max execution time was reached. *)
+let prove_sequent sequent_with_notations =
+    let cyclic_notations, acyclic_notations = split_cyclic_acyclic sequent_with_notations in
+    let max_execution_time_in_seconds = 3. in
+    let ttl = Sys.time () +. max_execution_time_in_seconds in
+    let replaced_sequents = [replace_all_notations_in_sequent sequent_with_notations.sequent acyclic_notations] in
+    try prove_with_increasing_bound sequent_with_notations.sequent cyclic_notations acyclic_notations 0 ttl replaced_sequents
+    with Ttl_exceeded -> (None, true)

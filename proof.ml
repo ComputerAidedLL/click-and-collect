@@ -1073,25 +1073,32 @@ let rec remove_loop proof =
 
 (* PROOF & NOTATIONS *)
 
-let rec from_fully_replaced_proof notations sequent proof =
+let rec from_fully_replaced_proof cyclic_notations acyclic_notations sequent proof =
     let rule_request = get_rule_request proof in
-    try let new_proof = from_sequent_and_rule_request sequent notations rule_request in
+    try let new_proof = from_sequent_and_rule_request sequent [] rule_request in
         let new_sequents = List.map get_conclusion (get_premises new_proof) in
-        let new_premises = List.map2 (from_fully_replaced_proof notations) new_sequents (get_premises proof) in
+        let new_premises = List.map2 (from_fully_replaced_proof cyclic_notations acyclic_notations) new_sequents (get_premises proof) in
         set_premises new_proof new_premises
     with Rule_exception _ -> match rule_request with
-    | Axiom -> begin try
-        unfold_at_position notations sequent proof 0 with Rule_exception _ ->
-        unfold_at_position notations sequent proof 1 end
-    | One -> unfold_at_position notations sequent proof 0
+    | Axiom -> unfold_axiom cyclic_notations acyclic_notations sequent proof
+    | One -> unfold_at_position cyclic_notations acyclic_notations sequent proof 0
     | Top fp | Bottom fp | Tensor fp | Par fp | With fp | Plus_left fp | Plus_right fp | Promotion fp | Dereliction fp
-    | Weakening fp | Contraction fp -> unfold_at_position notations sequent proof fp
-    | Cut (_, fp) -> unfold_at_position notations sequent proof fp
+    | Weakening fp | Contraction fp | Cut (_, fp) -> unfold_at_position cyclic_notations acyclic_notations sequent proof fp
     | _ -> raise (Failure (Printf.sprintf "rule_request %s not expected" (Rule_request.to_string rule_request)))
 
-and unfold_at_position notations sequent proof position =
+and unfold_at_position cyclic_notations acyclic_notations sequent proof position =
+    let notations = acyclic_notations @ cyclic_notations in
     let new_proof = try
         from_sequent_and_rule_request sequent notations (Unfold_litt position) with Rule_exception _ ->
         from_sequent_and_rule_request sequent notations (Unfold_dual position) in
     let new_sequent = get_conclusion (List.hd (get_premises new_proof)) in
-    set_premises new_proof [from_fully_replaced_proof notations new_sequent proof]
+    set_premises new_proof [from_fully_replaced_proof cyclic_notations acyclic_notations new_sequent proof]
+
+and unfold_axiom cyclic_notations acyclic_notations sequent proof =
+    let new_proof = try
+        from_sequent_and_rule_request sequent acyclic_notations (Unfold_litt 0) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent acyclic_notations (Unfold_litt 1) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent cyclic_notations (Unfold_litt 0) with Rule_exception _ ->
+        from_sequent_and_rule_request sequent cyclic_notations (Unfold_dual 1) in
+    let new_sequent = get_conclusion (List.hd (get_premises new_proof)) in
+    set_premises new_proof [from_fully_replaced_proof cyclic_notations acyclic_notations new_sequent proof]
