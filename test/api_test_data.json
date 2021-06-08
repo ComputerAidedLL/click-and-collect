@@ -1012,6 +1012,7 @@
     {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"litt","v":"B"}}],["B",{"t":"whynot","v":{"t":"one"}}]]},
     {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"}]},"notations":[["A",{"t":"lollipop","v1":{"t":"litt","v":"A"},"v2":{"t":"litt","v":"A"}}]]},
     {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"B"}]},"notations":[["A",{"t":"dual","v":{"t":"litt","v":"A"}}],["B",{"t":"litt","v":"A"}]]},
-    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["A",{"t":"dual","v":{"t":"litt","v":"A"}}]]}
+    {"s":{"hyp":[],"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["A",{"t":"dual","v":{"t":"litt","v":"A"}}]]},
+    {"s":{"hyp":[],"cons":[{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}},{"t":"par","v1":{"t":"litt","v":"B"},"v2":{"t":"dual","v":{"t":"litt","v":"A"}}}]},"notations":[["A",{"t":"litt","v":"B"}]]}
   ]
 }

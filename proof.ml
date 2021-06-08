@@ -1105,7 +1105,11 @@ and unfold_axiom cyclic_notations acyclic_notations sequent proof =
     let new_proof = try
         from_sequent_and_rule_request sequent acyclic_notations (Unfold_litt 0) with Rule_exception _ -> try
         from_sequent_and_rule_request sequent acyclic_notations (Unfold_litt 1) with Rule_exception _ -> try
-        from_sequent_and_rule_request sequent cyclic_notations (Unfold_litt 0) with Rule_exception _ ->
+        from_sequent_and_rule_request sequent acyclic_notations (Unfold_dual 0) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent acyclic_notations (Unfold_dual 1) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent cyclic_notations (Unfold_litt 0) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent cyclic_notations (Unfold_litt 1) with Rule_exception _ -> try
+        from_sequent_and_rule_request sequent cyclic_notations (Unfold_dual 0) with Rule_exception _ ->
         from_sequent_and_rule_request sequent cyclic_notations (Unfold_dual 1) in
     let new_sequent = get_conclusion (List.hd (get_premises new_proof)) in
     set_premises new_proof [from_fully_replaced_proof cyclic_notations acyclic_notations new_sequent proof]
