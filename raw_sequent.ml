@@ -170,4 +170,4 @@ let rec get_variable_names =
     | Whynot e -> get_variable_names e;;
 
 let get_unique_variable_names raw_sequent =
-    List.sort_uniq String.compare (List.concat (List.map get_variable_names raw_sequent));;
+    List.sort_uniq String.compare (List.concat_map get_variable_names raw_sequent);;

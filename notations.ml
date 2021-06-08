@@ -26,7 +26,7 @@ let to_json notations =
 (* VARIABLES *)
 
 let get_variable_names notations =
-    List.concat (List.map (fun (_, f) -> get_variable_names f) notations);;
+    List.concat_map (fun (_, f) -> get_variable_names f) notations;;
 
 (* GET CYCLIC / ACYCLIC NOTATIONS *)
 
@@ -82,7 +82,7 @@ let split_cyclic_acyclic notations variables =
     done;
 
     (* We filter only notations that appear in variables input *)
-    let affected_indices = List.sort_uniq compare (List.concat (List.map (get_affected_indices notations matrix) variables)) in
+    let affected_indices = List.sort_uniq compare (List.concat_map (get_affected_indices notations matrix) variables) in
 
     let cyclic_indices = List.filter (fun x -> matrix.(x).(x)) affected_indices in
     let acyclic_indices = List.filter (fun x -> not matrix.(x).(x)) affected_indices in

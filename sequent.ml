@@ -66,7 +66,7 @@ let rec get_variable_names =
     | Whynot e -> get_variable_names e;;
 
 let get_unique_variable_names sequent =
-    List.sort_uniq String.compare (List.concat (List.map get_variable_names sequent));;
+    List.sort_uniq String.compare (List.concat_map get_variable_names sequent);;
 
 let rec count_notation_in_formula notation_name = function
     | Litt x when x = notation_name -> 1
@@ -95,40 +95,6 @@ let rec replace_in_formula alias formula = function
 
 let replace_in_sequent alias formula sequent =
      List.map (replace_in_formula alias formula) sequent;;
-
-let rec partial_replace_in_formula alias formula = function
-    | Litt s when s = alias -> [formula; Litt s]
-    | Dual s when s = alias -> [dual formula; Dual s]
-    | Tensor (e1, e2) ->
-        let l1 = partial_replace_in_formula alias formula e1 in
-        let l2 = partial_replace_in_formula alias formula e2 in
-        List.concat (List.map (fun f1 -> List.map (fun f2 -> Tensor (f1, f2)) l2) l1)
-    | Par (e1, e2) ->
-        let l1 = partial_replace_in_formula alias formula e1 in
-        let l2 = partial_replace_in_formula alias formula e2 in
-        List.concat (List.map (fun f1 -> List.map (fun f2 -> Par (f1, f2)) l2) l1)
-    | With (e1, e2) ->
-        let l1 = partial_replace_in_formula alias formula e1 in
-        let l2 = partial_replace_in_formula alias formula e2 in
-        List.concat (List.map (fun f1 -> List.map (fun f2 -> With (f1, f2)) l2) l1)
-    | Plus (e1, e2) ->
-        let l1 = partial_replace_in_formula alias formula e1 in
-        let l2 = partial_replace_in_formula alias formula e2 in
-        List.concat (List.map (fun f1 -> List.map (fun f2 -> Plus (f1, f2)) l2) l1)
-    | Ofcourse e ->
-        let l = partial_replace_in_formula alias formula e in
-        List.map (fun f -> Ofcourse f) l
-    | Whynot e ->
-        let l = partial_replace_in_formula alias formula e in
-        List.map (fun f -> Whynot f) l
-    | f -> [f];;
-
-let rec partial_replace_in_sequent alias formula = function
-    | [] -> [[]]
-    | e :: tail ->
-        let formulas = partial_replace_in_formula alias formula e in
-        let tails = partial_replace_in_sequent alias formula tail in
-        List.concat (List.map (fun f -> List.map (fun t -> f::t) tails) formulas);;
 
 (* PATTERN MATCHING ON FORMULA *)
 

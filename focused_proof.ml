@@ -438,31 +438,61 @@ let proof_from_focused_proof focused_proof cyclic_notations acyclic_notations or
     let simplified_proof = remove_loop proof in
     Proof.from_fully_replaced_proof cyclic_notations acyclic_notations original_sequent simplified_proof
 
-let iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
-    let replaced_sequents = ref replaced_sequents in
-    let proof = ref None in
-    try while !proof = None do
-        let replaced_sequent = List.hd !replaced_sequents in
+let rec iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl = function
+    | [] -> None
+    | replaced_sequent :: tail ->
         let focused_sequent = sequent_to_focused_sequent replaced_sequent in
         match prove focused_sequent [] exponential_bound ttl with
-           | Some focused_proof ->
-                proof := Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent);
-           | None -> replaced_sequents := List.tl !replaced_sequents;
-    done;
-    !proof
-    with Failure m when m = "hd" -> None
+           | Some focused_proof -> Some (proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent)
+           | None -> iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl tail
 
+let rec replace_notation_in_formula_or_not ttl notation_name notation_formula formula =
+    (if Sys.time () > ttl then raise Ttl_exceeded);
+    match formula with
+    | Litt s when s = notation_name -> [notation_formula; Litt s]
+    | Dual s when s = notation_name -> [dual notation_formula; Dual s]
+    | Tensor (e1, e2) ->
+        let l1 = replace_notation_in_formula_or_not ttl notation_name notation_formula e1 in
+        let l2 = replace_notation_in_formula_or_not ttl notation_name notation_formula e2 in
+        List.concat_map (fun f1 -> List.map (fun f2 -> Tensor (f1, f2)) l2) l1
+    | Par (e1, e2) ->
+        let l1 = replace_notation_in_formula_or_not ttl notation_name notation_formula e1 in
+        let l2 = replace_notation_in_formula_or_not ttl notation_name notation_formula e2 in
+        List.concat_map (fun f1 -> List.map (fun f2 -> Par (f1, f2)) l2) l1
+    | With (e1, e2) ->
+        let l1 = replace_notation_in_formula_or_not ttl notation_name notation_formula e1 in
+        let l2 = replace_notation_in_formula_or_not ttl notation_name notation_formula e2 in
+        List.concat_map (fun f1 -> List.map (fun f2 -> With (f1, f2)) l2) l1
+    | Plus (e1, e2) ->
+        let l1 = replace_notation_in_formula_or_not ttl notation_name notation_formula e1 in
+        let l2 = replace_notation_in_formula_or_not ttl notation_name notation_formula e2 in
+        List.concat_map (fun f1 -> List.map (fun f2 -> Plus (f1, f2)) l2) l1
+    | Ofcourse e ->
+        let l = replace_notation_in_formula_or_not ttl notation_name notation_formula e in
+        List.map (fun f -> Ofcourse f) l
+    | Whynot e ->
+        let l = replace_notation_in_formula_or_not ttl notation_name notation_formula e in
+        List.map (fun f -> Whynot f) l
+    | _ -> [formula];;
+
+let rec replace_notation_in_sequent_or_not ttl notation_name notation_formula = function
+    | [] -> [[]]
+    | e :: tail ->
+        let formulas = replace_notation_in_formula_or_not ttl notation_name notation_formula e in
+        let tails = replace_notation_in_sequent_or_not ttl notation_name notation_formula tail in
+        List.concat_map (fun f -> List.map (fun t -> f::t) tails) formulas;;
+
+let replace_notation_in_sequents ttl sequents notation =
+    let notation_name, rf = notation in
+    let notation_formula = Raw_sequent.to_formula rf in
+    List.concat_map (replace_notation_in_sequent_or_not ttl notation_name notation_formula) sequents
 
 let rec prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents =
     has_reached_exponential_bound := false;
     match iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl replaced_sequents with
         | None ->
             let new_replaced_sequents = List.sort_uniq compare (replaced_sequents @
-                List.concat (List.map (fun (s, rf) ->
-                    List.concat (List.map (fun sequent ->
-                        partial_replace_in_sequent s (Raw_sequent.to_formula rf) sequent)
-                    replaced_sequents))
-                cyclic_notations)) in
+                List.concat_map (replace_notation_in_sequents ttl replaced_sequents) cyclic_notations) in
             if !has_reached_exponential_bound || new_replaced_sequents <> replaced_sequents
             then prove_with_increasing_bound original_sequent cyclic_notations acyclic_notations (exponential_bound + 1) ttl new_replaced_sequents
             else (None, false)
