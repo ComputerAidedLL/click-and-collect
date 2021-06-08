@@ -171,3 +171,101 @@ let rec get_variable_names =
 
 let get_unique_variable_names raw_sequent =
     List.sort_uniq String.compare (List.concat_map get_variable_names raw_sequent);;
+
+
+(* EXPORTS *)
+
+type raw_formula_format = {
+    atom_preformat : string -> string;
+    litt_format : (string -> string, unit, string) format;
+    dual_format : (string -> string, unit, string) format;
+    is_dual_atomic : bool;
+    is_unary_atomic : bool;
+    one_format : string;
+    bottom_format : string;
+    top_format : string;
+    zero_format : string;
+    tensor_format : (string -> string -> string, unit, string) format;
+    par_format : (string -> string -> string, unit, string) format;
+    with_format : (string -> string -> string, unit, string) format;
+    plus_format : (string -> string -> string, unit, string) format;
+    lollipop_format : (string -> string -> string, unit, string) format;
+    ofcourse_format : (string -> string, unit, string) format;
+    whynot_format : (string -> string, unit, string) format }
+
+let rec raw_formula_export_atomic formatting =
+  let unary_connective f e =
+    let s, atomic = raw_formula_export_atomic formatting e in
+    let s_parenthesis = if atomic then s else "(" ^ s ^ ")" in
+    Printf.sprintf f s_parenthesis, formatting.is_unary_atomic in
+  let binary_connective f e1 e2 =
+    let s1, atomic1 = raw_formula_export_atomic formatting e1 in
+    let s1_parenthesis = if atomic1 then s1 else "(" ^ s1 ^ ")" in
+    let s2, atomic2 = raw_formula_export_atomic formatting e2 in
+    let s2_parenthesis = if atomic2 then s2 else "(" ^ s2 ^ ")" in
+    Printf.sprintf f s1_parenthesis s2_parenthesis, false in
+  function
+  | One -> formatting.one_format, true
+  | Bottom -> formatting.bottom_format, true
+  | Top -> formatting.top_format, true
+  | Zero -> formatting.zero_format, true
+  | Litt x -> Printf.sprintf formatting.litt_format (formatting.atom_preformat x), true
+  | Dual (Litt x) -> Printf.sprintf formatting.dual_format (formatting.atom_preformat x), formatting.is_dual_atomic
+  | Dual e -> let s, atomic = raw_formula_export_atomic formatting e in
+              let s_parenthesis = "(" ^ s ^ ")" in
+              Printf.sprintf formatting.dual_format s_parenthesis, formatting.is_dual_atomic
+  | Tensor (e1, e2) -> binary_connective formatting.tensor_format e1 e2
+  | Par (e1, e2) -> binary_connective formatting.par_format e1 e2
+  | With (e1, e2) -> binary_connective formatting.with_format e1 e2
+  | Plus (e1, e2) -> binary_connective formatting.plus_format e1 e2
+  | Lollipop (e1, e2) -> binary_connective formatting.lollipop_format e1 e2
+  | Ofcourse e -> unary_connective formatting.ofcourse_format e
+  | Whynot e -> unary_connective formatting.whynot_format e
+
+
+(* SEQUENT -> LATEX *)
+
+let raw_latex_format = {
+    atom_preformat = litteral_to_latex;
+    litt_format = "%s";
+    dual_format = "{%s}\\orth";
+    is_dual_atomic = true;
+    is_unary_atomic = true;
+    one_format = "\\one";
+    bottom_format = "\\bot";
+    top_format = "\\top";
+    zero_format = "\\zero";
+    tensor_format = "%s \\tensor %s";
+    par_format = "%s \\parr %s";
+    with_format = "%s \\with %s";
+    plus_format = "%s \\plus %s";
+    lollipop_format = "%s \\limp %s";
+    ofcourse_format = "\\oc %s";
+    whynot_format = "\\wn %s" }
+
+let raw_formula_to_latex formula =
+  let s, _ = raw_formula_export_atomic raw_latex_format formula in s
+
+
+(* SEQUENT -> ASCII *)
+
+let raw_ascii_format utf8 = {
+    atom_preformat = (fun x -> x);
+    litt_format = "%s";
+    dual_format = "%s^";
+    is_dual_atomic = true;
+    is_unary_atomic = true;
+    one_format = "1";
+    bottom_format = "_";
+    top_format = "T";
+    zero_format = "0";
+    tensor_format = "%s * %s";
+    par_format = "%s | %s";
+    with_format = "%s & %s";
+    plus_format = "%s + %s";
+    lollipop_format = if utf8 then "%s-o %s" else "%s -o %s";
+    ofcourse_format = "!%s";
+    whynot_format = "?%s" }
+
+let raw_formula_to_ascii utf8 formula =
+  let s, _ = raw_formula_export_atomic (raw_ascii_format utf8) formula in s
