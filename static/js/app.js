@@ -65,8 +65,7 @@ function submitSequent(element, autoSubmit = false) {
 function parseSequentAsString(sequentAsString, $container) {
     $.ajax({
         type: 'GET',
-        url: '/parse_sequent',
-        data: { sequentAsString },
+        url: `/parse_sequent/${urlEncode(sequentAsString)}`,
         success: function(data)
         {
             if (data['is_valid']) {
@@ -203,12 +202,11 @@ function onNotationUpdate(notationFormulasAsString) {
 // ****************
 
 function uncompressProof(compressedProof, $container) {
-    let apiUrl = '/uncompress_proof';
-
     $.ajax({
-        type: 'GET',
-        url: apiUrl,
-        data: { compressedProof },
+        type: 'POST',
+        url: '/uncompress_proof',
+        contentType:'application/json; charset=utf-8',
+        data: JSON.stringify({ compressedProof }),
         success: function(data)
         {
             if (data['proof']) {

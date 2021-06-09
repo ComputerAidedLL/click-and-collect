@@ -509,19 +509,19 @@ function createExportBar($container) {
         .append($('<span>').text('Export:'));
 
     let coqButton = createExportButton(
-        'images/coq.png',
+        'static/images/coq.png',
         'Export as Coq',
         function () { exportAsCoq($container); });
     $exportBar.append(coqButton);
 
     let latexButton = createExportButton(
-        'images/camera.png',
+        'static/images/camera.png',
         'Proof drawing',
         function () { openExportDialog($container); });
     $exportBar.append(latexButton);
 
     let shareButton = createExportButton(
-        'images/share-icon.png',
+        'static/images/share-icon.png',
         'Share proof URL',
         function () { shareProof($container); });
     $exportBar.append(shareButton);
@@ -594,7 +594,7 @@ function exportAsLatex($container, format, implicitExchange) {
     let notations = getNotations($container);
 
     let httpRequest = new XMLHttpRequest();
-    httpRequest.open('POST', `/export_as_latex?format=${format}&implicitExchange=${implicitExchange}`, true);
+    httpRequest.open('POST', `/export_as_latex/${format}/${implicitExchange}`, true);
     httpRequest.responseType = 'blob';
     httpRequest.setRequestHeader('Content-Type', "application/json; charset=UTF-8");
 
@@ -642,7 +642,7 @@ function shareProof($container) {
         data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
-            addQueryParamInUrl('p', data, "Add compressed_proof in URL");
+            addQueryParamInUrl('p', data['compressedProof'], "Add compressed_proof in URL");
             copyUrlToClipboard();
             displayPedagogicInfo('Sharable URL has been copied to clipboard.', $container);
         },
@@ -864,8 +864,7 @@ function openCutPopup(onFormulaSuccessCallback) {
 function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $container) {
     $.ajax({
         type: 'GET',
-        url: '/parse_formula',
-        data: { formulaAsString },
+        url: `/parse_formula/${urlEncode(formulaAsString)}`,
         success: function(data)
         {
             if (data['is_valid']) {
@@ -956,8 +955,7 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
 function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) {
     $.ajax({
         type: 'GET',
-        url: '/is_valid_litt',
-        data: { litt: notationName },
+        url: `/is_valid_litt/${urlEncode(notationName)}`,
         success: function(data)
         {
             if (data['is_valid']) {
@@ -1232,4 +1230,9 @@ function uncompressJson(json) {
         json = json.replaceAll(abbreviation, field);
     }
     return json;
+}
+
+function urlEncode(s) {
+    return s.replaceAll('?', '%3F')
+        .replaceAll('/', '%2F');
 }

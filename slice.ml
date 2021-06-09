@@ -17,7 +17,7 @@ let rec slices = function
   | With (f1, f2) -> slices f1 @ (slices f2)
   | Plus (f1, f2) -> prod_map List.append (slices f1) (slices f2)
   | Ofcourse f -> slices f
-  | Whynot f -> []
+  | Whynot _f -> []
 
 let rec remove x = function
   | [] -> raise Not_found

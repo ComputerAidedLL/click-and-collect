@@ -4,27 +4,12 @@ The repository contains
 frontend and backend code
 for an online interactive sequent prover for linear logic.
 
-## Technical informations and roadmap
-Some informations are available in the [wiki](https://github.com/etiennecallies/click-and-collect/wiki).
+## Technical information and roadmap
+Some information is available in the [wiki](https://github.com/etiennecallies/click-and-collect/wiki).
 
 ## Install
-
-### Install system dependencies
-
-- System dependencies for `ocsigen-start` (excluding PostgreSQL stuff as we rely on SQLite3):
-  `libgdbm-dev libsqlite3-dev debianutils imagemagick libgdbm-dev libgmp-dev libpcre3-dev libssl-dev npm pkg-config ruby-sass zlib1g-dev`
-- System dependencies for `lzma`: `liblzma-dev`
-- System dependencies for the SQLite3 backend of `ocsipersist`: `libsqlite3-dev pkg-config`
-
-To install everything under Debian-like distros:
-```
-sudo apt install libgdbm-dev libsqlite3-dev debianutils imagemagick libgdbm-dev libgmp-dev libpcre3-dev libssl-dev npm pkg-config ruby-sass zlib1g-dev liblzma-dev libsqlite3-dev
-```
-
 ### Build using opam
-
 - First initialize opam if necessary
-
 ```
 sudo apt-get install opam
 opam init
@@ -34,15 +19,10 @@ opam init
 ```
 opam switch create 4.12.0 # latest version at the time of writing
 ```
-- Install [lzma](https://github.com/fccm/ocaml-lzma) package from source, as it is sadly not available on opam
+- Install `opium`
 ```
-git clone git@github.com:fccm/ocaml-lzma.git
-opam pin add lzma ocaml-lzma/ -n
-opam install lzma
-```
-- Install `ocsigen-start`
-```
-opam install ocsigen-start
+opam depext opium
+opam install opium
 ```
 - Clone this repository
 ```
@@ -50,27 +30,18 @@ git clone https://github.com/etiennecallies/click-and-collect
 ```
 - Build and launch
 ```
-cd click-and-collect
-make test.byte
+dune build
+./_build/default/main.exe
 ```
 
-Now you can visit [http://localhost:8080](http://localhost:8080) and play with click-and-collect.
+Now you can visit [http://localhost:3000](http://localhost:3000) and play with click-and-collect.
 
-### Deploy on server
-Same as local dev, except that we need to proxy port 8080 by nginx (or Apache).
-- Add this nginx config (install it with `sudo apt install nginx`)
+### Make proof sharing work
+To compress/uncompress json we use LZMA algorithm.
+The code calls unix commands `lzma` and `unlzma`. Install them by installing `liblzma-dev` package:
 ```
-server {
-    root /home/{username}/click-and-collect;
-    index index.html;
-    server_name {hostname};
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-    }
-}
+sudo apt-get install liblzma-dev
 ```
-- Allow https by adding a certificate `sudo certbot --nginx`
 
 ### Make LaTeX export work
 If you don't have LaTeX environment installed on your machine (or your server), you can proceed as following to make LaTeX export work.
@@ -79,6 +50,22 @@ If you don't have LaTeX environment installed on your machine (or your server), 
 ```
 sudo apt-get install poppler-utils
 ```
+
+### Deploy on server
+Same as local dev, except that we need to proxy port 3000 by nginx (or Apache).
+- Add this nginx config (install it with `sudo apt install nginx`)
+```
+server {
+    root /home/{username}/click-and-collect;
+    index index.html;
+    server_name {hostname};
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+    }
+}
+```
+- Allow https by adding a certificate `sudo certbot --nginx`
 
 ## Contribute
 ### Modify Coq nanoyalla package

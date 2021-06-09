@@ -7,29 +7,29 @@ type fact =
   | Ftop
   | Fint of int
 
-let rec fsum x y =
-match x, y with
-| Fint n, Fint m -> Fint (n + m)
-| Fbot, _ -> Fbot
-| _, Fbot -> Fbot
-| Ftop, _ -> Ftop
-| _, Ftop -> Ftop
+let fsum x y =
+    match x, y with
+    | Fint n, Fint m -> Fint (n + m)
+    | Fbot, _ -> Fbot
+    | _, Fbot -> Fbot
+    | Ftop, _ -> Ftop
+    | _, Ftop -> Ftop
 
-let rec fsup x y =
-match x, y with
-| Ftop, _ -> Ftop
-| _, Ftop -> Ftop
-| Fint n, Fint m -> if n = m then Fint n else Ftop
-| x, Fbot -> x
-| Fbot, x -> x
+let fsup x y =
+    match x, y with
+    | Ftop, _ -> Ftop
+    | _, Ftop -> Ftop
+    | Fint n, Fint m -> if n = m then Fint n else Ftop
+    | x, Fbot -> x
+    | Fbot, x -> x
 
-let rec finf x y =
-match x, y with
-| Fbot, _ -> Fbot
-| _, Fbot -> Fbot
-| Fint n, Fint m -> if n = m then Fint n else Fbot
-| x, Ftop -> x
-| Ftop, x -> x
+let finf x y =
+    match x, y with
+    | Fbot, _ -> Fbot
+    | _, Fbot -> Fbot
+    | Fint n, Fint m -> if n = m then Fint n else Fbot
+    | x, Ftop -> x
+    | Ftop, x -> x
 
 let fone = Fint 0
 let fbot p = Fint p
@@ -64,8 +64,8 @@ let valid_semantics p v f =
 let delta_valuation reference atom =
   if atom = reference then 1 else 0
 
-let zero_valuation atom = 0
-let one_valuation atom = 1
+let zero_valuation _atom = 0
+let one_valuation _atom = 1
 
 let valid_sequent sequent =
   let variables = get_unique_variable_names sequent in

@@ -5,13 +5,12 @@
 *.cmi
 *.cmo
 
-# Ocsigen / Eliom
+# Opium
 _build
-_client/
-_deps/
-_server/
-local/
-.depend
+
+# Run dir
+temp/
+log/
 
 # Executable
 test/api_test

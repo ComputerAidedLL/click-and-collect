@@ -55,7 +55,8 @@ let proof_to_latex implicit_exchange notations proof =
     let end_file = "}\n\n\\end{document}\n\n" in
     Printf.sprintf "%s%s%s%s%s%s%s%s" header packages macros start_proof proof_lines end_proof notations_part end_file;;
 
-let temp_directory = "local/var/temp";;
+let temp_directory = "temp";;
+let log_directory = "log";;
 
 let create_file_prefix =
     let now = Unix.localtime (Unix.time ()) in
@@ -76,6 +77,7 @@ let read_and_remove_file file_name =
 
 let convert_to_pdf proof_as_latex =
     (try let _ = Sys.is_directory temp_directory in () with Sys_error _ -> Unix.mkdir temp_directory 0o777);
+    (try let _ = Sys.is_directory log_directory in () with Sys_error _ -> Unix.mkdir log_directory 0o777);
 
     let file_prefix = create_file_prefix in
     let tex_file_name = Printf.sprintf "%s/%s.tex" temp_directory file_prefix in
@@ -83,7 +85,7 @@ let convert_to_pdf proof_as_latex =
     let _ = Unix.write_substring tex_file proof_as_latex 0 (String.length proof_as_latex) in
     Unix.close tex_file;
 
-    let log_file = "local/var/log/click_and_collect/latex.log" in
+    let log_file = Printf.sprintf "%s/latex.log" log_directory in
     let process_status = Unix.system (Printf.sprintf "pdflatex -interaction=nonstopmode -halt-on-error -output-directory %s %s >> %s" temp_directory tex_file_name log_file) in
     (if is_failure process_status then raise (Failure (Printf.sprintf "An error occured during pdflatex. Check logs in %s." log_file)));
     Sys.remove tex_file_name;
@@ -116,11 +118,12 @@ let export_as_latex implicit_exchange format request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let proof = proof_with_notations.proof in
         let notations = proof_with_notations.notations in
-        if format = "ascii" then true, to_ascii implicit_exchange notations proof, "text/plain"
-        else if format = "utf8" then true, to_utf8 implicit_exchange notations proof, "text/plain"
+        if format = "ascii" then true, to_ascii implicit_exchange notations proof
+        else if format = "utf8" then true, to_utf8 implicit_exchange notations proof
         else let proof_as_latex = proof_to_latex implicit_exchange notations proof in
-        if format = "tex" then true, proof_as_latex, "text/plain"
-        else if format = "pdf" then true, get_pdf_file proof_as_latex, "application/pdf"
-        else if format = "png" then true, get_png_file proof_as_latex, "image/png"
-        else false, "Unknown format: " ^ format, ""
-    with Proof_with_notations.Json_exception m -> false, "Bad request: " ^ m, "";;
+        if format = "tex" then true, proof_as_latex
+        else if format = "pdf" then true, get_pdf_file proof_as_latex
+        else if format = "png" then true, get_png_file proof_as_latex
+        else false, "Unknown format: " ^ format
+    with Proof_with_notations.Json_exception m -> false, "Bad request: " ^ m
+        | e -> false, Printexc.to_string e;;
