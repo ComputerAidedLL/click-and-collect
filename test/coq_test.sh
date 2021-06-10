@@ -1,3 +1,5 @@
+set -e
+
 echo "Preparing Coq environment..."
 
 cp ./nanoyalla/nanoll.v .
@@ -30,7 +32,7 @@ proofs_directory='test/proof_test_data/*.json'
 for f in $proofs_directory
 do
   echo "$f"
-  curl -s -X POST 'http://localhost:8080/export_as_coq' -H 'content-type:text/plain;charset=UTF-8' -d @"$f" > ccLLproof.v
+  curl -s --fail -X POST 'http://localhost:3000/export_as_coq' -H 'content-type:text/plain;charset=UTF-8' -d @"$f" > ccLLproof.v
   coqc -R . NanoYalla ccLLproof.v || cat ccLLproof.v
 done
 

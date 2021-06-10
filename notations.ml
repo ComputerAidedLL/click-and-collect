@@ -32,7 +32,7 @@ let get_variable_names notations =
 
 let rec position_of_notation notation_name n = function
     | [] -> None
-    | (s, f) :: tail -> if s = notation_name then Some n else position_of_notation notation_name (n+1) tail
+    | (s, _f) :: tail -> if s = notation_name then Some n else position_of_notation notation_name (n+1) tail
 
 let stack_variable notations stack notation_position variable =
     match position_of_notation variable 0 notations with

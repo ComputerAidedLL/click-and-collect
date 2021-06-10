@@ -5,11 +5,14 @@ open Yojson
 open Yojson.Basic.Util
 
 (* The utils function *)
-let call_api_get path param_key param_value =
+let url_encode_string s =
+    Str.global_replace (Str.regexp "?") "%3F"
+    (Str.global_replace (Str.regexp "/") "%2F" s)
+
+let call_api_get path =
     let body =
-      let uri = Uri.of_string ("http://localhost:8080/" ^ path) in
-      let complete_uri = Uri.add_query_param uri (param_key, [param_value]) in
-      Client.get complete_uri >>= fun (resp, body) ->
+      let uri = Uri.of_string ("http://localhost:3000/" ^ path) in
+      Client.get uri >>= fun (resp, body) ->
         let code = resp |> Response.status |> Code.code_of_status in
         Alcotest.(check int) (Printf.sprintf "returns 200 for path %s" path) 200 code;
         Cohttp_lwt.Body.to_string body in
@@ -17,7 +20,7 @@ let call_api_get path param_key param_value =
 
 let call_api_post path body_as_string expected_code =
     let body =
-      let complete_uri = "http://localhost:8080/" ^ path in
+      let complete_uri = "http://localhost:3000/" ^ path in
       let body = Cohttp_lwt.Body.of_string body_as_string in
       Client.post ~body:body (Uri.of_string complete_uri) >>= fun (resp, body) ->
         let code = resp |> Response.status |> Code.code_of_status in
@@ -27,8 +30,8 @@ let call_api_post path body_as_string expected_code =
 
 (* The tests *)
 let call_api_parse_sequent_full_response () =
-    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof\":{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}}" (call_api_get "parse_sequent" "sequentAsString" "a");
-    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent" "sequentAsString" "a*")
+    Alcotest.(check string) "valid" "{\"is_valid\":true,\"proof\":{\"sequent\":{\"cons\":[{\"type\":\"litt\",\"value\":\"a\"}]},\"appliedRule\":null}}" (call_api_get "parse_sequent/a");
+    Alcotest.(check string) "invalid" "{\"is_valid\":false,\"error_message\":\"Syntax error: please read the syntax rules.\"}" (call_api_get "parse_sequent/a*")
 
 let call_api_parse_sequent () =
     let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
@@ -36,7 +39,7 @@ let call_api_parse_sequent () =
     let run_test test_sample =
         let sequent_as_string = test_sample |> member "sequent_as_string" |> to_string in
         let expected_sequent_as_json = test_sample |> member "expected_sequent_as_json" in
-        let body = call_api_get "parse_sequent" "sequentAsString" sequent_as_string in
+        let body = call_api_get ("parse_sequent/" ^ (url_encode_string sequent_as_string)) in
         let data = Yojson.Basic.from_string body in
         let is_valid = data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
@@ -46,7 +49,7 @@ let call_api_parse_sequent () =
 
 let call_api_parse_sequent_syntax_exception () =
     let assert_syntax_exception sequent_as_string =
-        let body = call_api_get "parse_sequent" "sequentAsString" sequent_as_string in
+        let body = call_api_get ("parse_sequent/" ^ (url_encode_string sequent_as_string)) in
         let data = Yojson.Basic.from_string body in
         let is_valid = data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is invalid") false is_valid in
@@ -118,7 +121,7 @@ let call_api_auto_reverse () =
 
 let call_api_test_png () =
     let body_as_string = "{\"notations\":[],\"proof\":{\"s\":{\"cons\": [{\"t\":\"litt\",\"v\":\"a\"},{\"t\":\"dual\",\"v\":{\"t\":\"litt\",\"v\":\"a\"}}]},\"ar\":{\"rr\":{\"r\":\"axiom\"},\"p\":[]}}}" in
-    let response_as_string = call_api_post "export_as_latex?format=png" body_as_string 200 in
+    let response_as_string = call_api_post "export_as_latex/png/false" body_as_string 200 in
     Alcotest.(check bool) "not empty response" true (response_as_string <> "")
 
 let call_api_sequent_is_provable () =
@@ -138,7 +141,7 @@ let parse_auto_prove_and_verify () =
     let test_samples = json_file |> member "parse_auto_prove_and_verify" |> to_list in
     let run_test test_sample =
         let sequent_as_string = test_sample |> to_string in
-        let parse_sequent_data = Yojson.Basic.from_string (call_api_get "parse_sequent" "sequentAsString" sequent_as_string) in
+        let parse_sequent_data = Yojson.Basic.from_string (call_api_get ("parse_sequent/" ^ (url_encode_string sequent_as_string))) in
         let is_valid = parse_sequent_data |> member "is_valid" |> to_bool in
         Alcotest.(check bool) (sequent_as_string ^ " is valid") true is_valid;
         let sequent_as_json = parse_sequent_data |> member "proof" |> member "sequent" in
@@ -193,16 +196,19 @@ let auto_prove_with_notations () =
 let test_compress_and_uncompress () =
     let check_json_file json_file =
         let big_proof_as_json = Yojson.Basic.from_file json_file in
-        let proof_as_latex = call_api_post "export_as_latex?format=tex" (Yojson.Basic.to_string big_proof_as_json) 200 in
+        let proof_as_latex = call_api_post "export_as_latex/tex/true" (Yojson.Basic.to_string big_proof_as_json) 200 in
         let response_as_string = call_api_post "compress_proof" (Yojson.Basic.to_string big_proof_as_json) 200 in
-        Alcotest.(check bool) "less than 2000 characters long" true (String.length response_as_string < 2000);
-        (* There is no way to construct a Uri ocaml object with a correctly encoded = sign in query parameter *)
-        let safe_compressed_proof = Str.global_replace (Str.regexp "=") "~" response_as_string in
-        let uncompressed_proof_as_string = call_api_get "uncompress_proof" "compressedProof" safe_compressed_proof in
-        let uncompressed_proof_as_latex = call_api_post "export_as_latex?format=tex" uncompressed_proof_as_string 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let compressed_proof = response_as_json |> member "compressedProof" |> to_string in
+        Alcotest.(check bool) "less than 2000 characters long" true (String.length compressed_proof < 2000);
+        let uncompressed_proof_as_string = call_api_post "uncompress_proof" response_as_string 200 in
+        let uncompressed_proof = Yojson.Basic.from_string uncompressed_proof_as_string in
+        Alcotest.(check bool) "has proof" true ((uncompressed_proof |> member "proof") <> `Null);
+        let uncompressed_proof_as_latex = call_api_post "export_as_latex/tex/true" uncompressed_proof_as_string 200 in
         Alcotest.(check string) "check proof as latex" proof_as_latex uncompressed_proof_as_latex in
     check_json_file "test/proof_test_data/lcm23.json";
-    check_json_file "test/proof_test_data/axiom_with_notations.json"
+    check_json_file "test/proof_test_data/axiom_with_notations.json";
+    check_json_file "test/proof_test_data/litt_with_quote.json"
 
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;

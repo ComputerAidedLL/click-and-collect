@@ -392,7 +392,7 @@ let rec unfocus_proof = function
                         Weakening_proof (map_wn_set theta_set @ gamma, e, tail, premise)
                     else
                         let premise_theta = Set_formula.elements (Set_formula.add e theta_set) in
-                        let theta_head, theta_tail = head_tail e premise_theta in
+                        let theta_head, _theta_tail = head_tail e premise_theta in
                         move_right (List.length theta_head) (List.length tail) premise
                 | _ -> raise (Failure "async formula with whynot expected") end
             | Axiom_central -> begin match focused_sequent with
@@ -412,7 +412,7 @@ let rec unfocus_proof = function
             | Focusing_central (formula, _) -> begin match focused_sequent with
                 | Async (theta_set, gamma, []) ->
                     let premise = unfocus_proof (List.hd focused_premises) in
-                    let head, tail = head_tail formula gamma in
+                    let head, _tail = head_tail formula gamma in
                     move_left (Set_formula.cardinal theta_set + List.length head) 0 premise
                 | _ -> raise (Failure "async empty expected") end
             | Focusing_exponential formula -> begin match focused_sequent with
@@ -424,7 +424,7 @@ let rec unfocus_proof = function
                     Contraction_proof (head, formula, tail @ gamma, exchange)
                 | _ -> raise (Failure "async empty expected") end
             | Async_on_pos -> begin match focused_sequent with
-                | Async (theta_set, gamma, e :: tail) ->
+                | Async (theta_set, _gamma, _e :: tail) ->
                     let premise = unfocus_proof (List.hd focused_premises) in
                     move_right (Set_formula.cardinal theta_set) (List.length tail) premise
                 | _ -> raise (Failure "async formula expected") end

@@ -211,7 +211,7 @@ let rec raw_formula_export_atomic formatting =
   | Zero -> formatting.zero_format, true
   | Litt x -> Printf.sprintf formatting.litt_format (formatting.atom_preformat x), true
   | Dual (Litt x) -> Printf.sprintf formatting.dual_format (formatting.atom_preformat x), formatting.is_dual_atomic
-  | Dual e -> let s, atomic = raw_formula_export_atomic formatting e in
+  | Dual e -> let s, _atomic = raw_formula_export_atomic formatting e in
               let s_parenthesis = "(" ^ s ^ ")" in
               Printf.sprintf formatting.dual_format s_parenthesis, formatting.is_dual_atomic
   | Tensor (e1, e2) -> binary_connective formatting.tensor_format e1 e2
