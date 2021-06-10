@@ -487,6 +487,9 @@ let to_coq_with_hyps cyclic_notations = to_coq_with_hyps_increment cyclic_notati
 
 (* PROOF -> LATEX *)
 
+let permutation_to_latex permutation =
+    Printf.sprintf "(%s)" (String.concat "\\; " (List.map (fun n -> string_of_int (n + 1)) permutation));;
+
 let latex_apply latex_rule conclusion =
     Printf.sprintf "  \\%s{%s}\n" latex_rule conclusion
 
@@ -519,7 +522,8 @@ let rec to_latex_permute implicit_exchange permutation_opt proof =
             then to_latex_permute implicit_exchange (Some display_permutation) p
             else to_latex_permute implicit_exchange None p ^
                 if permutation = identity (List.length permutation) then ""
-                else (latex_apply "exv" conclusion)
+                else let ex_with_permutation = Printf.sprintf "exv{%s}" (permutation_to_latex permutation)
+                     in latex_apply ex_with_permutation conclusion
     | Cut_proof (_, _, _, p1, p2) -> to_latex_clear_exchange p1 ^ (to_latex_clear_exchange p2) ^ (latex_apply "cutv" conclusion)
     | Unfold_litt_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
     | Unfold_dual_proof (_, _, _, p) -> to_latex_clear_exchange p ^ (latex_apply "defv" conclusion)
