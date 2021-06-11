@@ -48,7 +48,7 @@ let plain_text_handler plain_text_function req =
 let static_handler = Middleware.static_unix ~local_path:"./static" ~uri_prefix:"/static" ();;
 
 let index_handler _request =
-    Response.of_file "./index.html";;
+    Response.of_file "./index.html" ~mime:"text/html; charset=utf-8";;
 
 let parse_sequent_handler req =
     common_get_handler safe_parse "sequent_as_string" req ;;
