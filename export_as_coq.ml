@@ -3,7 +3,7 @@ open Proof_with_notations
 
 let variables_cyclic_acyclic_notations proof_with_notations =
     let proof_variables = Proof.get_unique_variable_names proof_with_notations.proof in
-    let cyclic_notations, sorted_acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations proof_variables in
+    let cyclic_notations, sorted_acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations (Some proof_variables) in
     let all_variables = List.sort_uniq String.compare (
         proof_variables
         @ Notations.get_variable_names cyclic_notations
