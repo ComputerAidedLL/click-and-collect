@@ -23,6 +23,10 @@ const RULES = {
     'unfold_dual': '<span class="italic">def</span>'
 };
 
+const TRANSFORM_OPTIONS = {
+    'expand_axiom': '⇯'
+};
+
 const ABBREVIATIONS = {
     '"sequent":': '"s":',
     '"appliedRule":': '"ar":',
@@ -87,6 +91,16 @@ function buildProof(proofAsJson, $container) {
         toggleCutMode($container, options.cutMode.value);
     }
 
+    if (options.proofTransformation) {
+        createOption($container, options.proofTransformation.value, 'Proof transformation',function (proofTransformation) {
+            saveOption($container, 'proofTransformation', proofTransformation);
+            toggleProofTransformation($container);
+            options.proofTransformation.onToggle(proofTransformation);
+        }, 'proof-transformation-dialog');
+
+        toggleProofTransformation($container);
+    }
+
     if (options.exportButtons) {
         createExportBar($container);
     }
@@ -107,8 +121,7 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
         addPremises($sequentTable,
             proofAsJson.sequent,
             permutationBeforeRule,
-            proofAsJson.appliedRule.ruleRequest,
-            proofAsJson.appliedRule.premises,
+            proofAsJson.appliedRule,
             options);
     } else if (options.checkProvability) {
         checkProvability($sequentTable);
@@ -196,8 +209,7 @@ function applyRule(ruleRequest, $sequentTable) {
             if (data.success === true) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
-                let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentTable, sequent, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, data['proof'].appliedRule, options);
 
                 if (!isProved($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
@@ -210,9 +222,11 @@ function applyRule(ruleRequest, $sequentTable) {
     });
 }
 
-function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRule, ruleRequest, premises, options) {
+function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRule, appliedRule, options) {
     // Undo previously applied rule if any
     undoRule($sequentTable);
+
+    let ruleRequest = appliedRule.ruleRequest;
 
     // Save data
     $sequentTable
@@ -233,10 +247,19 @@ function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRul
             clearSavedProof();
             undoRule($sequentTable);
         })
+    } else if (options.proofTransformation.value) {
+        for (let transformOption of appliedRule.transformOptions) {
+            $ruleSymbol.append($('<span>')
+                .text(TRANSFORM_OPTIONS[transformOption])
+                .on('click', function() {
+                    applyTransformation($sequentTable, transformOption);
+                }));
+        }
     }
     $td.next('.tagBox').html($ruleSymbol);
 
     // Add premises
+    let premises = appliedRule.premises;
     if (premises.length === 0) {
         if (options.withInteraction) {
             markParentSequentsAsProved($sequentTable);
@@ -806,7 +829,7 @@ function autoReverseSequent($sequentTable) {
         success: function(data)
         {
             if (data.appliedRule !== null) {
-                addPremises($sequentTable, sequent, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                addPremises($sequentTable, sequent, permutationBeforeRule, data.appliedRule, options);
             }
         },
         error: onAjaxError
@@ -871,6 +894,74 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $contai
                 onFormulaSuccessCallback(data['formula']);
             } else {
                 displayPedagogicError(data['error_message'], $container);
+            }
+        },
+        error: onAjaxError
+    });
+}
+
+// ********************
+// PROOF TRANSFORMATION
+// ********************
+
+function toggleProofTransformation($container) {
+    let options = $container.data('options');
+    let $divProof = $container.children('div.proof');
+
+    if (options.proofTransformation.value) {
+        // We get proof stored in HTML
+        let proof = getProofAsJson($container);
+        let notations = getNotations($container);
+
+        $.ajax({
+            type: 'POST',
+            url: '/get_proof_transformation_options',
+            contentType:'application/json; charset=utf-8',
+            data: compressJson(JSON.stringify({ proof, notations })),
+            success: function(data)
+            {
+                $divProof.addClass('proof-transformation');
+                options.withInteraction = false;
+                reloadProof($container, data['proofWithTransformationOptions'], options);
+            },
+            error: onAjaxError
+        });
+    } else {
+        let proof = getProofAsJson($container);
+        $divProof.removeClass('proof-transformation');
+        options.withInteraction = true;
+        reloadProof($container, proof, options);
+    }
+}
+
+function reloadProof($container, proofAsJson, options) {
+    let $mainSequentTable = $container.find('table').last();
+    let $sequentContainer = removeSequentTable($mainSequentTable);
+    createSubProof(proofAsJson, $sequentContainer, options);
+}
+
+function applyTransformation ($sequentTable, transformOption) {
+    let $container = $sequentTable.closest('.proof-container');
+    let options = $container.data('options');
+
+    // Sequent json that was stored in div can not been permuted before transformation applying
+    let sequent = $sequentTable.data('sequentWithPermutation');
+    let permutationBeforeRule = $sequentTable.data('permutationBeforeRule');
+    let notations = getNotations($container);
+
+    $.ajax({
+        type: 'POST',
+        url: `/apply_transformation/${transformOption}`,
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify({ sequent, notations })),
+        success: function(data)
+        {
+            if (data.success === true) {
+                clearSavedProof();
+                cleanPedagogicMessage($container);
+                addPremises($sequentTable, sequent, permutationBeforeRule, data['proof'].appliedRule, options);
+            } else {
+                displayPedagogicError(data['errorMessage'], $container);
             }
         },
         error: onAjaxError

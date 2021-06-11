@@ -53,6 +53,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 
 /* PROOF */
 .proof.complete { background:#CFC; }
+.proof.proof-transformation { background:#e0ecf8; }
 .proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: 0 auto 1em; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }

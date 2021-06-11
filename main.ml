@@ -1,14 +1,4 @@
 open Opium
-
-open Apply_rule
-open Auto_prove_sequent
-open Auto_reverse_sequent
-open Export_as_coq
-open Export_as_latex
-open Is_sequent_provable
-open Parse_sequent
-open Proof_compression
-
 open Lwt.Syntax
 
 (* UTILS *)
@@ -18,7 +8,7 @@ let bool_from_string s =
 
 let from_req req =
     let+ json = Request.to_json_exn req in
-    Yojson.Basic.from_string (uncompress_json (Yojson.Safe.to_string json))
+    Yojson.Basic.from_string (Proof_compression.uncompress_json (Yojson.Safe.to_string json))
 
 let common_get_handler handler_function handler_param req =
     Lwt.catch (fun () ->
@@ -51,45 +41,48 @@ let index_handler _request =
     Response.of_file "./index.html" ~mime:"text/html; charset=utf-8";;
 
 let parse_sequent_handler req =
-    common_get_handler safe_parse "sequent_as_string" req ;;
+    common_get_handler Parse_sequent.safe_parse "sequent_as_string" req ;;
 
 let parse_empty_sequent_handler _req =
-    Lwt.return (Response.of_json (safe_parse ""));;
+    Lwt.return (Response.of_json (Parse_sequent.safe_parse ""));;
 
 let parse_formula_handler req =
-    common_get_handler safe_parse_formula "formula_as_string" req;;
+    common_get_handler Parse_sequent.safe_parse_formula "formula_as_string" req;;
 
 let is_valid_litt_handler req =
-    common_get_handler safe_is_valid_litt "litt" req;;
+    common_get_handler Parse_sequent.safe_is_valid_litt "litt" req;;
 
 let is_sequent_provable_handler req =
-    json_handler is_sequent_provable req
+    json_handler Is_sequent_provable.is_sequent_provable req
 
 let apply_rule_handler req =
-    json_handler apply_rule req
+    json_handler Apply_rule.apply_rule req
 
 let auto_reverse_handler req =
-    json_handler auto_reverse_sequent req
+    json_handler Auto_reverse_sequent.auto_reverse_sequent req
 
 let auto_prove_handler req =
-    json_handler auto_prove_sequent req
+    json_handler Auto_prove_sequent.auto_prove_sequent req
 
 let compress_proof_handler req =
-    json_handler compress_proof req
+    json_handler Proof_compression.compress_proof req
 
 let uncompress_proof_handler req =
-    json_handler uncompress_proof req;;
+    json_handler Proof_compression.uncompress_proof req;;
 
 let export_as_coq_handler req =
-    plain_text_handler export_as_coq req
+    plain_text_handler Export_as_coq.export_as_coq req
 
 let export_as_latex_handler req =
     let implicit_exchange = bool_from_string (Router.param req "implicit_exchange") in
     let format = Router.param req "format" in
-    let+ response = plain_text_handler (export_as_latex implicit_exchange format) req in
+    let+ response = plain_text_handler (Export_as_latex.export_as_latex implicit_exchange format) req in
     if format = "png" then Response.set_content_type "image/png" response
     else if format = "pdf" then Response.set_content_type "application/pdf" response
     else response
+
+let get_proof_transformation_options_handler req =
+    json_handler Proof_transformation.get_proof_transformation_options req
 
 (** Configure the logger *)
 let set_logger () =
@@ -113,5 +106,6 @@ let _ =
   |> App.post "/uncompress_proof" uncompress_proof_handler
   |> App.post "/export_as_coq" export_as_coq_handler
   |> App.post "/export_as_latex/:format/:implicit_exchange" export_as_latex_handler
+  |> App.post "/get_proof_transformation_options" get_proof_transformation_options_handler
   |> App.run_command
 ;;

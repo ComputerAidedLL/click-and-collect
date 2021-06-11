@@ -348,6 +348,13 @@ let get_rule_request = function
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
+(* PROOF -> RULE REQUEST *)
+
+let get_transform_options = function
+    | Axiom_proof _ -> `List [`String "expand_axiom"]
+    | _ -> `List [];;
+
+
 (* JSON -> PROOF *)
 
 exception Json_exception of string;;
@@ -385,19 +392,21 @@ let rec from_json notations json =
 
 (* PROOF -> JSON *)
 
-let rec to_json proof =
+let rec to_json ?transform_options:(t_o=false) proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
     match proof with
     | Hypothesis_proof _ -> `Assoc [("sequent", sequent_as_json);
                                     ("appliedRule", `Null)]
-    | _ -> let rule_request = get_rule_request proof in
+    | _ ->
+        let rule_request = get_rule_request proof in
         let rule_request_as_json = Rule_request.to_json rule_request in
         let premises = get_premises proof in
-        let premises_as_json = List.map to_json premises in
+        let premises_as_json = List.map (to_json ~transform_options:t_o) premises in
+        let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
+            (if t_o then [("transformOptions", get_transform_options proof)] else []) in
         `Assoc [("sequent", sequent_as_json);
-                ("appliedRule", `Assoc [("ruleRequest", rule_request_as_json);
-                                        ("premises", `List premises_as_json)])];;
+                ("appliedRule", `Assoc applied_rule)];;
 
 
 (* PROOF -> COQ *)
