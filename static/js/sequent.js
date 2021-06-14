@@ -388,8 +388,7 @@ function autoProveSequent($sequentTable) {
             if (data.success) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
-                let $sequentContainer = removeSequentTable($sequentTable);
-                createSubProof(data['proof'], $sequentContainer, options);
+                addPremises($sequentTable, data['proof'], permutationBeforeRule, options);
             } else {
                 if (data['is_provable']) {
                     markAsNotAutoProvable($sequentTable);

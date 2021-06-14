@@ -210,6 +210,24 @@ let test_compress_and_uncompress () =
     check_json_file "test/proof_test_data/axiom_with_notations.json";
     check_json_file "test/proof_test_data/litt_with_quote.json"
 
+let call_api_apply_transformation () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "apply_transformation" |> to_list in
+    let run_test test_sample =
+        let compressed_proof = call_api_post "compress_proof" (Yojson.Basic.to_string test_sample) 200 in
+        let uncompressed_proof = call_api_post "uncompress_proof" compressed_proof 200 |> Yojson.Basic.from_string |> member "proof" in
+        let notations = test_sample |> member "notations" in
+        let response_as_string = call_api_post "apply_transformation" (Yojson.Basic.to_string test_sample) 200 in
+        let response_as_json = Yojson.Basic.from_string response_as_string in
+        let proof = response_as_json |> member "proof" in
+        let request_as_json = `Assoc [("proof", proof); ("notations", notations)] in
+        (* Check proof validity *)
+        let _ = call_api_post "export_as_latex/tex/true" (Yojson.Basic.to_string request_as_json) 200 in
+        let proof_first_sequent = uncompressed_proof |> member "sequent" |> Yojson.Basic.to_string in
+        let got_proof_first_sequent = proof |> member "sequent" |> Yojson.Basic.to_string in
+        Alcotest.(check string) "check proof first sequent" proof_first_sequent got_proof_first_sequent in
+    List.iter run_test test_samples
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -246,6 +264,10 @@ let test_compress_uncompress = [
     "Test compress and uncompress", `Quick, test_compress_and_uncompress;
 ]
 
+let test_apply_transformation = [
+    "Test apply transformation", `Quick, call_api_apply_transformation;
+]
+
 (* Run it *)
 let () =
     Alcotest.run "API on localhost:8080" [
@@ -256,4 +278,5 @@ let () =
         "test_auto_reverse_sequent", test_auto_reverse_sequent;
         "test_auto_prove_sequent", test_auto_prove_sequent;
         "test_compress_uncompress", test_compress_uncompress;
+        "test_apply_transformation", test_apply_transformation;
     ]

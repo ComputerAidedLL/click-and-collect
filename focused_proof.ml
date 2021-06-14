@@ -3,6 +3,7 @@
 open Sequent
 open Sequent_with_notations
 open Proof
+open Permutations
 
 type llf_rule =
   | One_intro
@@ -303,37 +304,6 @@ let rec double_list = function
     | [] -> []
     | e :: tail -> e :: e :: double_list tail
 
-let rec head_tail formula = function
-    | [] -> raise NotFound
-    | e :: formula_list -> if e = formula then [], formula_list
-        else let head, tail = head_tail formula formula_list in e :: head, tail
-
-let rec weaken proof head tail = function
-    | [] -> proof
-    | e :: l -> Weakening_proof (head, e, map_wn l @ tail, weaken proof head tail l)
-
-let rec contract proof head tail = function
-    | [] -> proof
-    | e :: l -> Contraction_proof (map_wn head, e, (map_wn l) @ tail, contract proof (head @ [e; e]) tail l)
-
-let move_left left_offset right_offset proof =
-    let sequent = get_conclusion proof in
-    let n = List.length sequent in
-    let permutation = List.init left_offset (fun k -> k)
-        @ [n - right_offset - 1]
-        @ List.init (n - right_offset - left_offset - 1) (fun k -> left_offset + k)
-        @ List.init right_offset (fun k -> n - right_offset + k) in
-    Exchange_proof (sequent, permutation, permutation, proof)
-
-let move_right left_offset right_offset proof =
-    let sequent = get_conclusion proof in
-    let n = List.length sequent in
-    let permutation = List.init left_offset (fun k -> k)
-        @ List.init (n - right_offset - left_offset - 1) (fun k -> left_offset + 1 + k)
-        @ [left_offset]
-        @ List.init right_offset (fun k -> n - right_offset + k) in
-    Exchange_proof (sequent, permutation, permutation, proof)
-
 let rec unfocus_proof = function
     | Null -> raise (Failure "Focused proof is null")
     | Node (focused_sequent, rule, focused_premises) ->
@@ -435,7 +405,7 @@ let sequent_to_focused_sequent sequent =
 
 let proof_from_focused_proof focused_proof cyclic_notations acyclic_notations original_sequent =
     let proof = unfocus_proof focused_proof in
-    let simplified_proof = remove_loop proof in
+    let simplified_proof = Proof_simplification.remove_loop proof in
     Proof.from_fully_replaced_proof cyclic_notations acyclic_notations original_sequent simplified_proof
 
 let rec iterate_on_notations_list original_sequent cyclic_notations acyclic_notations exponential_bound ttl = function
