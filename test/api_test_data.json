@@ -620,7 +620,7 @@
       "expected_provability": true
     },
     {
-      "request": {"s":{"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["B",{"t":"tensor","v1":{"t":"litt","v":"A"},"v2":{"t":"litt","v":"B"}}]]},
+      "request": {"s":{"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["A",{"t":"one"}]]},
       "expected_provability": false
     },
     {
@@ -629,6 +629,10 @@
     },
     {
       "request": {"s":{"cons":[{"t":"litt","v":"A"},{"t":"litt","v":"A"}]},"notations":[["A",{"t":"litt","v":"B"}],["B",{"t":"plus","v1":{"t":"whynot","v":{"t":"litt","v":"C"}},"v2":{"t":"whynot","v":{"t":"one"}}}]]},
+      "expected_provability": true
+    },
+    {
+      "request": {"s":{"cons":[]},"notations":[["a",{"t":"whynot","v":{"t":"dual","v":{"t":"litt","v":"a"}}}]]},
       "expected_provability": true
     }
   ],

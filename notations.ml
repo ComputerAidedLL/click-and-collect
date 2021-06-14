@@ -81,8 +81,11 @@ let split_cyclic_acyclic notations variables =
             done
     done;
 
-    (* We filter only notations that appear in variables input *)
-    let affected_indices = List.sort_uniq compare (List.concat_map (get_affected_indices notations matrix) variables) in
+    let affected_indices = match variables with
+        (* If no variable list is given, we don't filter notations *)
+        | None -> List.init n (fun x -> x)
+        (* We filter only notations that appear, directly or indirectly, in variable list *)
+        | Some variable_list -> List.sort_uniq compare (List.concat_map (get_affected_indices notations matrix) variable_list) in
 
     let cyclic_indices = List.filter (fun x -> matrix.(x).(x)) affected_indices in
     let acyclic_indices = List.filter (fun x -> not matrix.(x).(x)) affected_indices in

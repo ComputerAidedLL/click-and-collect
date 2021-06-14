@@ -504,7 +504,8 @@ let rec prove_with_increasing_bound original_sequent cyclic_notations acyclic_no
    * is_provable is false if auto_prover performed an exhaustive research
    * is_provable is true if max execution time was reached. *)
 let prove_sequent sequent_with_notations =
-    let cyclic_notations, acyclic_notations = split_cyclic_acyclic sequent_with_notations in
+    let sequent_variables = Sequent.get_unique_variable_names sequent_with_notations.sequent in
+    let cyclic_notations, acyclic_notations = Notations.split_cyclic_acyclic sequent_with_notations.notations (Some sequent_variables) in
     let max_execution_time_in_seconds = 3. in
     let ttl = Sys.time () +. max_execution_time_in_seconds in
     let replaced_sequents = [replace_all_notations_in_sequent sequent_with_notations.sequent acyclic_notations] in

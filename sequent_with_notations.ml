@@ -26,10 +26,6 @@ let from_json sequent_with_notations_as_json =
 
 (* OPERATIONS *)
 
-let split_cyclic_acyclic sequent_with_notations =
-    let all_variables = get_unique_variable_names sequent_with_notations.sequent in
-    Notations.split_cyclic_acyclic sequent_with_notations.notations all_variables
-
 let rec replace_all_notations_in_sequent sequent = function
     | [] -> sequent
     | (s, raw_formula) :: tail -> let formula = Raw_sequent.to_formula raw_formula in
