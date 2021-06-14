@@ -24,7 +24,12 @@ const RULES = {
 };
 
 const TRANSFORM_OPTIONS = {
-    'expand_axiom': {'button': '⇯', 'title': 'Expand axiom'}
+    'expand_axiom': {
+        'button': '⇯',
+        'title': 'One step axiom expansion (single click) or full axiom expansion (double click)',
+        'singleClick': 'expand_axiom',
+        'doubleClick': 'expand_axiom_full'
+    }
 };
 
 const ABBREVIATIONS = {
@@ -248,12 +253,15 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
         })
     } else if (options.proofTransformation.value) {
         for (let transformOption of proofAsJson.appliedRule.transformOptions) {
-            $ruleSymbol.append($('<span>', {'class': 'clickable'})
+            let $transformSpan = $('<span>', {'class': 'clickable'})
                 .text(TRANSFORM_OPTIONS[transformOption].button)
-                .attr('title', TRANSFORM_OPTIONS[transformOption].title)
-                .on('click', function() {
-                    applyTransformation($sequentTable, transformOption);
-                }));
+                .attr('title', TRANSFORM_OPTIONS[transformOption].title);
+            addClickAndDoubleClickEvent($transformSpan, function () {
+                applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformOption].singleClick);
+            }, function () {
+                applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformOption].doubleClick);
+            });
+            $ruleSymbol.append($transformSpan);
         }
     }
     $td.next('.tagBox').html($ruleSymbol);

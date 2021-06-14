@@ -52,6 +52,11 @@ let expand_axiom formula =
         Promotion_proof ([e], e', [], Dereliction_proof ([], e, [e'], Axiom_proof e))
     end;;
 
+let rec expand_axiom_full proof =
+    let new_proof = match proof with
+        | Axiom_proof f -> expand_axiom f
+        | _ -> proof in
+    set_premises new_proof (List.map expand_axiom_full (get_premises new_proof))
 
 (* OPERATIONS *)
 
@@ -59,9 +64,11 @@ let get_transformation_options_json proof =
     Proof.to_json ~transform_options:true proof;;
 
 let apply_transformation_with_exceptions proof_with_notations = function
-    | Expand_axiom -> match proof_with_notations.proof with
+    | Expand_axiom -> begin match proof_with_notations.proof with
         | Axiom_proof f -> expand_axiom f
         | _ -> raise (Transform_exception ("Can only expand axiom on Axiom_proof"))
+    end
+    | Expand_axiom_full -> expand_axiom_full proof_with_notations.proof;;
 
 (* HANDLERS *)
 
