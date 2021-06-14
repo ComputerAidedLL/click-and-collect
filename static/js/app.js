@@ -50,6 +50,9 @@ function submitSequent(element, autoSubmit = false) {
 
         // We update current URL by adding sequent in query parameters
         addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
+
+        // We set proof_transformation to false
+        addQueryParamInUrl('proof_transformation', null, `proof_transformation set to false`);
     }
 
     // Add GA events

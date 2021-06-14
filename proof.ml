@@ -1,5 +1,6 @@
 open Sequent
 open Rule_request
+open Transform_request
 
 (* PROOF *)
 
@@ -348,11 +349,17 @@ let get_rule_request = function
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
-(* PROOF -> RULE REQUEST *)
+(* PROOF -> TRANSFORM OPTION *)
 
 let get_transform_options = function
-    | Axiom_proof _ -> `List [`String "expand_axiom"]
-    | _ -> `List [];;
+    | Axiom_proof f -> begin match f with
+        | Litt _s | Dual _s -> []
+        | _ -> [Expand_axiom] end
+    | _ -> [];;
+
+let get_transform_options_as_json proof =
+    let transform_options = get_transform_options proof in
+    `List (List.map (fun transform_option -> `String (Transform_request.to_string transform_option)) transform_options)
 
 
 (* JSON -> PROOF *)
@@ -404,7 +411,7 @@ let rec to_json ?transform_options:(t_o=false) proof =
         let premises = get_premises proof in
         let premises_as_json = List.map (to_json ~transform_options:t_o) premises in
         let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
-            (if t_o then [("transformOptions", get_transform_options proof)] else []) in
+            (if t_o then [("transformOptions", get_transform_options_as_json proof)] else []) in
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc applied_rule)];;
 
