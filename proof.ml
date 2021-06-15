@@ -351,14 +351,14 @@ let get_rule_request = function
 
 (* PROOF -> TRANSFORM OPTION *)
 
-let get_transform_options = function
+let get_transform_options notations = function
     | Axiom_proof f -> begin match f with
-        | Litt _s | Dual _s -> []
+        | Litt s | Dual s -> if List.mem_assoc s notations then [Expand_axiom] else []
         | _ -> [Expand_axiom] end
     | _ -> [];;
 
-let get_transform_options_as_json proof =
-    let transform_options = get_transform_options proof in
+let get_transform_options_as_json notations proof =
+    let transform_options = get_transform_options notations proof in
     `List (List.map (fun transform_option -> `String (Transform_request.to_string transform_option)) transform_options)
 
 
@@ -399,7 +399,7 @@ let rec from_json notations json =
 
 (* PROOF -> JSON *)
 
-let rec to_json ?transform_options:(t_o=false) proof =
+let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
     match proof with
@@ -409,9 +409,9 @@ let rec to_json ?transform_options:(t_o=false) proof =
         let rule_request = get_rule_request proof in
         let rule_request_as_json = Rule_request.to_json rule_request in
         let premises = get_premises proof in
-        let premises_as_json = List.map (to_json ~transform_options:t_o) premises in
+        let premises_as_json = List.map (to_json ~transform_options:t_o ~notations:notations) premises in
         let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
-            (if t_o then [("transformOptions", get_transform_options_as_json proof)] else []) in
+            (if t_o then [("transformOptions", get_transform_options_as_json notations proof)] else []) in
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc applied_rule)];;
 
