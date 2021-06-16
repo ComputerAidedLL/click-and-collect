@@ -352,14 +352,18 @@ let get_rule_request = function
 (* PROOF -> TRANSFORM OPTION *)
 
 let get_transform_options notations = function
-    | Axiom_proof f -> begin match f with
-        | Litt s | Dual s -> if List.mem_assoc s notations then [Expand_axiom] else []
-        | _ -> [Expand_axiom] end
+    | Axiom_proof f -> let expand_axiom_enabled = match f with
+        | Litt s | Dual s -> List.mem_assoc s notations
+        | _ -> true in
+        [Expand_axiom, expand_axiom_enabled]
     | _ -> [];;
 
 let get_transform_options_as_json notations proof =
     let transform_options = get_transform_options notations proof in
-    `List (List.map (fun transform_option -> `String (Transform_request.to_string transform_option)) transform_options)
+    `List (List.map (fun (transform_option, enabled) -> `Assoc [
+        ("transformation", `String (Transform_request.to_string transform_option));
+        ("enabled", `Bool enabled)
+        ]) transform_options)
 
 
 (* JSON -> PROOF *)

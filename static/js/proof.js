@@ -253,14 +253,18 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
         })
     } else if (options.proofTransformation.value) {
         for (let transformOption of proofAsJson.appliedRule.transformOptions) {
-            let $transformSpan = $('<span>', {'class': 'clickable'})
-                .text(TRANSFORM_OPTIONS[transformOption].button)
-                .attr('title', TRANSFORM_OPTIONS[transformOption].title);
-            addClickAndDoubleClickEvent($transformSpan, function () {
-                applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformOption].singleClick);
-            }, function () {
-                applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformOption].doubleClick);
-            });
+            let transformation = transformOption.transformation;
+            let $transformSpan = $('<span>', {'class': 'transform-button'})
+                .addClass(transformOption.enabled ? 'enabled' : 'disabled')
+                .text(TRANSFORM_OPTIONS[transformation].button);
+            if (transformOption.enabled) {
+                $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
+                addClickAndDoubleClickEvent($transformSpan, function () {
+                    applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].singleClick);
+                }, function () {
+                    applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].doubleClick);
+                });
+            }
             $ruleSymbol.append($transformSpan);
         }
     }

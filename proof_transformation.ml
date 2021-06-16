@@ -63,12 +63,12 @@ let rec expand_axiom_full notations proof =
 let get_transformation_options_json proof notations =
     Proof.to_json ~transform_options:true ~notations:notations proof;;
 
-let apply_transformation_with_exceptions proof_with_notations = function
-    | Expand_axiom -> begin match proof_with_notations.proof with
-        | Axiom_proof f -> expand_axiom proof_with_notations.notations f
+let apply_transformation_with_exceptions proof cyclic_notations acyclic_notations = function
+    | Expand_axiom -> begin match proof with
+        | Axiom_proof f -> expand_axiom (cyclic_notations @ acyclic_notations) f
         | _ -> raise (Transform_exception ("Can only expand axiom on Axiom_proof"))
     end
-    | Expand_axiom_full -> expand_axiom_full proof_with_notations.notations proof_with_notations.proof;;
+    | Expand_axiom_full -> expand_axiom_full acyclic_notations proof;;
 
 (* HANDLERS *)
 
@@ -82,7 +82,8 @@ let apply_transformation request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let transform_request_as_json = Request_utils.get_key request_as_json "transformRequest" in
         let transform_request = Transform_request.from_json transform_request_as_json in
-        let proof = apply_transformation_with_exceptions proof_with_notations transform_request in
+        let cyclic_notations, acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations None in
+        let proof = apply_transformation_with_exceptions proof_with_notations.proof cyclic_notations acyclic_notations transform_request in
         let proof_with_transformation_options = get_transformation_options_json proof proof_with_notations.notations in
         true, `Assoc ["proofWithTransformationOptions", proof_with_transformation_options]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m)
