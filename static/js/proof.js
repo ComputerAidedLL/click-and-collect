@@ -71,39 +71,22 @@ function buildProof(proofAsJson, $container) {
     createSubProof(proofAsJson, $proofDiv, options);
 
     if (options.autoReverse) {
-        createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
-            saveOption($container, 'autoReverse', autoReverse);
-
-            if (autoReverse) {
-                autoReverseContainer($container);
-            }
-
-            options.autoReverse.onToggle(autoReverse);
-        }, 'auto-reverse-dialog');
-
-        if (options.autoReverse.value) {
-            autoReverseContainer($container);
-        }
+        createOption($container, 'autoReverse', 'Auto-reverse','auto-reverse-dialog', function () {
+            switchOffOption($container,'proofTransformation');
+        }, autoReverseContainer);
     }
 
     if (options.cutMode) {
-        createOption($container, options.cutMode.value, 'Cut mode',function (cutMode) {
-            saveOption($container, 'cutMode', cutMode);
-            toggleCutMode($container, cutMode);
-            options.cutMode.onToggle(cutMode);
-        }, 'cut-mode-dialog');
-
-        toggleCutMode($container, options.cutMode.value);
+        createOption($container, 'cutMode', 'Cut mode', 'cut-mode-dialog',function () {
+            switchOffOption($container,'proofTransformation');
+        }, toggleCutMode);
     }
 
     if (options.proofTransformation) {
-        createOption($container, options.proofTransformation.value, 'Proof transformation',function (proofTransformation) {
-            saveOption($container, 'proofTransformation', proofTransformation);
-            toggleProofTransformation($container);
-            options.proofTransformation.onToggle(proofTransformation);
-        }, 'proof-transformation-dialog');
-
-        toggleProofTransformation($container);
+        createOption($container, 'proofTransformation', 'Proof transformation', 'proof-transformation-dialog',function () {
+            switchOffOption($container,'autoReverse');
+            switchOffOption($container,'cutMode');
+        }, toggleProofTransformation);
     }
 
     if (options.exportButtons) {
@@ -159,12 +142,26 @@ function removeSequentTable($sequentTable) {
 // OPTIONS
 // *******
 
-function createOption($container, isChecked, text, onToggle, dialogId) {
+function createOption($container, optionName, text, dialogId, onSwitchOn, onToggle) {
     let $input = $('<input type="checkbox">');
-    $input.prop('checked', isChecked);
-    $input.on('change', function() {
-        onToggle(this.checked);
-    });
+    if (optionName) {
+        let options = $container.data('options');
+        $input.addClass(optionName);
+        $input.prop('checked', options[optionName].value);
+        $input.on('change', function() {
+            if (this.checked) {
+                onSwitchOn();
+            }
+            let options = $container.data('options');
+            options[optionName].value = this.checked;
+            $container.data('options', options);
+
+            options[optionName].onToggle(this.checked);
+            onToggle($container, this.checked);
+        });
+
+        onToggle($container, options[optionName].value);
+    }
 
     let $optionBar = $('<div>', {'class': 'option-bar'})
         .append($('<span>', {'class': 'option-label'}).text(text))
@@ -182,10 +179,11 @@ function createInfo(title, dialogId) {
         .on('click', function () { $(`#${dialogId}`).dialog('open'); })
 }
 
-function saveOption($container, optionName, optionValue) {
-    let options = $container.data('options');
-    options[optionName].value = optionValue;
-    $container.data('options', options);
+function switchOffOption($container, optionName) {
+    let $input = $container.find(`input.${optionName}`);
+    if ($input.length && $input.prop('checked')) {
+        $input.prop('checked', false).trigger('change');
+    }
 }
 
 // **********
@@ -605,7 +603,7 @@ function exportAsCoq($container) {
 function openExportDialog($container) {
     let exportDialog = $('#export-dialog');
     if (!exportDialog.find('.' + 'download-button').length) {
-        createOption(exportDialog, false, 'Draw explicit exchange rules', function () {}, 'explicit-exchange-dialog');
+        createOption(exportDialog, null, 'Draw explicit exchange rules', 'explicit-exchange-dialog', null, null);
         exportDialog.append($('<p>')
             .append($('<button type="button">')
                 .addClass('download-button')
@@ -785,9 +783,11 @@ function isReversible(ruleRequest) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function autoReverseContainer($container) {
-    let $mainSequentTable = $container.find('table').last();
-    autoReverseSequentPremises($mainSequentTable);
+function autoReverseContainer($container, autoReverse) {
+    if (autoReverse) {
+        let $mainSequentTable = $container.find('table').last();
+        autoReverseSequentPremises($mainSequentTable);
+    }
 }
 
 function autoReverseSequentPremises($sequentTable) {
@@ -916,11 +916,11 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $contai
 // PROOF TRANSFORMATION
 // ********************
 
-function toggleProofTransformation($container) {
+function toggleProofTransformation($container, proofTransformation) {
     let options = $container.data('options');
     let $divProof = $container.children('div.proof');
 
-    if (options.proofTransformation.value) {
+    if (proofTransformation) {
         // We get proof stored in HTML
         let proof = getProofAsJson($container);
         let notations = getNotations($container);
@@ -939,10 +939,12 @@ function toggleProofTransformation($container) {
             error: onAjaxError
         });
     } else {
-        let proof = getProofAsJson($container);
-        $divProof.removeClass('proof-transformation');
-        options.withInteraction = true;
-        reloadProof($container, proof, options);
+        if ($divProof.hasClass('proof-transformation')) {
+            let proof = getProofAsJson($container);
+            $divProof.removeClass('proof-transformation');
+            options.withInteraction = true;
+            reloadProof($container, proof, options);
+        }
     }
 }
 
