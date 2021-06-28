@@ -23,6 +23,15 @@ const RULES = {
     'unfold_dual': '<span class="italic">def</span>'
 };
 
+const TRANSFORM_OPTIONS = {
+    'expand_axiom': {
+        'button': '⇯',
+        'title': 'One step axiom expansion (single click) or full axiom expansion (double click)',
+        'singleClick': 'expand_axiom',
+        'doubleClick': 'expand_axiom_full'
+    }
+};
+
 const ABBREVIATIONS = {
     '"sequent":': '"s":',
     '"appliedRule":': '"ar":',
@@ -62,29 +71,22 @@ function buildProof(proofAsJson, $container) {
     createSubProof(proofAsJson, $proofDiv, options);
 
     if (options.autoReverse) {
-        createOption($container, options.autoReverse.value, 'Auto-reverse',function (autoReverse) {
-            saveOption($container, 'autoReverse', autoReverse);
-
-            if (autoReverse) {
-                autoReverseContainer($container);
-            }
-
-            options.autoReverse.onToggle(autoReverse);
-        }, 'auto-reverse-dialog');
-
-        if (options.autoReverse.value) {
-            autoReverseContainer($container);
-        }
+        createOption($container, 'autoReverse', 'Auto-reverse','auto-reverse-dialog', function () {
+            switchOffOption($container,'proofTransformation');
+        }, autoReverseContainer);
     }
 
     if (options.cutMode) {
-        createOption($container, options.cutMode.value, 'Cut mode',function (cutMode) {
-            saveOption($container, 'cutMode', cutMode);
-            toggleCutMode($container, cutMode);
-            options.cutMode.onToggle(cutMode);
-        }, 'cut-mode-dialog');
+        createOption($container, 'cutMode', 'Cut mode', 'cut-mode-dialog',function () {
+            switchOffOption($container,'proofTransformation');
+        }, toggleCutMode);
+    }
 
-        toggleCutMode($container, options.cutMode.value);
+    if (options.proofTransformation) {
+        createOption($container, 'proofTransformation', 'Proof transformation', 'proof-transformation-dialog',function () {
+            switchOffOption($container,'autoReverse');
+            switchOffOption($container,'cutMode');
+        }, toggleProofTransformation);
     }
 
     if (options.exportButtons) {
@@ -105,10 +107,8 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
         }
 
         addPremises($sequentTable,
-            proofAsJson.sequent,
+            proofAsJson,
             permutationBeforeRule,
-            proofAsJson.appliedRule.ruleRequest,
-            proofAsJson.appliedRule.premises,
             options);
     } else if (options.checkProvability) {
         checkProvability($sequentTable);
@@ -142,12 +142,26 @@ function removeSequentTable($sequentTable) {
 // OPTIONS
 // *******
 
-function createOption($container, isChecked, text, onToggle, dialogId) {
+function createOption($container, optionName, text, dialogId, onSwitchOn, onToggle) {
     let $input = $('<input type="checkbox">');
-    $input.prop('checked', isChecked);
-    $input.on('change', function() {
-        onToggle(this.checked);
-    });
+    if (optionName) {
+        let options = $container.data('options');
+        $input.addClass(optionName);
+        $input.prop('checked', options[optionName].value);
+        $input.on('change', function() {
+            if (this.checked) {
+                onSwitchOn();
+            }
+            let options = $container.data('options');
+            options[optionName].value = this.checked;
+            $container.data('options', options);
+
+            options[optionName].onToggle(this.checked);
+            onToggle($container, this.checked);
+        });
+
+        onToggle($container, options[optionName].value);
+    }
 
     let $optionBar = $('<div>', {'class': 'option-bar'})
         .append($('<span>', {'class': 'option-label'}).text(text))
@@ -165,10 +179,11 @@ function createInfo(title, dialogId) {
         .on('click', function () { $(`#${dialogId}`).dialog('open'); })
 }
 
-function saveOption($container, optionName, optionValue) {
-    let options = $container.data('options');
-    options[optionName].value = optionValue;
-    $container.data('options', options);
+function switchOffOption($container, optionName) {
+    let $input = $container.find(`input.${optionName}`);
+    if ($input.length && $input.prop('checked')) {
+        $input.prop('checked', false).trigger('change');
+    }
 }
 
 // **********
@@ -196,8 +211,7 @@ function applyRule(ruleRequest, $sequentTable) {
             if (data.success === true) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
-                let appliedRule = data['proof'].appliedRule;
-                addPremises($sequentTable, sequent, permutationBeforeRule, appliedRule.ruleRequest, appliedRule.premises, options);
+                addPremises($sequentTable, data['proof'], permutationBeforeRule, options);
 
                 if (!isProved($sequentTable) && options.autoReverse?.value) {
                     autoReverseSequentPremises($sequentTable);
@@ -210,13 +224,15 @@ function applyRule(ruleRequest, $sequentTable) {
     });
 }
 
-function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRule, ruleRequest, premises, options) {
+function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options) {
     // Undo previously applied rule if any
     undoRule($sequentTable);
 
+    let ruleRequest = proofAsJson.appliedRule.ruleRequest;
+
     // Save data
     $sequentTable
-        .data('sequentWithPermutation', sequentWithPermutation)
+        .data('sequentWithPermutation', proofAsJson.sequent)
         .data('permutationBeforeRule', permutationBeforeRule)
         .data('ruleRequest', ruleRequest);
 
@@ -233,10 +249,27 @@ function addPremises($sequentTable, sequentWithPermutation, permutationBeforeRul
             clearSavedProof();
             undoRule($sequentTable);
         })
+    } else if (options.proofTransformation.value) {
+        for (let transformOption of proofAsJson.appliedRule.transformOptions) {
+            let transformation = transformOption.transformation;
+            let $transformSpan = $('<span>', {'class': 'transform-button'})
+                .addClass(transformOption.enabled ? 'enabled' : 'disabled')
+                .text(TRANSFORM_OPTIONS[transformation].button);
+            if (transformOption.enabled) {
+                $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
+                addClickAndDoubleClickEvent($transformSpan, function () {
+                    applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].singleClick);
+                }, function () {
+                    applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].doubleClick);
+                });
+            }
+            $ruleSymbol.append($transformSpan);
+        }
     }
     $td.next('.tagBox').html($ruleSymbol);
 
     // Add premises
+    let premises = proofAsJson.appliedRule.premises;
     if (premises.length === 0) {
         if (options.withInteraction) {
             markParentSequentsAsProved($sequentTable);
@@ -570,7 +603,7 @@ function exportAsCoq($container) {
 function openExportDialog($container) {
     let exportDialog = $('#export-dialog');
     if (!exportDialog.find('.' + 'download-button').length) {
-        createOption(exportDialog, false, 'Draw explicit exchange rules', function () {}, 'explicit-exchange-dialog');
+        createOption(exportDialog, null, 'Draw explicit exchange rules', 'explicit-exchange-dialog', null, null);
         exportDialog.append($('<p>')
             .append($('<button type="button">')
                 .addClass('download-button')
@@ -750,9 +783,11 @@ function isReversible(ruleRequest) {
 // AUTO-REVERSE OPTION
 // *******************
 
-function autoReverseContainer($container) {
-    let $mainSequentTable = $container.find('table').last();
-    autoReverseSequentPremises($mainSequentTable);
+function autoReverseContainer($container, autoReverse) {
+    if (autoReverse) {
+        let $mainSequentTable = $container.find('table').last();
+        autoReverseSequentPremises($mainSequentTable);
+    }
 }
 
 function autoReverseSequentPremises($sequentTable) {
@@ -806,7 +841,7 @@ function autoReverseSequent($sequentTable) {
         success: function(data)
         {
             if (data.appliedRule !== null) {
-                addPremises($sequentTable, sequent, permutationBeforeRule, data.appliedRule.ruleRequest, data.appliedRule.premises, options);
+                addPremises($sequentTable, data, permutationBeforeRule, options);
             }
         },
         error: onAjaxError
@@ -872,6 +907,72 @@ function parseFormulaAsString(formulaAsString, onFormulaSuccessCallback, $contai
             } else {
                 displayPedagogicError(data['error_message'], $container);
             }
+        },
+        error: onAjaxError
+    });
+}
+
+// ********************
+// PROOF TRANSFORMATION
+// ********************
+
+function toggleProofTransformation($container, proofTransformation) {
+    let options = $container.data('options');
+    let $divProof = $container.children('div.proof');
+
+    if (proofTransformation) {
+        // We get proof stored in HTML
+        let proof = getProofAsJson($container);
+        let notations = getNotations($container);
+
+        $.ajax({
+            type: 'POST',
+            url: '/get_proof_transformation_options',
+            contentType:'application/json; charset=utf-8',
+            data: compressJson(JSON.stringify({ proof, notations })),
+            success: function(data)
+            {
+                $divProof.addClass('proof-transformation');
+                options.withInteraction = false;
+                reloadProof($container, data['proofWithTransformationOptions'], options);
+            },
+            error: onAjaxError
+        });
+    } else {
+        if ($divProof.hasClass('proof-transformation')) {
+            let proof = getProofAsJson($container);
+            $divProof.removeClass('proof-transformation');
+            options.withInteraction = true;
+            reloadProof($container, proof, options);
+        }
+    }
+}
+
+function reloadProof($container, proofAsJson, options) {
+    let $mainSequentTable = $container.find('table').last();
+    let $sequentContainer = removeSequentTable($mainSequentTable);
+    createSubProof(proofAsJson, $sequentContainer, options);
+}
+
+function applyTransformation ($sequentTable, transformOption) {
+    let $container = $sequentTable.closest('.proof-container');
+    let options = $container.data('options');
+
+    // Sequent json that was stored in div can not been permuted before transformation applying
+    let proof = recGetProofAsJson($sequentTable);
+    let permutationBeforeRule = $sequentTable.data('permutationBeforeRule');
+    let notations = getNotations($container);
+    let transformRequest = { transformation: transformOption }
+
+    $.ajax({
+        type: 'POST',
+        url: '/apply_transformation',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify({ proof, notations, transformRequest })),
+        success: function(data)
+        {
+            clearSavedProof();
+            addPremises($sequentTable, data['proofWithTransformationOptions'], permutationBeforeRule, options);
         },
         error: onAjaxError
     });

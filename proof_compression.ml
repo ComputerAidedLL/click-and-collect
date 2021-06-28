@@ -57,28 +57,12 @@ let compress_proof request_as_json =
         true, `Assoc ["compressedProof", `String compressed_proof]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad request: " ^ m);;
 
-exception Json_exception of string
-
-let get_key d k =
-    let value =
-        try Yojson.Basic.Util.member k d
-        with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("request body must be a json object"))
-    in
-    if value = `Null
-    then raise (Json_exception ("required argument '" ^ k ^ "' is missing"))
-    else value
-
-let get_string d k =
-    let value = get_key d k in
-    try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception ("field '" ^ k ^ "' must be a string"));;
-
 let uncompress_proof request_as_json =
-    try let compressed_proof = get_string request_as_json "compressedProof" in
+    try let compressed_proof = Request_utils.get_string request_as_json "compressedProof" in
         let uncompressed_proof_and_notations_as_string = uncompress_json_lzma compressed_proof in
         let uncompressed_proof_and_notations = Proof_with_notations.from_json uncompressed_proof_and_notations_as_string in
         let uncompressed_proof_and_notations_as_json = Proof_with_notations.to_json uncompressed_proof_and_notations in
         true, uncompressed_proof_and_notations_as_json
     with Uncompress_exception m -> false, `Assoc [("error_message", `String m)]
         | Proof_with_notations.Json_exception m -> true, `Assoc [("error_message", `String ("Bad proof with notations: " ^ m))]
-        | Json_exception m -> false, `Assoc [("error_message", `String ("Bad request: " ^ m))]
+        | Request_utils.Bad_request_exception m -> false, `Assoc [("error_message", `String ("Bad request: " ^ m))]

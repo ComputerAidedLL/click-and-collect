@@ -50,6 +50,9 @@ function submitSequent(element, autoSubmit = false) {
 
         // We update current URL by adding sequent in query parameters
         addQueryParamInUrl('s', sequentAsString.toString(), 'Linear logic proof start');
+
+        // We set proof_transformation to false
+        addQueryParamInUrl('proof_transformation', null, `proof_transformation set to false`);
     }
 
     // Add GA events
@@ -88,6 +91,9 @@ function initMainProof(proofAsJson) {
     // We get cut mode option in URL
     let cutMode = getQueryParamInUrl('cut_mode') === '1';
 
+    // We get proof transformation option in URL
+    let proofTransformation = getQueryParamInUrl('proof_transformation') === '1';
+
     // We get notations from URL
     let notations = getQueryPairListParamInUrl('n');
 
@@ -102,6 +108,10 @@ function initMainProof(proofAsJson) {
         cutMode: {
             value: cutMode,
             onToggle: onOptionToggle('cut_mode')
+        },
+        proofTransformation: {
+            value: proofTransformation,
+            onToggle: onOptionToggle('proof_transformation')
         },
         notations: {
             formulasAsString: notations,

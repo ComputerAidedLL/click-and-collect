@@ -53,6 +53,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 
 /* PROOF */
 .proof.complete { background:#CFC; }
+.proof.proof-transformation { border: 2px dashed #66a3e0; }
 .proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding-left: 2.4em; padding-top:0.5em; padding-bottom:0.3em; margin: 0 auto 1em; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
@@ -74,9 +75,12 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof.cut-mode span.first-point:after, .proof.cut-mode .commaList li:last-child span.comma:after { content: '.'; }
 .proof.cut-mode span.first-point, .proof.cut-mode .commaList li span.comma { cursor: pointer; margin-left: 0.3em; margin-right: 0.3em; }
 .proof .binary-connector { margin-left: 3px; margin-right: 3px; }
-.proof .clickable:hover { cursor:pointer; }
+.proof .clickable { cursor: pointer; }
 .proof .highlightableExpr:hover { background: #e0ecf8; }
 .proof .main-formula.hoverable:hover .primaryConnector { background: #66a3e0; color: #FFF; }
+.transform-button { margin-left: 0.1em; }
+.transform-button.enabled:hover { cursor: pointer; background: #66a3e0; color: #FFF; }
+.transform-button.disabled { color: #ccc; }
 
 .export-bar, .option-bar { margin-left: auto; margin-right: auto; display: table; }
 .export-bar { margin-top: 1em; }
