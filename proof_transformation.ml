@@ -598,3 +598,9 @@ let apply_transformation request_as_json =
         | Request_utils.Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Transform_request.Json_exception m -> false, `String ("Bad transformation request: " ^ m)
         | Transform_exception m -> false, `String ("Transform exception: " ^ m);;
+
+let simplify_proof request_as_json =
+    try let proof_with_notations = Proof_with_notations.from_json request_as_json in
+        let proof = Proof_simplification.remove_loop proof_with_notations.proof in
+        true, `Assoc ["proof", Proof.to_json proof]
+    with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m);;

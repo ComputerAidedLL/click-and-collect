@@ -965,7 +965,7 @@ function toggleProofTransformation($container, proofTransformation) {
     if (proofTransformation) {
         $divProof.addClass('proof-transformation');
         removeTransformStack($container);
-        createUndoRedoButton($container);
+        createTransformBar($container);
         reloadProofWithTransformationOptions($container, options);
     } else {
         if ($divProof.hasClass('proof-transformation')) {
@@ -973,7 +973,7 @@ function toggleProofTransformation($container, proofTransformation) {
             $divProof.removeClass('proof-transformation');
             options.withInteraction = true;
             reloadProof($container, proof, options);
-            removeUndoRedoButton($container);
+            removeTransformBar($container);
         }
     }
 }
@@ -1004,18 +1004,21 @@ function reloadProof($container, proofAsJson, options) {
     createSubProof(proofAsJson, $sequentContainer, options);
 }
 
-function createUndoRedoButton($container) {
+function createTransformBar($container) {
     let $proof = $container.find('.proof');
-    $('<span>', {class: 'undo-redo'})
-        .addClass('redo').text('↷').attr('title', 'Redo proof transformation')
-        .insertAfter($proof);
-    $('<span>', {class: 'undo-redo'})
-        .addClass('undo').text('↶').attr('title', 'Undo proof transformation')
-        .insertAfter($proof);
+    let $transformBar = $('<div>', {class: 'transform-bar'});
+    $transformBar.insertAfter($proof);
+    $transformBar.append($('<span>', {class: 'transform-global-button'})
+        .addClass('undo').text('↶').attr('title', 'Undo proof transformation'));
+    $transformBar.append($('<span>', {class: 'transform-global-button'})
+        .addClass('redo').text('↷').attr('title', 'Redo proof transformation'));
+    $transformBar.append($('<span>', {class: 'transform-global-button'})
+        .addClass('simplify').text('↯').attr('title', 'Simplify proof')
+        .addClass('enabled').on('click', function () { simplifyProof($container); }));
 }
 
-function removeUndoRedoButton($container) {
-    $container.find('.undo-redo').remove();
+function removeTransformBar($container) {
+    $container.find('.transform-bar').remove();
 }
 
 function undoTransformation($container) {
@@ -1086,7 +1089,6 @@ function updateUndoRedoButton($container, transformStack, transformPointer) {
 
 function applyTransformation ($sequentTable, transformOption) {
     let $container = $sequentTable.closest('.proof-container');
-    let options = $container.data('options');
 
     // Sequent json that was stored in div can not been permuted before transformation applying
     let proof = recGetProofAsJson($sequentTable);
@@ -1102,14 +1104,40 @@ function applyTransformation ($sequentTable, transformOption) {
         {
             clearSavedProof();
             cleanPedagogicMessage($container);
-            let $sequentContainer = removeSequentTable($sequentTable);
-            options.proofTransformation.value = false;
-            createSubProof(data['proof'], $sequentContainer, options);
-            options.proofTransformation.value = true;
-            reloadProofWithTransformationOptions($container, options);
+            replaceAndReloadProof($sequentTable, data['proof'], $container);
         },
         error: onAjaxError
     });
+}
+
+function simplifyProof($container) {
+    let $mainSequentTable = $container.find('table').last();
+    let proof = recGetProofAsJson($mainSequentTable);
+    let notations = getNotations($container);
+
+    $.ajax({
+        type: 'POST',
+        url: '/simplify_proof',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify({ proof, notations })),
+        success: function(data)
+        {
+            clearSavedProof();
+            cleanPedagogicMessage($container);
+            replaceAndReloadProof($mainSequentTable, data['proof'], $container);
+        },
+        error: onAjaxError
+    });
+}
+
+function replaceAndReloadProof($sequentTable, proofAsJson, $container) {
+    let options = $container.data('options');
+
+    let $sequentContainer = removeSequentTable($sequentTable);
+    options.proofTransformation.value = false;
+    createSubProof(proofAsJson, $sequentContainer, options);
+    options.proofTransformation.value = true;
+    reloadProofWithTransformationOptions($container, options);
 }
 
 
