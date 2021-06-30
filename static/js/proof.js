@@ -1013,8 +1013,11 @@ function createTransformBar($container) {
     $transformBar.append($('<span>', {class: 'transform-global-button'})
         .addClass('redo').text('↷').attr('title', 'Redo proof transformation'));
     $transformBar.append($('<span>', {class: 'transform-global-button'})
-        .addClass('simplify').text('↯').attr('title', 'Simplify proof')
+        .text('↯').attr('title', 'Simplify proof')
         .addClass('enabled').on('click', function () { simplifyProof($container); }));
+    $transformBar.append($('<span>', {class: 'transform-global-button'})
+        .text('✄').attr('title', 'Eliminate all cuts')
+        .addClass('enabled').on('click', function () { eliminateAllCuts($container); }));
 }
 
 function removeTransformBar($container) {
@@ -1130,9 +1133,28 @@ function simplifyProof($container) {
     });
 }
 
+function eliminateAllCuts($container) {
+    let $mainSequentTable = $container.find('table').last();
+    let proof = recGetProofAsJson($mainSequentTable);
+    let notations = getNotations($container);
+
+    $.ajax({
+        type: 'POST',
+        url: '/eliminate_all_cuts',
+        contentType:'application/json; charset=utf-8',
+        data: compressJson(JSON.stringify({ proof, notations })),
+        success: function(data)
+        {
+            clearSavedProof();
+            cleanPedagogicMessage($container);
+            replaceAndReloadProof($mainSequentTable, data['proof'], $container);
+        },
+        error: onAjaxError
+    });
+}
+
 function replaceAndReloadProof($sequentTable, proofAsJson, $container) {
     let options = $container.data('options');
-
     let $sequentContainer = removeSequentTable($sequentTable);
     options.proofTransformation.value = false;
     createSubProof(proofAsJson, $sequentContainer, options);

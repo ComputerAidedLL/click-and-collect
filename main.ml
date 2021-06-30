@@ -90,6 +90,9 @@ let apply_transformation_handler req =
 let simplify_proof_handler req =
     json_handler Proof_transformation.simplify_proof req
 
+let eliminate_all_cuts_handler req =
+    json_handler Proof_transformation.eliminate_all_cuts req
+
 (** Configure the logger *)
 let set_logger () =
   Logs.set_reporter (Logs_fmt.reporter ());
@@ -115,5 +118,6 @@ let _ =
   |> App.post "/get_proof_transformation_options" get_proof_transformation_options_handler
   |> App.post "/apply_transformation" apply_transformation_handler
   |> App.post "/simplify_proof" simplify_proof_handler
+  |> App.post "/eliminate_all_cuts" eliminate_all_cuts_handler
   |> App.run_command
 ;;

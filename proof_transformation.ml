@@ -579,6 +579,22 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Eliminate_cut_key_case -> cut_elimination_key_case (cyclic_notations @ acyclic_notations) proof
     ;;
 
+let rec eliminate_all_cuts_in_proof acyclic_notations = function
+    | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
+        let p1 = eliminate_all_cuts_in_proof acyclic_notations cut_p1 in
+        let p2 = eliminate_all_cuts_in_proof acyclic_notations cut_p2 in
+        let cut_proof = Cut_proof (cut_head, cut_formula, cut_tail, p1, p2) in
+        let new_proof =
+            if can_commute_with_cut (List.length cut_head) cut_tail p1
+            then cut_elimination true acyclic_notations cut_proof
+            else if can_commute_with_cut 0 cut_head p2
+            then cut_elimination false acyclic_notations cut_proof
+            else cut_elimination_key_case acyclic_notations cut_proof in
+        eliminate_all_cuts_in_proof acyclic_notations new_proof
+    | Exchange_proof (s, display_permutation, exchange_permutation, p) ->
+        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, eliminate_all_cuts_in_proof acyclic_notations p))
+    | proof -> set_premises proof (List.map (eliminate_all_cuts_in_proof acyclic_notations) (get_premises proof))
+
 (* HANDLERS *)
 
 let get_proof_transformation_options request_as_json =
@@ -602,5 +618,12 @@ let apply_transformation request_as_json =
 let simplify_proof request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let proof = Proof_simplification.remove_loop proof_with_notations.proof in
+        true, `Assoc ["proof", Proof.to_json proof]
+    with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m);;
+
+let eliminate_all_cuts request_as_json =
+    try let proof_with_notations = Proof_with_notations.from_json request_as_json in
+        let _cyclic_notations, acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations None in
+        let proof = eliminate_all_cuts_in_proof acyclic_notations proof_with_notations.proof in
         true, `Assoc ["proof", Proof.to_json proof]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m);;
