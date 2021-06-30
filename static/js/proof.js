@@ -34,19 +34,19 @@ const TRANSFORM_OPTIONS = {
         'button': '←',
         'title': 'Eliminate cut or commute it on left hand-side',
         'singleClick': 'eliminate_cut_left',
-        'doubleClick': null
+        'doubleClick': 'eliminate_cut_full'
     },
     'eliminate_cut_right': {
         'button': '→',
         'title': 'Eliminate cut or commute it on right hand-side',
         'singleClick': 'eliminate_cut_right',
-        'doubleClick': null
+        'doubleClick': 'eliminate_cut_full'
     },
     'eliminate_cut_key_case': {
         'button': '↑',
         'title': 'Eliminate cut key-case',
         'singleClick': 'eliminate_cut_key_case',
-        'doubleClick': null
+        'doubleClick': 'eliminate_cut_full'
     }
 };
 
@@ -1115,42 +1115,12 @@ function applyTransformation ($sequentTable, transformOption) {
 
 function simplifyProof($container) {
     let $mainSequentTable = $container.find('table').last();
-    let proof = recGetProofAsJson($mainSequentTable);
-    let notations = getNotations($container);
-
-    $.ajax({
-        type: 'POST',
-        url: '/simplify_proof',
-        contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify({ proof, notations })),
-        success: function(data)
-        {
-            clearSavedProof();
-            cleanPedagogicMessage($container);
-            replaceAndReloadProof($mainSequentTable, data['proof'], $container);
-        },
-        error: onAjaxError
-    });
+    applyTransformation ($mainSequentTable, 'simplify');
 }
 
 function eliminateAllCuts($container) {
     let $mainSequentTable = $container.find('table').last();
-    let proof = recGetProofAsJson($mainSequentTable);
-    let notations = getNotations($container);
-
-    $.ajax({
-        type: 'POST',
-        url: '/eliminate_all_cuts',
-        contentType:'application/json; charset=utf-8',
-        data: compressJson(JSON.stringify({ proof, notations })),
-        success: function(data)
-        {
-            clearSavedProof();
-            cleanPedagogicMessage($container);
-            replaceAndReloadProof($mainSequentTable, data['proof'], $container);
-        },
-        error: onAjaxError
-    });
+    applyTransformation ($mainSequentTable, 'eliminate_all_cuts');
 }
 
 function replaceAndReloadProof($sequentTable, proofAsJson, $container) {

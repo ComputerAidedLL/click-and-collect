@@ -4,6 +4,9 @@ type transform_request =
     | Eliminate_cut_left
     | Eliminate_cut_key_case
     | Eliminate_cut_right
+    | Eliminate_cut_full
+    | Eliminate_all_cuts
+    | Simplify
     ;;
 
 (* JSON -> TRANSFORM REQUEST *)
@@ -18,6 +21,9 @@ let from_json transform_request_as_json =
             | "eliminate_cut_left" -> Eliminate_cut_left
             | "eliminate_cut_key_case" -> Eliminate_cut_key_case
             | "eliminate_cut_right" -> Eliminate_cut_right
+            | "eliminate_cut_full" -> Eliminate_cut_full
+            | "eliminate_all_cuts" -> Eliminate_all_cuts
+            | "simplify" -> Simplify
             | _ -> raise (Json_exception ("unknown transformation '" ^ transformation ^ "'"))
     with Request_utils.Bad_request_exception m -> raise (Json_exception ("bad request: " ^ m));;
 
@@ -29,4 +35,7 @@ let to_string = function
     | Eliminate_cut_left -> "eliminate_cut_left"
     | Eliminate_cut_key_case -> "eliminate_cut_key_case"
     | Eliminate_cut_right -> "eliminate_cut_right"
+    | Eliminate_cut_full -> "eliminate_cut_full"
+    | Eliminate_all_cuts -> "eliminate_all_cuts"
+    | Simplify -> "simplify"
     ;;
