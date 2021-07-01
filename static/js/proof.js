@@ -990,7 +990,7 @@ function reloadProofWithTransformationOptions($container, options) {
         success: function(data)
         {
             removeTransformBar($container);
-            createTransformBar($container, data['canEliminateAllCuts']);
+            createTransformBar($container, data['canSimplify'], data['canEliminateAllCuts']);
             options.withInteraction = false;
             reloadProof($container, data['proofWithTransformationOptions'], options);
             stackProofTransformation($container);
@@ -1005,7 +1005,7 @@ function reloadProof($container, proofAsJson, options) {
     createSubProof(proofAsJson, $sequentContainer, options);
 }
 
-function createTransformBar($container, canEliminateAllCuts) {
+function createTransformBar($container, canSimplify, canEliminateAllCuts) {
     let $proof = $container.find('.proof');
     let $transformBar = $('<div>', {class: 'transform-bar'});
     $transformBar.insertAfter($proof);
@@ -1013,9 +1013,14 @@ function createTransformBar($container, canEliminateAllCuts) {
         .addClass('undo').text('↶').attr('title', 'Undo proof transformation'));
     $transformBar.append($('<span>', {class: 'transform-global-button'})
         .addClass('redo').text('↷').attr('title', 'Redo proof transformation'));
-    $transformBar.append($('<span>', {class: 'transform-global-button'})
-        .text('↯').attr('title', 'Simplify proof')
-        .addClass('enabled').on('click', function () { simplifyProof($container); }));
+
+    let $simplificationButton = $('<span>', {class: 'transform-global-button'})
+        .text('↯').attr('title', 'Simplify proof');
+    if (canSimplify) {
+        $simplificationButton.addClass('enabled').on('click', function () { simplifyProof($container); })
+    }
+    $transformBar.append($simplificationButton);
+
     let $eliminateAllCutsButton = $('<span>', {class: 'transform-global-button'})
         .text('✄').attr('title', 'Eliminate all cuts');
     if (canEliminateAllCuts) {

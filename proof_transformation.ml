@@ -607,6 +607,9 @@ let check_all_cuts_elimination proof notations =
     let cyclic_notations, _ = Notations.split_cyclic_acyclic notations (Some proof_variables) in
     (List.length cyclic_notations = 0)
 
+let check_simplification proof =
+    proof <> Proof_simplification.remove_loop proof
+
 let apply_transformation_with_exceptions proof cyclic_notations acyclic_notations = function
     | Expand_axiom -> expand_axiom_on_proof (cyclic_notations @ acyclic_notations) proof
     | Expand_axiom_full -> expand_axiom_full acyclic_notations proof
@@ -624,8 +627,10 @@ let get_proof_transformation_options request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations in
         let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof proof_with_notations.notations in
+        let can_simplify = check_simplification proof_with_notations.proof in
         true, `Assoc [
             "proofWithTransformationOptions", proof_with_transformation_options;
+            "canSimplify", `Bool can_simplify;
             "canEliminateAllCuts", `Bool can_eliminate_all_cuts]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad request: " ^ m);;
 

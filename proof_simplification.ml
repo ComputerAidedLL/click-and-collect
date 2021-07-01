@@ -51,9 +51,12 @@ let rec rec_commute_up_permutations proof perm =
     | Cut_proof (head, _, tail, p1, p2) ->
         let new_proof = set_premises proof [rec_commute_up_permutations p1 (identity (List.length head + 1)); rec_commute_up_permutations p2 (identity (1 + List.length tail))] in
         if perm = identity (List.length conclusion) then new_proof else Exchange_proof (conclusion, perm, perm, new_proof)
-    (* TODO notations *)
-    | Unfold_litt_proof _ -> raise (Failure "Unfold litt not implemented yet")
-    | Unfold_dual_proof _ -> raise (Failure "Unfold dual not implemented yet")
+    | Unfold_litt_proof (head, s, _tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Unfold_litt_proof (permute conclusion head_perm, s, permute conclusion tail_perm, rec_commute_up_permutations p perm)
+    | Unfold_dual_proof (head, s, _tail, p) ->
+        let head_perm, tail_perm = head_tail_perm head perm in
+        Unfold_dual_proof (permute conclusion head_perm, s, permute conclusion tail_perm, rec_commute_up_permutations p perm)
     | Hypothesis_proof sequent -> Hypothesis_proof (permute sequent perm);;
 
 let commute_up_permutations proof =
