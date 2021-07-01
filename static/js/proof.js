@@ -147,9 +147,9 @@ function createSequentTable(sequent, options) {
     $td.append(createSequent(sequent, $sequentTable, options));
     $sequentTable.append($td);
 
-    let $tagBox = $('<td>', {'class': 'tagBox'})
+    let $tagBox = $('<div>', {'class': 'tagBox'})
         .html('&nbsp;');
-    $sequentTable.append($tagBox);
+    $td.append($tagBox);
 
     return $sequentTable;
 }
@@ -269,7 +269,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
 
     // Add rule symbol
     let $ruleSymbol = $('<div>', {'class': 'tag'}).html(RULES[ruleRequest.rule]);
-    $td.next('.tagBox').addClass(ruleRequest.rule).append($ruleSymbol);
+    $td.children('.tagBox').addClass(ruleRequest.rule).append($ruleSymbol);
     if (options.withInteraction) {
         $ruleSymbol.addClass('clickable');
         $ruleSymbol.on('click', function() {
@@ -301,7 +301,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
             }
             transformDiv.append($transformSpan);
         }
-        $td.next('.tagBox').append(transformDiv);
+        $td.children('.tagBox').append(transformDiv);
     }
 
 
@@ -349,7 +349,7 @@ function undoRule($sequentTable) {
     $td.removeClass('dashed-line');
 
     // Remove rule symbol
-    $td.next('.tagBox').html('');
+    $td.children('.tagBox').html('');
 
     // Remove premises
     $sequentTable.prevAll().each(function (i, e) {
