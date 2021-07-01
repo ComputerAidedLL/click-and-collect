@@ -421,14 +421,14 @@ let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_pro
             if is_left
             then Contraction_proof (new_head, e, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [Whynot e; Whynot e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
             else Contraction_proof (cut_head @ new_head, e, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [Whynot e; Whynot e] @ new_tail, other_proof, new_proof)))
-    | Unfold_litt_proof (head, s, tail, p) ->
+    | Unfold_litt_proof (head, s, tail, p) when List.mem_assoc s notations ->
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             let new_proof = build_exchange (get_conclusion p) permutation p in
             let formula = Raw_sequent.to_formula (List.assoc s notations) in
             if is_left
             then Unfold_litt_proof (new_head, s, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [formula] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
             else Unfold_litt_proof (cut_head @ new_head, s, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [formula] @ new_tail, other_proof, new_proof)))
-    | Unfold_dual_proof (head, s, tail, p) ->
+    | Unfold_dual_proof (head, s, tail, p) when List.mem_assoc s notations ->
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             let new_proof = build_exchange (get_conclusion p) permutation p in
             let formula = dual (Raw_sequent.to_formula (List.assoc s notations)) in
@@ -546,10 +546,10 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         let head2 = add_whynot head_without_whynot in
         let tail2 = add_whynot tail_without_whynot in
         cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
-    | Unfold_litt_proof (head1, s, tail1, p1), Unfold_dual_proof (head2, _s, tail2, p2) ->
+    | Unfold_litt_proof (head1, s, tail1, p1), Unfold_dual_proof (head2, _s, tail2, p2) when List.mem_assoc s notations ->
         let formula = Raw_sequent.to_formula (List.assoc s notations) in
         cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
-    | Unfold_dual_proof (head1, s, tail1, p1), Unfold_litt_proof (head2, _s, tail2, p2) ->
+    | Unfold_dual_proof (head1, s, tail1, p1), Unfold_litt_proof (head2, _s, tail2, p2) when List.mem_assoc s notations ->
         let formula = dual (Raw_sequent.to_formula (List.assoc s notations)) in
         cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
     | Exchange_proof (_, _display_permutation, exchange_permutation, p), _ ->
@@ -570,11 +570,13 @@ let rec cut_elimination_key_case notations cut_trans = function
 
 let eliminate_cut notations cut_head cut_formula cut_tail cut_p1 cut_p2 cut_trans =
     let cut_proof = Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) in
-    if can_commute_with_cut (List.length cut_head) cut_tail cut_p1
+    if can_commute_with_cut (List.length cut_head) cut_tail notations cut_p1
     then cut_elimination true notations cut_trans cut_proof
-    else if can_commute_with_cut 0 cut_head cut_p2
+    else if can_commute_with_cut 0 cut_head notations cut_p2
     then cut_elimination false notations cut_trans cut_proof
-    else cut_elimination_key_case notations cut_trans cut_proof
+    else if can_cut_key_case (List.length cut_head) 0 notations cut_p1 cut_p2
+    then cut_elimination_key_case notations cut_trans cut_proof
+    else cut_proof
 
 let rec eliminate_cut_full acyclic_notations = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
@@ -599,6 +601,12 @@ let rec eliminate_all_cuts_in_proof acyclic_notations = function
 let get_transformation_options_json proof notations =
     Proof.to_json ~transform_options:true ~notations:notations proof;;
 
+let check_all_cuts_elimination proof notations =
+    has_cut proof &&
+    let proof_variables = Proof.get_unique_variable_names proof in
+    let cyclic_notations, _ = Notations.split_cyclic_acyclic notations (Some proof_variables) in
+    (List.length cyclic_notations = 0)
+
 let apply_transformation_with_exceptions proof cyclic_notations acyclic_notations = function
     | Expand_axiom -> expand_axiom_on_proof (cyclic_notations @ acyclic_notations) proof
     | Expand_axiom_full -> expand_axiom_full acyclic_notations proof
@@ -615,7 +623,10 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
 let get_proof_transformation_options request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
         let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations in
-        true, `Assoc ["proofWithTransformationOptions", proof_with_transformation_options]
+        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof proof_with_notations.notations in
+        true, `Assoc [
+            "proofWithTransformationOptions", proof_with_transformation_options;
+            "canEliminateAllCuts", `Bool can_eliminate_all_cuts]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad request: " ^ m);;
 
 let apply_transformation request_as_json =

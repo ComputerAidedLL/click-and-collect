@@ -965,7 +965,6 @@ function toggleProofTransformation($container, proofTransformation) {
     if (proofTransformation) {
         $divProof.addClass('proof-transformation');
         removeTransformStack($container);
-        createTransformBar($container);
         reloadProofWithTransformationOptions($container, options);
     } else {
         if ($divProof.hasClass('proof-transformation')) {
@@ -990,6 +989,8 @@ function reloadProofWithTransformationOptions($container, options) {
         data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
+            removeTransformBar($container);
+            createTransformBar($container, data['canEliminateAllCuts']);
             options.withInteraction = false;
             reloadProof($container, data['proofWithTransformationOptions'], options);
             stackProofTransformation($container);
@@ -1004,7 +1005,7 @@ function reloadProof($container, proofAsJson, options) {
     createSubProof(proofAsJson, $sequentContainer, options);
 }
 
-function createTransformBar($container) {
+function createTransformBar($container, canEliminateAllCuts) {
     let $proof = $container.find('.proof');
     let $transformBar = $('<div>', {class: 'transform-bar'});
     $transformBar.insertAfter($proof);
@@ -1015,9 +1016,12 @@ function createTransformBar($container) {
     $transformBar.append($('<span>', {class: 'transform-global-button'})
         .text('↯').attr('title', 'Simplify proof')
         .addClass('enabled').on('click', function () { simplifyProof($container); }));
-    $transformBar.append($('<span>', {class: 'transform-global-button'})
-        .text('✄').attr('title', 'Eliminate all cuts')
-        .addClass('enabled').on('click', function () { eliminateAllCuts($container); }));
+    let $eliminateAllCutsButton = $('<span>', {class: 'transform-global-button'})
+        .text('✄').attr('title', 'Eliminate all cuts');
+    if (canEliminateAllCuts) {
+        $eliminateAllCutsButton.addClass('enabled').on('click', function () { eliminateAllCuts($container); })
+    }
+    $transformBar.append($eliminateAllCutsButton);
 }
 
 function removeTransformBar($container) {

@@ -306,13 +306,11 @@ let get_first_size proofs_of_sequent =
     let _, _, size, _ = List.hd proofs_of_sequent in size
 
 let rec get_proofs_of_all_sequents proof =
-    match proof with
-    | Hypothesis_proof s -> [(s, sort s, 1, proof)]
-    | _ ->  let s = get_conclusion proof in
-        let proofs_by_premises = List.map get_proofs_of_all_sequents (get_premises proof) in
-        let size = 1 + sum (List.map get_first_size proofs_by_premises) in
-        let all_proofs_of_premises = List.concat proofs_by_premises in
-        (s, sort s, size, proof) :: all_proofs_of_premises
+    let s = get_conclusion proof in
+    let proofs_by_premises = List.map get_proofs_of_all_sequents (get_premises proof) in
+    let size = 1 + sum (List.map get_first_size proofs_by_premises) in
+    let all_proofs_of_premises = List.concat proofs_by_premises in
+    (s, sort s, size, proof) :: all_proofs_of_premises
 
 let rec get_sequents_and_weakenings head = function
     | [] -> [[], []]
@@ -351,18 +349,16 @@ let find_shorter_proof_up_to_weakening sequent weakenings size sorted_proofs =
     | None -> None
 
 let rec get_shortest_proof sorted_proofs proof =
-    match proof with
-    | Hypothesis_proof _ -> proof, 1, false
-    | _ -> let premises_shortest_proof = List.map (get_shortest_proof sorted_proofs) (get_premises proof)  in
-        let size = 1 + sum (List.map get_size premises_shortest_proof) in
-        let sequents_and_weakenings = get_sequents_and_weakenings [] (get_conclusion proof) in
-        let shorter_proofs = List.filter_map (fun (s, w) -> find_shorter_proof_up_to_weakening s w size sorted_proofs) sequents_and_weakenings in
-        match min shorter_proofs with
-        | Some l -> l
-        | None ->
-            let p = set_premises proof (List.map get_proof premises_shortest_proof) in
-            let has_simplified = List.exists get_has_simplified premises_shortest_proof in
-            p, size, has_simplified
+    let premises_shortest_proof = List.map (get_shortest_proof sorted_proofs) (get_premises proof)  in
+    let size = 1 + sum (List.map get_size premises_shortest_proof) in
+    let sequents_and_weakenings = get_sequents_and_weakenings [] (get_conclusion proof) in
+    let shorter_proofs = List.filter_map (fun (s, w) -> find_shorter_proof_up_to_weakening s w size sorted_proofs) sequents_and_weakenings in
+    match min shorter_proofs with
+    | Some l -> l
+    | None ->
+        let p = set_premises proof (List.map get_proof premises_shortest_proof) in
+        let has_simplified = List.exists get_has_simplified premises_shortest_proof in
+        p, size, has_simplified
 
 let rec remove_loop proof =
     let commuted_proof = commute_down_weakenings (commute_up_permutations proof) in
