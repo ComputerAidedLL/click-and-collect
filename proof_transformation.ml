@@ -62,9 +62,7 @@ let rec expand_axiom_on_proof notations = function
     | _ -> raise (Transform_exception ("Can only expand axiom on Axiom_proof or Exchange_proof"))
 
 let rec expand_axiom_full notations proof =
-    let new_proof =
-        try expand_axiom_on_proof notations proof
-        with Transform_exception _ -> proof in
+    let new_proof = expand_axiom_on_proof notations proof in
     set_premises new_proof (List.map (expand_axiom_full notations) (get_premises new_proof))
 
 (* CUT ELIMINATION LEFT / RIGHT *)
@@ -576,7 +574,7 @@ let eliminate_cut notations cut_head cut_formula cut_tail cut_p1 cut_p2 cut_tran
     then cut_elimination false notations cut_trans cut_proof
     else if can_cut_key_case (List.length cut_head) 0 notations cut_p1 cut_p2
     then cut_elimination_key_case notations cut_trans cut_proof
-    else cut_proof
+    else raise (Transform_exception "Can not eliminate this cut neither on left, neither on right, neither on key-case")
 
 let rec eliminate_cut_full acyclic_notations = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
