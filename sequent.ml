@@ -50,6 +50,11 @@ let rec add_whynot = function
     | [] -> []
     | e :: l -> Whynot e :: add_whynot l;;
 
+let rec has_whynot_context = function
+    | [] -> true
+    | Whynot _e :: tail -> has_whynot_context tail
+    | _ -> false
+
 let rec get_variable_names =
     function
     | One -> []
