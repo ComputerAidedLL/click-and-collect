@@ -964,14 +964,17 @@ function toggleProofTransformation($container, proofTransformation) {
 
     if (proofTransformation) {
         $divProof.addClass('proof-transformation');
+        options.withInteraction = false;
         removeTransformStack($container);
         reloadProofWithTransformationOptions($container, options);
     } else {
         if ($divProof.hasClass('proof-transformation')) {
-            let proof = getProofAsJson($container);
             $divProof.removeClass('proof-transformation');
             options.withInteraction = true;
-            reloadProof($container, proof, options);
+            let proof = getProofAsJson($container);
+            let $mainSequentTable = $container.find('table').last();
+            let $sequentContainer = removeSequentTable($mainSequentTable);
+            createSubProof(proof, $sequentContainer, options);
             removeTransformBar($container);
         }
     }
@@ -989,23 +992,22 @@ function reloadProofWithTransformationOptions($container, options) {
         data: compressJson(JSON.stringify({ proof, notations })),
         success: function(data)
         {
-            removeTransformBar($container);
-            createTransformBar($container, data['canSimplify'], data['canEliminateAllCuts']);
-            options.withInteraction = false;
-            reloadProof($container, data['proofWithTransformationOptions'], options);
-            stackProofTransformation($container);
+            loadProofWithTransformationOptions($container, data, options);
+            stackProofTransformation($container, data);
         },
         error: onAjaxError
     });
 }
 
-function reloadProof($container, proofAsJson, options) {
+function loadProofWithTransformationOptions($container, proofTransformationData, options) {
+    removeTransformBar($container);
+    createTransformBar($container, proofTransformationData);
     let $mainSequentTable = $container.find('table').last();
     let $sequentContainer = removeSequentTable($mainSequentTable);
-    createSubProof(proofAsJson, $sequentContainer, options);
+    createSubProof(proofTransformationData['proofWithTransformationOptions'], $sequentContainer, options);
 }
 
-function createTransformBar($container, canSimplify, canEliminateAllCuts) {
+function createTransformBar($container, proofTransformationData) {
     let $proof = $container.find('.proof');
     let $transformBar = $('<div>', {class: 'transform-bar'});
     $transformBar.insertAfter($proof);
@@ -1016,14 +1018,14 @@ function createTransformBar($container, canSimplify, canEliminateAllCuts) {
 
     let $simplificationButton = $('<span>', {class: 'transform-global-button'})
         .text('↯').attr('title', 'Simplify proof');
-    if (canSimplify) {
+    if (proofTransformationData['canSimplify']) {
         $simplificationButton.addClass('enabled').on('click', function () { simplifyProof($container); })
     }
     $transformBar.append($simplificationButton);
 
     let $eliminateAllCutsButton = $('<span>', {class: 'transform-global-button'})
         .text('✄').attr('title', 'Eliminate all cuts');
-    if (canEliminateAllCuts) {
+    if (proofTransformationData['canEliminateAllCuts']) {
         $eliminateAllCutsButton.addClass('enabled').on('click', function () { eliminateAllCuts($container); })
     }
     $transformBar.append($eliminateAllCutsButton);
@@ -1038,7 +1040,7 @@ function undoTransformation($container) {
     let transformStack = $container.data('transformStack');
     let transformPointer = $container.data('transformPointer') - 1;
     $container.data('transformPointer', transformPointer);
-    reloadProof($container, transformStack[transformPointer], options);
+    loadProofWithTransformationOptions($container, transformStack[transformPointer], options);
     updateUndoRedoButton($container, transformStack, transformPointer);
 }
 
@@ -1047,17 +1049,17 @@ function redoTransformation($container) {
     let transformStack = $container.data('transformStack');
     let transformPointer = $container.data('transformPointer') + 1;
     $container.data('transformPointer', transformPointer);
-    reloadProof($container, transformStack[transformPointer], options);
+    loadProofWithTransformationOptions($container, transformStack[transformPointer], options);
     updateUndoRedoButton($container, transformStack, transformPointer);
 }
 
-function stackProofTransformation($container) {
+function stackProofTransformation($container, proofTransformationData) {
     let transformStack = $container.data('transformStack') || [];
     let transformPointer = $container.data('transformPointer');
     if (transformPointer < transformStack.length - 1) {
         transformStack.length = transformPointer + 1;
     }
-    transformStack.push(getProofAsJson($container));
+    transformStack.push(proofTransformationData);
     $container.data('transformStack', transformStack);
 
     transformPointer = transformStack.length - 1;
