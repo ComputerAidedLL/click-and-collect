@@ -285,6 +285,11 @@ let rec rec_commute_down_weakenings proof =
 let commute_down_weakenings proof =
     get_commuted_proof (rec_commute_down_weakenings proof);;
 
+(* SIMPLIFY : COMMUTATIONS ONLY *)
+
+let simplify proof =
+    commute_down_weakenings (commute_up_permutations proof)
+
 (* SIMPLIFY : REMOVE LOOP *)
 
 let get_proof short_proof =

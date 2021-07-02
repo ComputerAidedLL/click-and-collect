@@ -608,7 +608,7 @@ let check_all_cuts_elimination proof notations =
     (List.length cyclic_notations = 0)
 
 let check_simplification proof =
-    proof <> Proof_simplification.remove_loop proof
+    proof <> Proof_simplification.simplify proof
 
 let apply_transformation_with_exceptions proof cyclic_notations acyclic_notations = function
     | Expand_axiom -> expand_axiom_on_proof (cyclic_notations @ acyclic_notations) proof
@@ -618,7 +618,7 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Eliminate_cut_key_case -> cut_elimination_key_case (cyclic_notations @ acyclic_notations) (fun p -> p) proof
     | Eliminate_cut_full -> eliminate_cut_full acyclic_notations proof
     | Eliminate_all_cuts -> eliminate_all_cuts_in_proof acyclic_notations proof
-    | Simplify -> Proof_simplification.remove_loop proof
+    | Simplify -> Proof_simplification.simplify proof
     ;;
 
 (* HANDLERS *)
