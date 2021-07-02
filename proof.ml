@@ -113,9 +113,50 @@ let get_conclusion = function
 
 
 (* OPERATIONS *)
+
 let rec has_cut = function
     | Cut_proof _ -> true
     | proof -> List.exists has_cut (get_premises proof);;
+
+let rec replace_in_proof a f = function
+    | Axiom_proof e ->
+        Axiom_proof (replace_in_formula a f e)
+    | One_proof ->
+        One_proof
+    | Top_proof (head, tail) ->
+        Top_proof (replace_in_sequent a f head, replace_in_sequent a f tail)
+    | Bottom_proof (head, tail, p) ->
+        Bottom_proof (replace_in_sequent a f head, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Tensor_proof (head, e1, e2, tail, p1, p2) ->
+        Tensor_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Par_proof (head, e1, e2, tail, p)  ->
+        Par_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | With_proof (head, e1, e2, tail, p1, p2) ->
+        With_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Plus_left_proof (head, e1, e2, tail, p) ->
+        Plus_left_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Plus_right_proof (head, e1, e2, tail, p) ->
+        Plus_right_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) ->
+        Promotion_proof (replace_in_sequent a f head_without_whynot, replace_in_formula a f e, replace_in_sequent a f tail_without_whynot, replace_in_proof a f p)
+    | Dereliction_proof (head, e, tail, p) ->
+        Dereliction_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Weakening_proof (head, e, tail, p) ->
+        Weakening_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Contraction_proof (head, e, tail, p) ->
+        Contraction_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Exchange_proof (sequent, display_permutation, permutation, p) ->
+        Exchange_proof (replace_in_sequent a f sequent, display_permutation, permutation, replace_in_proof a f p)
+    | Cut_proof (head, e, tail, p1, p2) ->
+        Cut_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Unfold_litt_proof (head, s, tail, p) ->
+        if s = a then raise (Failure "Can not substitute an atom that is notation name") else
+        Unfold_litt_proof (replace_in_sequent a f head, s, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Unfold_dual_proof (head, s, tail, p) ->
+        if s = a then raise (Failure "Can not substitute an atom that is notation name") else
+        Unfold_dual_proof (replace_in_sequent a f head, s, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Hypothesis_proof s ->
+        Hypothesis_proof (replace_in_sequent a f s);;
 
 (* VARIABLES *)
 

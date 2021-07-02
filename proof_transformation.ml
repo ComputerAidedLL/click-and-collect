@@ -614,6 +614,7 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Eliminate_cut_full -> eliminate_cut_full acyclic_notations proof
     | Eliminate_all_cuts -> eliminate_all_cuts_in_proof acyclic_notations proof
     | Simplify -> Proof_simplification.simplify proof
+    | Substitute (alias, formula) -> Proof.replace_in_proof alias formula proof
     ;;
 
 (* HANDLERS *)

@@ -285,7 +285,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
                 .text(TRANSFORM_OPTIONS[transformation].button);
             $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
             if (transformOption.enabled) {
-                $transformSpan.on('click', function () { applyTransformation($sequentTable, transformation); })
+                $transformSpan.on('click', function () { applyTransformation($sequentTable, { transformation }); })
             }
             transformDiv.append($transformSpan);
         }
@@ -1012,6 +1012,11 @@ function createTransformBar($container, proofTransformationData) {
         $eliminateAllCutsButton.addClass('enabled').on('click', function () { eliminateAllCuts($container); })
     }
     $transformBar.append($eliminateAllCutsButton);
+
+    let $substituteButton = $('<span>', {class: 'transform-global-button'})
+        .text('≔').attr('title', 'Substitute an atom by formula')
+        .addClass('enabled').on('click', function () { openSubstitutionPopup($container); })
+    $transformBar.append($substituteButton);
 }
 
 function removeTransformBar($container) {
@@ -1084,13 +1089,12 @@ function updateUndoRedoButton($container, transformStack, transformPointer) {
     }
 }
 
-function applyTransformation ($sequentTable, transformOption) {
+function applyTransformation($sequentTable, transformRequest) {
     let $container = $sequentTable.closest('.proof-container');
 
     // Sequent json that was stored in div can not been permuted before transformation applying
     let proof = recGetProofAsJson($sequentTable);
     let notations = getNotations($container);
-    let transformRequest = { transformation: transformOption }
 
     $.ajax({
         type: 'POST',
@@ -1109,12 +1113,17 @@ function applyTransformation ($sequentTable, transformOption) {
 
 function simplifyProof($container) {
     let $mainSequentTable = $container.find('table').last();
-    applyTransformation ($mainSequentTable, 'simplify');
+    applyTransformation ($mainSequentTable, { transformation: 'simplify'});
 }
 
 function eliminateAllCuts($container) {
     let $mainSequentTable = $container.find('table').last();
-    applyTransformation ($mainSequentTable, 'eliminate_all_cuts');
+    applyTransformation ($mainSequentTable, { transformation: 'eliminate_all_cuts'});
+}
+
+function substituteInProof($container, alias, formula) {
+    let $mainSequentTable = $container.find('table').last();
+    applyTransformation ($mainSequentTable, { transformation: 'substitute', alias, formula});
 }
 
 function replaceAndReloadProof($sequentTable, proofAsJson, $container) {
@@ -1124,6 +1133,33 @@ function replaceAndReloadProof($sequentTable, proofAsJson, $container) {
     createSubProof(proofAsJson, $sequentContainer, options);
     options.proofTransformation.value = true;
     reloadProofWithTransformationOptions($container, options);
+}
+
+
+// ************
+// SUBSTITUTION
+// ************
+
+function openSubstitutionPopup($container) {
+    let $dialog = $('#substitution-formula-dialog');
+    $dialog.find('input' + '[type=submit]').off('click')
+        .on('click', function () {
+            let alias = $dialog.find($('input[name=alias]')).val();
+            isValidLitt(alias, function (validAlias) {
+                if (notationNameExists($container, validAlias, null)) {
+                    displayPedagogicError(`Can not substitute an atom that has a notation definition.`, $dialog);
+                } else {
+                    let formulaAsString = $dialog.find($('input[name=formulaAsString]')).val();
+                    parseFormulaAsString(formulaAsString, function (formula) {
+                        $dialog.dialog('close');
+                        substituteInProof($container, alias, formula);
+                    }, $dialog);
+                }
+            }, function (errorMessage) {
+                displayPedagogicError(`Alias "${alias}" is not a valid litteral. ${errorMessage}`, $dialog);
+            });
+        })
+    $dialog.dialog('open');
 }
 
 
@@ -1201,7 +1237,7 @@ function createNotationForm(defaultName, defaultFormulaAsString) {
     return $form;
 }
 
-function isValidNotationName(notationName, callbackIfValid, callbackIfNotValid) {
+function isValidLitt(notationName, callbackIfValid, callbackIfNotValid) {
     $.ajax({
         type: 'GET',
         url: `/is_valid_litt/${urlEncode(notationName)}`,
@@ -1224,7 +1260,7 @@ function submitNotation($form, editMode, callback) {
 
     // For new notation name, we check that name not already exists
     if (!editMode || notationName !== getNotationNameByPosition($form, position)) {
-        isValidNotationName(notationName, function (validNotationName) {
+        isValidLitt(notationName, function (validNotationName) {
             if (notationNameExists($form, validNotationName, editMode ? position : null)) {
                 displayPedagogicError(`Notation ${validNotationName} already exists.`, $form);
             } else {

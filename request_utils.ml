@@ -12,4 +12,9 @@ let get_key d k =
 let get_string d k =
     let value = get_key d k in
     try Yojson.Basic.Util.to_string value
-    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("field '" ^ k ^ "' must be a string"));;
+    with Yojson.Basic.Util.Type_error (_, _) -> raise (Bad_request_exception ("field '" ^ k ^ "' must be a string"))
+
+let get_formula d k =
+    let value = get_key d k in
+    try Raw_sequent.formula_from_json value
+    with Raw_sequent.Json_exception m -> raise (Bad_request_exception ("field '" ^ k ^ "' must contain a valid formula: " ^ m))

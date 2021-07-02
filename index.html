@@ -211,6 +211,17 @@
             </form>
         </div>
 
+        <div id="substitution-formula-dialog" title="Enter substitution formula" class="dialog">
+            <form action="#">
+                <label>
+                    <input type="text" name="alias" size="2" />
+                    <span>≔</span>
+                    <input type="text" name="formulaAsString" placeholder="Type formula ..." size="20" />
+                </label>
+                <input type="submit" value="Substitute" />
+            </form>
+        </div>
+
         <div id="explicit-exchange-dialog" title="Explicit exchange" class="dialog">
             <p>By default, no exchange rule will appear in the export: the output will be displayed as in the interface (snapshot).
                 With explicit exchange activated, required exchanges will appear in the export, to get derivation rules applied strictly through the proof.</p>
