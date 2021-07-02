@@ -278,9 +278,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
         })
     } else if (options.proofTransformation.value) {
         let transformDiv = $('<div>', {'class': 'transform'});
-        let transformOptions = proofAsJson.appliedRule.transformOptions;
-        $sequentTable.data('transformOptions', transformOptions);
-        for (let transformOption of transformOptions) {
+        for (let transformOption of proofAsJson.appliedRule['transformOptions']) {
             let transformation = transformOption.transformation;
             let $transformSpan = $('<span>', {'class': 'transform-button'})
                 .addClass(transformOption.enabled ? 'enabled' : 'disabled')
@@ -330,8 +328,7 @@ function undoRule($sequentTable) {
         .data('sequentWithPermutation', null)
         .data('permutationBeforeRule', null)
         .data('ruleRequest', null)
-        .data('provabilityCheckStatus', null)
-        .data('transformOptions', null);
+        .data('provabilityCheckStatus', null);
 
     // Remove line
     let $td = $sequentTable.find('div.sequent').closest('td');
@@ -422,10 +419,6 @@ function recGetProofAsJson($sequentTable) {
             }
         }
         appliedRule = { ruleRequest, premises };
-
-        if ($sequentTable.data('transformOptions') !== null) {
-            appliedRule.transformOptions = $sequentTable.data('transformOptions');
-        }
 
         let permutationBeforeRule = $sequentTable.data('permutationBeforeRule');
         let displayPermutation = getSequentPermutation($sequentTable);

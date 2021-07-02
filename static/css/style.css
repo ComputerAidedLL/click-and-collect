@@ -54,7 +54,7 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 /* PROOF */
 .proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding: 1.6em 2.4em 0.8em 2.4em; margin: 0 auto 1em; }
 .proof.complete { background:#CFC; }
-.proof.proof-transformation { border: 2px dashed #66a3e0; padding: 1.6em 5.8em 0.8em 5.8em; }
+.proof.proof-transformation { border: 2px dashed #66a3e0; padding: 1.6em 6em 0.8em 6em; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
 .proof td { position: relative; padding:0; }
