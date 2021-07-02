@@ -598,14 +598,11 @@ let rec eliminate_all_cuts_in_proof acyclic_notations = function
 
 (* OPERATIONS *)
 
-let get_transformation_options_json proof notations =
-    Proof.to_json ~transform_options:true ~notations:notations proof;;
+let get_transformation_options_json proof notations not_cyclic =
+    Proof.to_json ~transform_options:true ~notations:notations ~not_cyclic:not_cyclic proof;;
 
-let check_all_cuts_elimination proof notations =
-    has_cut proof &&
-    let proof_variables = Proof.get_unique_variable_names proof in
-    let cyclic_notations, _ = Notations.split_cyclic_acyclic notations (Some proof_variables) in
-    (List.length cyclic_notations = 0)
+let check_all_cuts_elimination proof not_cyclic =
+    has_cut proof && not_cyclic
 
 let check_simplification proof =
     proof <> Proof_simplification.simplify proof
@@ -625,8 +622,11 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
 
 let get_proof_transformation_options request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
-        let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations in
-        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof proof_with_notations.notations in
+        let proof_variables = Proof.get_unique_variable_names proof_with_notations.proof in
+        let cyclic_notations, _ = Notations.split_cyclic_acyclic proof_with_notations.notations (Some proof_variables) in
+        let not_cyclic = (List.length cyclic_notations = 0) in
+        let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations not_cyclic in
+        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof not_cyclic in
         let can_simplify = check_simplification proof_with_notations.proof in
         true, `Assoc [
             "proofWithTransformationOptions", proof_with_transformation_options;

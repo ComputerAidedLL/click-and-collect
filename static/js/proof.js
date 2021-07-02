@@ -25,28 +25,28 @@ const RULES = {
 
 const TRANSFORM_OPTIONS = {
     'expand_axiom': {
+        'button': '⇫',
+        'title': 'One step axiom expansion'
+    },
+    'expand_axiom_full': {
         'button': '⇯',
-        'title': 'One step axiom expansion (single click) or full axiom expansion (double click)',
-        'singleClick': 'expand_axiom',
-        'doubleClick': 'expand_axiom_full'
+        'title': 'Full axiom expansion'
     },
     'eliminate_cut_left': {
         'button': '←',
-        'title': 'Eliminate cut or commute it on left hand-side',
-        'singleClick': 'eliminate_cut_left',
-        'doubleClick': 'eliminate_cut_full'
+        'title': 'Commute this cut with rule on the left'
     },
     'eliminate_cut_right': {
         'button': '→',
-        'title': 'Eliminate cut or commute it on right hand-side',
-        'singleClick': 'eliminate_cut_right',
-        'doubleClick': 'eliminate_cut_full'
+        'title': 'Commute this cut with rule on the right'
     },
     'eliminate_cut_key_case': {
         'button': '↑',
-        'title': 'Eliminate cut key-case',
-        'singleClick': 'eliminate_cut_key_case',
-        'doubleClick': 'eliminate_cut_full'
+        'title': 'Eliminate cut key-case'
+    },
+    'eliminate_cut_full': {
+        'button': '✄',
+        'title': 'Fully eliminate this cut'
     }
 };
 
@@ -285,19 +285,9 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
             let $transformSpan = $('<span>', {'class': 'transform-button'})
                 .addClass(transformOption.enabled ? 'enabled' : 'disabled')
                 .text(TRANSFORM_OPTIONS[transformation].button);
+            $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
             if (transformOption.enabled) {
-                $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
-                if (TRANSFORM_OPTIONS[transformation].doubleClick) {
-                    addClickAndDoubleClickEvent($transformSpan, function () {
-                        applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].singleClick);
-                    }, function () {
-                        applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].doubleClick);
-                    });
-                } else {
-                    $transformSpan.on('click', function () {
-                        applyTransformation($sequentTable, TRANSFORM_OPTIONS[transformation].singleClick);
-                    })
-                }
+                $transformSpan.on('click', function () { applyTransformation($sequentTable, transformation); })
             }
             transformDiv.append($transformSpan);
         }

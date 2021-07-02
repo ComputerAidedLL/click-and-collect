@@ -408,20 +408,23 @@ let rec can_cut_key_case length1 length2 notations p1 p2 = match p1, p2 with
         can_cut_key_case length1 (List.nth permutation length2) notations p1 p
     | _ -> false;;
 
-let get_transform_options notations = function
+let get_transform_options notations not_cyclic = function
     | Axiom_proof f -> let expand_axiom_enabled = match f with
         | Litt s | Dual s -> List.mem_assoc s notations
         | _ -> true in
-        [Expand_axiom, expand_axiom_enabled]
+        [Expand_axiom, expand_axiom_enabled; Expand_axiom_full, expand_axiom_enabled && not_cyclic]
     | Cut_proof (head, _formula, tail, p1, p2) ->
         let commute_left = can_commute_with_cut (List.length head) tail notations p1 in
         let commute_right = can_commute_with_cut 0 head notations p2 in
         let cut_key_case = can_cut_key_case (List.length head) 0 notations p1 p2 in
-        [Eliminate_cut_left, commute_left; Eliminate_cut_key_case, cut_key_case; Eliminate_cut_right, commute_right]
+        [Eliminate_cut_left, commute_left;
+        Eliminate_cut_key_case, cut_key_case;
+        Eliminate_cut_right, commute_right;
+        Eliminate_cut_full, not_cyclic]
     | _ -> [];;
 
-let get_transform_options_as_json notations proof =
-    let transform_options = get_transform_options notations proof in
+let get_transform_options_as_json notations not_cyclic proof =
+    let transform_options = get_transform_options notations not_cyclic proof in
     `List (List.map (fun (transform_option, enabled) -> `Assoc [
         ("transformation", `String (Transform_request.to_string transform_option));
         ("enabled", `Bool enabled)
@@ -465,7 +468,7 @@ let rec from_json notations json =
 
 (* PROOF -> JSON *)
 
-let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) proof =
+let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) ?not_cyclic:(not_cyclic=false) proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
     match proof with
@@ -475,9 +478,9 @@ let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) proof =
         let rule_request = get_rule_request proof in
         let rule_request_as_json = Rule_request.to_json rule_request in
         let premises = get_premises proof in
-        let premises_as_json = List.map (to_json ~transform_options:t_o ~notations:notations) premises in
+        let premises_as_json = List.map (to_json ~transform_options:t_o ~notations:notations ~not_cyclic:not_cyclic) premises in
         let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
-            (if t_o then [("transformOptions", get_transform_options_as_json notations proof)] else []) in
+            (if t_o then [("transformOptions", get_transform_options_as_json notations not_cyclic proof)] else []) in
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc applied_rule)];;
 
