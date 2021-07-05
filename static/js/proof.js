@@ -1177,6 +1177,7 @@ function createNotationBar($container, callback) {
         .append($('<span>', {'class': 'notation-label'}).text('Add notation'))
         .append($('<span>', {'class': 'notation-add'}).text('+')
             .on('click', function () {
+                switchOffOption($container,'proofTransformation');
                 let $form = createNotationForm(null, null);
                 $form.insertBefore($notationBar);
             }))
@@ -1333,7 +1334,11 @@ function createNotationLine(notationName, notationFormulaAsString, notationFormu
         .append($('<span>').html(createLittHTML(notationName)))
         .append($('<span>').text(' ::= '))
         .append($('<span>').html(createFormulaHTML(notationFormula, true)));
-    $notationLine.on('click', function() { editNotationLine($notationLine); })
+    $notationLine.on('click', function() {
+        let $container = $notationLine.closest('.proof-container');
+        switchOffOption($container,'proofTransformation');
+        editNotationLine($notationLine);
+     });
 
     return $notationLine;
 }
