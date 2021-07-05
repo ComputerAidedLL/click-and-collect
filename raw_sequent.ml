@@ -61,6 +61,20 @@ let rec to_raw_formula =
 let to_raw_sequent sequent =
     {hyp=[]; cons=List.map to_raw_formula sequent};;
 
+(* REPLACEMENT *)
+
+let rec replace_in_raw_formula alias formula = function
+    | Litt s when s = alias -> formula
+    | Dual e -> Dual (replace_in_raw_formula alias formula e)
+    | Tensor (e1, e2) -> Tensor (replace_in_raw_formula alias formula e1, replace_in_raw_formula alias formula e2)
+    | Par (e1, e2) -> Par (replace_in_raw_formula alias formula e1, replace_in_raw_formula alias formula e2)
+    | With (e1, e2) -> With (replace_in_raw_formula alias formula e1, replace_in_raw_formula alias formula e2)
+    | Plus (e1, e2) -> Plus (replace_in_raw_formula alias formula e1, replace_in_raw_formula alias formula e2)
+    | Ofcourse e -> Ofcourse (replace_in_raw_formula alias formula e)
+    | Whynot e -> Whynot (replace_in_raw_formula alias formula e)
+    | Lollipop (e1, e2) -> Lollipop (replace_in_raw_formula alias formula e1, replace_in_raw_formula alias formula e2)
+    | e -> e
+
 (* RAW_SEQUENT -> JSON *)
 
 let rec raw_formula_to_json =

@@ -12,21 +12,24 @@ let pair_from_json pair_as_json =
         notation_name, raw_formula
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception "a notation pair must be a list of a string and a formula")
 
-let pair_to_json pair =
+let pair_to_json ?stringify:(stringify=false) pair =
     let notation_name, formula = pair in
-    `List [`String notation_name; raw_formula_to_json formula]
+    `List [`String notation_name; if stringify then `String (raw_formula_to_ascii false formula) else raw_formula_to_json formula]
 
 let from_json notations_as_json =
     try List.map pair_from_json (Yojson.Basic.Util.to_list notations_as_json)
     with Yojson.Basic.Util.Type_error (_, _) -> raise (Json_exception "notations must be a list of notation pair")
 
-let to_json notations =
-    `List (List.map pair_to_json notations)
+let to_json ?stringify:(stringify=false) notations =
+    `List (List.map (pair_to_json ~stringify:stringify) notations)
 
 (* VARIABLES *)
 
 let get_variable_names notations =
     List.concat_map (fun (_, f) -> get_variable_names f) notations;;
+
+let replace_in_notations alias raw_formula notations =
+    List.map (fun (s, rf) -> s, Raw_sequent.replace_in_raw_formula alias raw_formula rf) notations;;
 
 (* GET CYCLIC / ACYCLIC NOTATIONS *)
 

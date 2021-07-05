@@ -62,8 +62,8 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .proof .sibling { display: inline-block; vertical-align:bottom; }
 .proof .sibling:first-child { margin-right: 3em; }
 .proof.proof-transformation .sibling:first-child { margin-right: 6em; }
-.proof .tagBox { position:absolute; bottom: 68%; left: 100%; text-align: left; }
-.proof .tagBox.contraction, .proof .tagBox.unfold_litt, .proof .tagBox.unfold_dual { top: -32%; }
+.proof .tagBox { position:absolute; bottom: 69%; left: 100%; text-align: left; }
+.proof .tagBox.contraction, .proof .tagBox.unfold_litt, .proof .tagBox.unfold_dual { top: -31%; }
 .proof .tagBox .tag { margin-left: 0.2em; font-size: 0.9em; display: inline-block; }
 .transform { color: #66a3e0; display: inline-block; }
 .transform-button { margin-left: 0.1em; border: 1px #66a3e0 solid; border-radius: 0.2em; }

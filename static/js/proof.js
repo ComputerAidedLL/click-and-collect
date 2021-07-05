@@ -985,9 +985,11 @@ function reloadProofWithTransformationOptions($container, options) {
 function loadProofWithTransformationOptions($container, proofTransformationData, options) {
     removeTransformBar($container);
     createTransformBar($container, proofTransformationData);
-    let $mainSequentTable = $container.find('table').last();
-    let $sequentContainer = removeSequentTable($mainSequentTable);
-    createSubProof(proofTransformationData['proofWithTransformationOptions'], $sequentContainer, options);
+    updateNotations($container, proofTransformationData['notationsAsString'], function () {
+        let $mainSequentTable = $container.find('table').last();
+        let $sequentContainer = removeSequentTable($mainSequentTable);
+        createSubProof(proofTransformationData['proofWithTransformationOptions'], $sequentContainer, options);
+    });
 }
 
 function createTransformBar($container, proofTransformationData) {
@@ -1105,6 +1107,7 @@ function applyTransformation($sequentTable, transformRequest) {
         {
             clearSavedProof();
             cleanPedagogicMessage($container);
+            saveNotations($container, data['notations']);
             replaceAndReloadProof($sequentTable, data['proof'], $container);
         },
         error: onAjaxError
@@ -1202,6 +1205,19 @@ function initNotations($notationBar, formulasAsString, callback) {
     submitNotation($form, true, function () {
         initNotations($notationBar, formulasAsString, callback);
     });
+}
+
+function updateNotations($container, notationsAsString, callback) {
+    let options = $container.data('options');
+    if (options.notations.formulasAsString !== notationsAsString) {
+        $container.find('.notation-item').remove();
+
+        let $notationBar = $container.find('.notation-bar');
+        let formulasAsString = JSON.parse(JSON.stringify(notationsAsString)); // deep copy
+        initNotations($notationBar, formulasAsString, callback);
+    } else {
+        callback();
+    }
 }
 
 function createNotationForm(defaultName, defaultFormulaAsString) {
@@ -1348,6 +1364,12 @@ function getNotations($container) {
     }
 
     return options.notations.formulas;
+}
+
+function saveNotations($container, notations) {
+    let options = $container.data('options');
+    options.notations.formulas = notations;
+    $container.data('options', options);
 }
 
 function notationNameExists($e, name, excludePosition) {

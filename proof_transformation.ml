@@ -616,7 +616,12 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Eliminate_cut_full -> eliminate_cut_full acyclic_notations proof
     | Eliminate_all_cuts -> eliminate_all_cuts_in_proof acyclic_notations proof
     | Simplify -> Proof_simplification.simplify proof
-    | Substitute (alias, formula) -> Proof.replace_in_proof alias formula proof
+    | Substitute (alias, raw_formula) -> Proof.replace_in_proof alias (Raw_sequent.to_formula raw_formula) proof
+    ;;
+
+let apply_transformation_on_notations notations = function
+    | Substitute (alias, raw_formula) -> Notations.replace_in_notations alias raw_formula notations
+    | _ -> notations
     ;;
 
 (* HANDLERS *)
@@ -629,10 +634,12 @@ let get_proof_transformation_options request_as_json =
         let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations not_cyclic in
         let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof not_cyclic in
         let can_simplify = check_simplification proof_with_notations.proof in
+        let notations_as_string = Notations.to_json ~stringify:true proof_with_notations.notations in
         true, `Assoc [
             "proofWithTransformationOptions", proof_with_transformation_options;
             "canSimplify", `Bool can_simplify;
-            "canEliminateAllCuts", `Bool can_eliminate_all_cuts]
+            "canEliminateAllCuts", `Bool can_eliminate_all_cuts;
+            "notationsAsString", notations_as_string]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad request: " ^ m);;
 
 let apply_transformation request_as_json =
@@ -641,7 +648,8 @@ let apply_transformation request_as_json =
         let transform_request = Transform_request.from_json transform_request_as_json in
         let cyclic_notations, acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations None in
         let proof = apply_transformation_with_exceptions proof_with_notations.proof cyclic_notations acyclic_notations transform_request in
-        true, `Assoc ["proof", Proof.to_json proof]
+        let notations = apply_transformation_on_notations proof_with_notations.notations transform_request in
+        true, `Assoc ["proof", Proof.to_json proof; "notations", Notations.to_json notations]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m)
         | Request_utils.Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Transform_request.Json_exception m -> false, `String ("Bad transformation request: " ^ m)

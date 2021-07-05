@@ -1,4 +1,4 @@
-open Sequent
+open Raw_sequent
 
 type transform_request =
     | Expand_axiom
@@ -9,7 +9,7 @@ type transform_request =
     | Eliminate_cut_full
     | Eliminate_all_cuts
     | Simplify
-    | Substitute of string * formula
+    | Substitute of string * raw_formula
     ;;
 
 (* JSON -> TRANSFORM REQUEST *)
@@ -29,8 +29,8 @@ let from_json transform_request_as_json =
             | "simplify" -> Simplify
             | "substitute" ->
                 let alias = Request_utils.get_string transform_request_as_json "alias" in
-                let formula = Request_utils.get_formula transform_request_as_json "formula" in
-                Substitute (alias, formula)
+                let raw_formula = Request_utils.get_raw_formula transform_request_as_json "formula" in
+                Substitute (alias, raw_formula)
             | _ -> raise (Json_exception ("unknown transformation '" ^ transformation ^ "'"))
     with Request_utils.Bad_request_exception m -> raise (Json_exception ("bad request: " ^ m));;
 
@@ -45,5 +45,5 @@ let to_string = function
     | Eliminate_cut_full -> "eliminate_cut_full"
     | Eliminate_all_cuts -> "eliminate_all_cuts"
     | Simplify -> "simplify"
-    | Substitute (alias, formula) -> Printf.sprintf "substitute %s ::= %s" alias (Sequent.formula_to_ascii formula)
+    | Substitute (alias, raw_formula) -> Printf.sprintf "substitute %s ::= %s" alias (Raw_sequent.raw_formula_to_ascii false raw_formula)
     ;;
