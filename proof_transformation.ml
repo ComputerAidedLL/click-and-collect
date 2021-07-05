@@ -62,7 +62,9 @@ let rec expand_axiom_on_proof notations = function
     | _ -> raise (Transform_exception ("Can only expand axiom on Axiom_proof or Exchange_proof"))
 
 let rec expand_axiom_full notations proof =
-    let new_proof = expand_axiom_on_proof notations proof in
+    let new_proof =
+        try expand_axiom_on_proof notations proof
+        with Transform_exception _ -> proof in
     set_premises new_proof (List.map (expand_axiom_full notations) (get_premises new_proof))
 
 (* CUT ELIMINATION LEFT / RIGHT *)
