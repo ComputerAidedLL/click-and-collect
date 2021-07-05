@@ -6,6 +6,90 @@ open Permutations
 
 exception Transform_exception of string;;
 
+(* PROOF -> TRANSFORM OPTION *)
+
+let rec can_commute_with_cut length_to_formula cut_context notations = function
+    | Axiom_proof _ -> true
+    | Top_proof (head, _tail)
+    | Bottom_proof (head, _tail, _)
+    | Tensor_proof (head, _, _, _tail, _, _)
+    | Par_proof (head, _, _, _tail, _)
+    | With_proof (head, _, _, _tail, _, _)
+    | Plus_left_proof (head, _, _, _tail, _)
+    | Plus_right_proof (head, _, _, _tail, _)
+    | Dereliction_proof (head, _, _tail, _)
+    | Weakening_proof (head, _, _tail, _)
+    | Contraction_proof (head, _, _tail, _)
+        when length_to_formula <> List.length head -> true
+    | Promotion_proof (head, _, _tail, _p)
+        when has_whynot_context cut_context && length_to_formula <> List.length head -> true
+    | Unfold_litt_proof (head, s, _tail, _)
+    | Unfold_dual_proof (head, s, _tail, _)
+        when List.mem_assoc s notations && length_to_formula <> List.length head -> true
+    | Weakening_proof (_head, _, _tail, _)
+    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true
+    | Cut_proof (_head, _, _tail, _, _) -> true
+    | Exchange_proof (_, _display_permutation, permutation, p)
+        -> can_commute_with_cut (List.nth permutation length_to_formula) cut_context notations p
+    | _ -> false;;
+
+let rec can_cut_key_case length1 length2 notations p1 p2 = match p1, p2 with
+    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head -> true
+    | Bottom_proof (head, _, _), One_proof when length1 = List.length head -> true
+    | Tensor_proof (head1, _, _, _, _, _), Par_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Par_proof (head1, _, _, _, _), Tensor_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | With_proof (head1, _, _, _, _, _), Plus_left_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Plus_left_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | With_proof (head1, _, _, _, _, _), Plus_right_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Plus_right_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Promotion_proof (head1, _, _, _), Dereliction_proof (head2, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Dereliction_proof (head1, _, _, _), Promotion_proof (head2, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Unfold_litt_proof (head1, s, _, _), Unfold_dual_proof (head2, _s, _, _)
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+    | Unfold_dual_proof (head1, s, _, _), Unfold_litt_proof (head2, _s, _, _)
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+    | Exchange_proof (_, _display_permutation, permutation, p), p2 ->
+        can_cut_key_case (List.nth permutation length1) length2 notations p p2
+    | p1, Exchange_proof (_, _display_permutation, permutation, p) ->
+        can_cut_key_case length1 (List.nth permutation length2) notations p1 p
+    | _ -> false;;
+
+let get_transform_options notations not_cyclic = function
+    | Axiom_proof f -> let expand_axiom_enabled = match f with
+        | Litt s | Dual s -> List.mem_assoc s notations
+        | _ -> true in
+        [Expand_axiom, expand_axiom_enabled; Expand_axiom_full, expand_axiom_enabled && not_cyclic]
+    | Cut_proof (head, _formula, tail, p1, p2) ->
+        let commute_left = can_commute_with_cut (List.length head) tail notations p1 in
+        let commute_right = can_commute_with_cut 0 head notations p2 in
+        let cut_key_case = can_cut_key_case (List.length head) 0 notations p1 p2 in
+        let cut_full = not_cyclic && (commute_left || commute_right || cut_key_case) in
+        [Eliminate_cut_left, commute_left;
+        Eliminate_cut_key_case, cut_key_case;
+        Eliminate_cut_right, commute_right;
+        Eliminate_cut_full, cut_full]
+    | _ -> [];;
+
+let get_transform_options_as_json notations not_cyclic proof =
+    let transform_options = get_transform_options notations not_cyclic proof in
+    ["transformOptions", `List (List.map (fun (transform_option, enabled) -> `Assoc [
+        ("transformation", `String (Transform_request.to_string transform_option));
+        ("enabled", `Bool enabled)
+        ]) transform_options)]
+
+let rec has_cut_that_can_be_eliminated notations not_cyclic proof =
+    let transform_options = get_transform_options notations not_cyclic proof in
+    if List.mem_assoc Eliminate_cut_full transform_options && List.assoc Eliminate_cut_full transform_options then true
+    else List.exists (has_cut_that_can_be_eliminated notations not_cyclic) (get_premises proof)
+
 (* AXIOM EXPANSION *)
 
 let expand_axiom notations = function
@@ -88,7 +172,7 @@ let head_tail_permuted head tail permutation is_left =
         then new_head, minus_last new_tail
         else List.tl new_head, new_tail
 
-let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left permutation head e1 e2 tail p1 p2 =
+let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left permutation head e1 e2 tail p1 p2 cut_trans =
     if is_left
     then let cut_formula_position = List.nth permutation (List.length cut_head) in
         let permutation_without_cut_formula = perm_minus_element cut_formula_position permutation
@@ -103,7 +187,7 @@ let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left per
             (* head' @ [e1; cut_formula]  [dual(cut_formula)] @ cut_tail     *)
             (* --------------------------------------------------------- Cut *)
             (*                 head' @ [e1] @ cut_tail                       *)
-            let new_cut = Cut_proof (head' @ [e1], cut_formula, cut_tail, new_p1, other_proof) in
+            let new_cut = cut_trans (Cut_proof (head' @ [e1], cut_formula, cut_tail, new_p1, other_proof)) in
 
             (* head' @ [e1] @ cut_tail    *)
             (* ----------------------- Ex *)
@@ -134,7 +218,7 @@ let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left per
             (* [e2] @ tail' @ [cut_formula]  [dual(cut_formula)] @ cut_tail     *)
             (* ------------------------------------------------------------ Cut *)
             (*                  [e2] @ tail' @ cut_tail                         *)
-            let new_cut = Cut_proof ([e2] @ tail', cut_formula, cut_tail, new_p2, other_proof) in
+            let new_cut = cut_trans (Cut_proof ([e2] @ tail', cut_formula, cut_tail, new_p2, other_proof)) in
 
             (* head @ [e1]  [e2] @ tail' @ cut_tail   *)
             (* ------------------------------------ ⊗ *)
@@ -158,7 +242,7 @@ let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left per
             (* cut_head @ [cut_formula]  [dual (cut_formula)] @ head' @ [e1]     *)
             (* ------------------------------------------------------------- Cut *)
             (*                 cut_head @ head' @ [e1]                           *)
-            let new_cut = Cut_proof (cut_head, cut_formula, head' @ [e1], other_proof, new_p1) in
+            let new_cut = cut_trans (Cut_proof (cut_head, cut_formula, head' @ [e1], other_proof, new_p1)) in
 
             (* cut_head @ head' @ [e1]  [e2] @ tail   *)
             (* ------------------------------------ ⊗ *)
@@ -179,7 +263,7 @@ let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left per
             (* cut_head @ [cut_formula]  [dual (cut_formula); e2] @ tail'     *)
             (* ---------------------------------------------------------- Cut *)
             (*              cut_head @ [e2] @ tail'                           *)
-            let new_cut = Cut_proof (cut_head, cut_formula, [e2] @ tail', other_proof, new_p2) in
+            let new_cut = cut_trans (Cut_proof (cut_head, cut_formula, [e2] @ tail', other_proof, new_p2)) in
 
             (* cut_head @ [e2] @ tail'    *)
             (* ----------------------- Ex *)
@@ -201,7 +285,7 @@ let cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left per
             (*        cut_head @ cut_tail             *)
             merge_exchange (build_exchange (cut_head @ head @ [Tensor (e1, e2)] @ tail') permutation_without_dual_cut_formula shifted_proof)
 
-let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permutation head formula tail p1 p2 =
+let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permutation head formula tail p1 p2 cut_trans =
     if is_left
     then let cut_formula_position = List.nth permutation (List.length cut_head) in
         let permutation_without_cut_formula = perm_minus_element cut_formula_position permutation
@@ -216,7 +300,7 @@ let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permut
             (* head' @ [formula; cut_formula]  [dual(cut_formula)] @ cut_tail     *)
             (* -------------------------------------------------------------- Cut *)
             (*                 head' @ [formula] @ cut_tail                       *)
-            let new_cut = Cut_proof (head' @ [formula], cut_formula, cut_tail, new_p1, other_proof) in
+            let new_cut = cut_trans (Cut_proof (head' @ [formula], cut_formula, cut_tail, new_p1, other_proof)) in
 
             (* head' @ [formula] @ cut_tail    *)
             (* ---------------------------- Ex *)
@@ -247,7 +331,7 @@ let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permut
             (* [dual(formula)] @ tail' @ [cut_formula]  [dual(cut_formula)] @ cut_tail     *)
             (* ----------------------------------------------------------------------- Cut *)
             (*                  [dual(formula)] @ tail' @ cut_tail                         *)
-            let new_cut = Cut_proof ([dual formula] @ tail', cut_formula, cut_tail, new_p2, other_proof) in
+            let new_cut = cut_trans (Cut_proof ([dual formula] @ tail', cut_formula, cut_tail, new_p2, other_proof)) in
 
             (* head @ [formula]  [dual(formula)] @ tail' @ cut_tail     *)
             (* ---------------------------------------------------- Cut *)
@@ -271,7 +355,7 @@ let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permut
             (* cut_head @ [cut_formula]  [dual (cut_formula)] @ head' @ [formula]     *)
             (* ------------------------------------------------------------------ Cut *)
             (*                 cut_head @ head' @ [formula]                           *)
-            let new_cut = Cut_proof (cut_head, cut_formula, head' @ [formula], other_proof, new_p1) in
+            let new_cut = cut_trans (Cut_proof (cut_head, cut_formula, head' @ [formula], other_proof, new_p1)) in
 
             (* cut_head @ head' @ [formula]  [dual(formula)] @ tail     *)
             (* ---------------------------------------------------- Cut *)
@@ -292,7 +376,7 @@ let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permut
             (* cut_head @ [cut_formula]  [dual (cut_formula); dual(formula)] @ tail'     *)
             (* --------------------------------------------------------------------- Cut *)
             (*              cut_head @ [dual(formula)] @ tail'                           *)
-            let new_cut = Cut_proof (cut_head, cut_formula, [dual formula] @ tail', other_proof, new_p2) in
+            let new_cut = cut_trans (Cut_proof (cut_head, cut_formula, [dual formula] @ tail', other_proof, new_p2)) in
 
             (* cut_head @ [dual(formula)] @ tail'    *)
             (* ---------------------------------- Ex *)
@@ -314,7 +398,7 @@ let cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permut
             (*   cut_head @ cut_tail      *)
             merge_exchange (build_exchange (cut_head @ head @ tail') permutation_without_dual_cut_formula shifted_proof)
 
-let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_proof is_left permutation notations = function
+let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_proof is_left permutation notations cut_trans = function
     | Axiom_proof _f -> other_proof
     | Top_proof (head, tail) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
@@ -326,56 +410,56 @@ let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_pro
         let new_permutation = perm_minus_element (List.length head) permutation in
         let new_proof = build_exchange (get_conclusion p) new_permutation p in
         if is_left
-        then Bottom_proof (new_head, new_tail @ cut_tail, Cut_proof (new_head @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-        else Bottom_proof (cut_head @ new_head, new_tail, Cut_proof (cut_head, cut_formula, new_head @ new_tail, other_proof, new_proof))
+        then Bottom_proof (new_head, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+        else Bottom_proof (cut_head @ new_head, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ new_tail, other_proof, new_proof)))
     | Tensor_proof (head, e1, e2, tail, p1, p2) ->
-        cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left permutation head e1 e2 tail p1 p2
+        cut_elimination_tensor cut_head cut_formula cut_tail other_proof is_left permutation head e1 e2 tail p1 p2 cut_trans
     | Par_proof (head, e1, e2, tail, p) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
         let new_permutation = perm_plus_element (List.length head) permutation in
         let new_proof = build_exchange (get_conclusion p) new_permutation p in
         if is_left
-        then Par_proof (new_head, e1, e2, new_tail @ cut_tail, Cut_proof (new_head @ [e1; e2] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-        else Par_proof (cut_head @ new_head, e1, e2, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [e1; e2] @ new_tail, other_proof, new_proof))
+        then Par_proof (new_head, e1, e2, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [e1; e2] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+        else Par_proof (cut_head @ new_head, e1, e2, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e1; e2] @ new_tail, other_proof, new_proof)))
     | With_proof (head, e1, e2, tail, p1, p2) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
         let new_p1 = build_exchange (get_conclusion p1) permutation p1 in
         let new_p2 = build_exchange (get_conclusion p2) permutation p2 in
         if is_left
         then With_proof (new_head, e1, e2, new_tail @ cut_tail,
-            Cut_proof (new_head @ [e1] @ new_tail, cut_formula, cut_tail, new_p1, other_proof),
-            Cut_proof (new_head @ [e2] @ new_tail, cut_formula, cut_tail, new_p2, other_proof))
+            cut_trans (Cut_proof (new_head @ [e1] @ new_tail, cut_formula, cut_tail, new_p1, other_proof)),
+            cut_trans (Cut_proof (new_head @ [e2] @ new_tail, cut_formula, cut_tail, new_p2, other_proof)))
         else With_proof (cut_head @ new_head, e1, e2, new_tail,
-            Cut_proof (cut_head, cut_formula, new_head @ [e1] @ new_tail, other_proof, new_p1),
-            Cut_proof (cut_head, cut_formula, new_head @ [e2] @ new_tail, other_proof, new_p2))
+            cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e1] @ new_tail, other_proof, new_p1)),
+            cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e2] @ new_tail, other_proof, new_p2)))
     | Plus_left_proof (head, e1, e2, tail, p) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
         let new_proof = build_exchange (get_conclusion p) permutation p in
         if is_left
-        then Plus_left_proof (new_head, e1, e2, new_tail @ cut_tail, Cut_proof (new_head @ [e1] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-        else Plus_left_proof (cut_head @ new_head, e1, e2, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [e1] @ new_tail, other_proof, new_proof))
+        then Plus_left_proof (new_head, e1, e2, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [e1] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+        else Plus_left_proof (cut_head @ new_head, e1, e2, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e1] @ new_tail, other_proof, new_proof)))
     | Plus_right_proof (head, e1, e2, tail, p) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
         let new_proof = build_exchange (get_conclusion p) permutation p in
         if is_left
-        then Plus_right_proof (new_head, e1, e2, new_tail @ cut_tail, Cut_proof (new_head @ [e2] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-        else Plus_right_proof (cut_head @ new_head, e1, e2, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [e2] @ new_tail, other_proof, new_proof))
+        then Plus_right_proof (new_head, e1, e2, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [e2] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+        else Plus_right_proof (cut_head @ new_head, e1, e2, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e2] @ new_tail, other_proof, new_proof)))
     | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) -> begin
         let new_head_without_whynot, new_tail_without_whynot = head_tail_permuted head_without_whynot tail_without_whynot permutation is_left in
         let new_head, new_tail = add_whynot new_head_without_whynot, add_whynot new_tail_without_whynot in
         let new_proof = build_exchange (get_conclusion p) permutation p in
         try if is_left
             then Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot @ (remove_whynot cut_tail),
-                Cut_proof (new_head @ [e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
+                cut_trans (Cut_proof (new_head @ [e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
             else Promotion_proof ((remove_whynot cut_head) @ new_head_without_whynot, e, new_tail_without_whynot,
-                Cut_proof (cut_head, cut_formula, new_head @ [e] @ new_tail, other_proof, new_proof))
+                cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e] @ new_tail, other_proof, new_proof)))
         with Not_whynot -> raise (Transform_exception "Cut context is not whynot context") end
     | Dereliction_proof (head, e, tail, p) ->
         let new_head, new_tail = head_tail_permuted head tail permutation is_left in
         let new_proof = build_exchange (get_conclusion p) permutation p in
         if is_left
-        then Dereliction_proof (new_head, e, new_tail @ cut_tail, Cut_proof (new_head @ [e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-        else Dereliction_proof (cut_head @ new_head, e, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [e] @ new_tail, other_proof, new_proof))
+        then Dereliction_proof (new_head, e, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+        else Dereliction_proof (cut_head @ new_head, e, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [e] @ new_tail, other_proof, new_proof)))
     | Weakening_proof (head, e, tail, p) ->
         let new_permutation = perm_minus_element (List.length head) permutation in
         let new_proof = build_exchange (get_conclusion p) new_permutation p in
@@ -390,8 +474,8 @@ let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_pro
         else
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             if is_left
-            then Weakening_proof (new_head, e, new_tail @ cut_tail, Cut_proof (new_head @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-            else Weakening_proof (cut_head @ new_head, e, new_tail, Cut_proof (cut_head, cut_formula, new_head @ new_tail, other_proof, new_proof))
+            then Weakening_proof (new_head, e, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+            else Weakening_proof (cut_head @ new_head, e, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ new_tail, other_proof, new_proof)))
     | Contraction_proof (head, e, tail, p) ->
         let new_permutation = perm_plus_element (List.length head) permutation in
         let new_proof = build_exchange (get_conclusion p) new_permutation p in
@@ -399,18 +483,18 @@ let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_pro
         if cut_formula_position = List.length head then
             if is_left
             then
-                let second_cut = Cut_proof (cut_head @ [cut_formula], cut_formula, cut_tail, new_proof, other_proof) in
+                let second_cut = cut_trans (Cut_proof (cut_head @ [cut_formula], cut_formula, cut_tail, new_proof, other_proof)) in
                 let second_exchange_proof = move_right (List.length cut_head) 0 second_cut in
-                let first_cut = Cut_proof (cut_head @ cut_tail, cut_formula, cut_tail, second_exchange_proof, other_proof) in
+                let first_cut = cut_trans (Cut_proof (cut_head @ cut_tail, cut_formula, cut_tail, second_exchange_proof, other_proof)) in
                 let sort_perm = List.init (List.length cut_head) (fun n -> n)
                     @ List.init (2 * List.length cut_tail) (fun n -> (List.length cut_head) + n / 2 + (n mod 2) * (List.length cut_tail)) in
                 let first_exchange = build_exchange (cut_head @ cut_tail @ cut_tail) sort_perm first_cut in
                 try contract first_exchange cut_head [] (remove_whynot cut_tail)
                 with Not_whynot -> raise (Transform_exception "Can not eliminate cut on this contraction since cut_tail doesn't have whynot context")
             else
-                let second_cut = Cut_proof (cut_head, cut_formula, [dual cut_formula] @ cut_tail, other_proof, new_proof) in
+                let second_cut = cut_trans (Cut_proof (cut_head, cut_formula, [dual cut_formula] @ cut_tail, other_proof, new_proof)) in
                 let second_exchange_proof = move_left 0 (List.length cut_tail) second_cut in
-                let first_cut = Cut_proof (cut_head, cut_formula, cut_head @ cut_tail, other_proof, second_exchange_proof) in
+                let first_cut = cut_trans (Cut_proof (cut_head, cut_formula, cut_head @ cut_tail, other_proof, second_exchange_proof)) in
                 let sort_perm = List.init (2 * List.length cut_head) (fun n -> n / 2 + (n mod 2) * (List.length cut_head))
                     @ List.init (List.length cut_tail) (fun n -> 2 * List.length cut_head + n) in
                 let first_exchange = build_exchange (cut_head @ cut_head @ cut_tail) sort_perm first_cut in
@@ -419,49 +503,49 @@ let rec cut_elimination_with_permutation cut_head cut_formula cut_tail other_pro
         else
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             if is_left
-            then Contraction_proof (new_head, e, new_tail @ cut_tail, Cut_proof (new_head @ [Whynot e; Whynot e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-            else Contraction_proof (cut_head @ new_head, e, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [Whynot e; Whynot e] @ new_tail, other_proof, new_proof))
-    | Unfold_litt_proof (head, s, tail, p) ->
+            then Contraction_proof (new_head, e, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [Whynot e; Whynot e] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+            else Contraction_proof (cut_head @ new_head, e, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [Whynot e; Whynot e] @ new_tail, other_proof, new_proof)))
+    | Unfold_litt_proof (head, s, tail, p) when List.mem_assoc s notations ->
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             let new_proof = build_exchange (get_conclusion p) permutation p in
             let formula = Raw_sequent.to_formula (List.assoc s notations) in
             if is_left
-            then Unfold_litt_proof (new_head, s, new_tail @ cut_tail, Cut_proof (new_head @ [formula] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-            else Unfold_litt_proof (cut_head @ new_head, s, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [formula] @ new_tail, other_proof, new_proof))
-    | Unfold_dual_proof (head, s, tail, p) ->
+            then Unfold_litt_proof (new_head, s, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [formula] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+            else Unfold_litt_proof (cut_head @ new_head, s, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [formula] @ new_tail, other_proof, new_proof)))
+    | Unfold_dual_proof (head, s, tail, p) when List.mem_assoc s notations ->
             let new_head, new_tail = head_tail_permuted head tail permutation is_left in
             let new_proof = build_exchange (get_conclusion p) permutation p in
             let formula = dual (Raw_sequent.to_formula (List.assoc s notations)) in
             if is_left
-            then Unfold_dual_proof (new_head, s, new_tail @ cut_tail, Cut_proof (new_head @ [formula] @ new_tail, cut_formula, cut_tail, new_proof, other_proof))
-            else Unfold_dual_proof (cut_head @ new_head, s, new_tail, Cut_proof (cut_head, cut_formula, new_head @ [formula] @ new_tail, other_proof, new_proof))
+            then Unfold_dual_proof (new_head, s, new_tail @ cut_tail, cut_trans (Cut_proof (new_head @ [formula] @ new_tail, cut_formula, cut_tail, new_proof, other_proof)))
+            else Unfold_dual_proof (cut_head @ new_head, s, new_tail, cut_trans (Cut_proof (cut_head, cut_formula, new_head @ [formula] @ new_tail, other_proof, new_proof)))
     | Cut_proof (head, formula, tail, p1, p2) ->
-        cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permutation head formula tail p1 p2
+        cut_elimination_cut cut_head cut_formula cut_tail other_proof is_left permutation head formula tail p1 p2 cut_trans
     | Exchange_proof (_, _display_permutation, exchange_permutation, p) ->
-        cut_elimination_with_permutation cut_head cut_formula cut_tail other_proof is_left (permute permutation exchange_permutation) notations p
+        cut_elimination_with_permutation cut_head cut_formula cut_tail other_proof is_left (permute permutation exchange_permutation) notations cut_trans p
     | _ -> raise (Transform_exception "Can not eliminate cut on this side")
 
 
-let rec cut_elimination is_left notations = function
+let rec cut_elimination is_left notations cut_trans = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) -> begin
         if is_left
-        then cut_elimination_with_permutation cut_head cut_formula cut_tail cut_p2 is_left (identity (List.length cut_head + 1)) notations cut_p1
-        else cut_elimination_with_permutation cut_head cut_formula cut_tail cut_p1 is_left (identity (List.length cut_tail + 1)) notations cut_p2
+        then cut_elimination_with_permutation cut_head cut_formula cut_tail cut_p2 is_left (identity (List.length cut_head + 1)) notations cut_trans cut_p1
+        else cut_elimination_with_permutation cut_head cut_formula cut_tail cut_p1 is_left (identity (List.length cut_tail + 1)) notations cut_trans cut_p2
     end
     | Exchange_proof (s, display_permutation, exchange_permutation, p) ->
-        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, cut_elimination is_left notations p))
+        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, cut_elimination is_left notations cut_trans p))
     | _-> raise (Transform_exception "Can only eliminate cut on Cut_proof or Exchange_proof")
 
 
 (* CUT ELIMINATION KEY CASE *)
 
-let cut_element head1 tail1 head2 tail2 e p1 p2 permutation_without_cut_formula =
+let cut_element head1 tail1 head2 tail2 e p1 p2 permutation_without_cut_formula cut_trans =
     let new_p1 = move_right (List.length head1) 0 p1 in
     let new_p2 = move_left 0 (List.length tail2) p2 in
-    let cut_e = Cut_proof (head1 @ tail1, e, head2 @ tail2, new_p1, new_p2) in
+    let cut_e = cut_trans (Cut_proof (head1 @ tail1, e, head2 @ tail2, new_p1, new_p2)) in
     build_exchange (head1 @ tail1 @ head2 @ tail2) permutation_without_cut_formula cut_e
 
-let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1 perm2 notations =
+let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1 perm2 notations cut_trans =
     let cut_formula_position1 = List.nth perm1 (List.length cut_head) in
     let cut_formula_position2 = List.nth perm2 0 in
     let permutation_without_cut_formula = perm_minus_element cut_formula_position1 perm1
@@ -484,7 +568,7 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         (* tail1 @ [e2]  [dual e2] @ head2 @ [dual e1] @ tail2     *)
         (* --------------------------------------------------- Cut *)
         (*              tail1 @ head2 @ [dual e1] @ tail2          *)
-        let cut_e2 = Cut_proof (tail1, e2, head2 @ [dual e1] @ tail2, new_p2, new_p) in
+        let cut_e2 = cut_trans (Cut_proof (tail1, e2, head2 @ [dual e1] @ tail2, new_p2, new_p)) in
 
         (* tail1 @ head2 @ [dual e1] @ tail2    *)
         (* --------------------------------- Ex *)
@@ -494,7 +578,7 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         (* head1 @ [e1]  [dual e1] @ tail1 @ head2 @ tail2     *)
         (* ----------------------------------------------- Cut *)
         (*             head1 @ tail1 @ head2 @ tail2           *)
-        let cut_e1 = Cut_proof (head1, e1, tail1 @ head2 @ tail2, p1, exchange_proof) in
+        let cut_e1 = cut_trans (Cut_proof (head1, e1, tail1 @ head2 @ tail2, p1, exchange_proof)) in
 
         (* head1 @ tail1 @ head2 @ tail2    *)
         (* ----------------------------- Ex *)
@@ -514,7 +598,7 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         (* head1 @ [e2] @ tail1 @ [e1]  [dual e1] @ head2     *)
         (* ---------------------------------------------- Cut *)
         (*            head1 @ [e2] @ tail1 @ head2            *)
-        let cut_e1 = Cut_proof (head1 @ [e2] @ tail1, e1, head2, new_p, new_p1) in
+        let cut_e1 = cut_trans (Cut_proof (head1 @ [e2] @ tail1, e1, head2, new_p, new_p1)) in
 
         (* head1 @ [e2] @ tail1 @ head2    *)
         (* ---------------------------- Ex *)
@@ -524,67 +608,122 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         (* head1 @ tail1 @ head2 @ [e2]  [dual e2] @ tail2     *)
         (* ----------------------------------------------- Cut *)
         (*             head1 @ tail1 @ head2 @ tail2           *)
-        let cut_e2 = Cut_proof (head1 @ tail1 @ head2, e2, tail2, exchange_proof, p2) in
+        let cut_e2 = cut_trans (Cut_proof (head1 @ tail1 @ head2, e2, tail2, exchange_proof, p2)) in
 
         (* head1 @ tail1 @ head2 @ tail2    *)
         (* ----------------------------- Ex *)
         (*       cut_head @ cut_tail        *)
         build_exchange (head1 @ tail1 @ head2 @ tail2) permutation_without_cut_formula cut_e2
     | With_proof (head1, e1, _e2, tail1, p1, _p2), Plus_left_proof (head2, _dual_e1, _dual_e2, tail2, p) ->
-        cut_element head1 tail1 head2 tail2 e1 p1 p permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 e1 p1 p permutation_without_cut_formula cut_trans
     | With_proof (head1, _e1, e2, tail1, _p1, p2), Plus_right_proof (head2, _dual_e1, _dual_e2, tail2, p) ->
-        cut_element head1 tail1 head2 tail2 e2 p2 p permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 e2 p2 p permutation_without_cut_formula cut_trans
     | Plus_left_proof (head1, e1, _e2, tail1, p), With_proof (head2, _dual_e1, _dual_e2, tail2, p1, _p2) ->
-        cut_element head1 tail1 head2 tail2 e1 p p1 permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 e1 p p1 permutation_without_cut_formula cut_trans
     | Plus_right_proof (head1, _e1, e2, tail1, p), With_proof (head2, _dual_e1, _dual_e2, tail2, _p1, p2) ->
-        cut_element head1 tail1 head2 tail2 e2 p p2 permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 e2 p p2 permutation_without_cut_formula cut_trans
     | Promotion_proof (head_without_whynot, formula, tail_without_whynot, p1), Dereliction_proof (head2, _dual_formula, tail2, p2) ->
         let head1 = add_whynot head_without_whynot in
         let tail1 = add_whynot tail_without_whynot in
-        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
     | Dereliction_proof (head1, formula, tail1, p1), Promotion_proof (head_without_whynot, _dual_formula, tail_without_whynot, p2) ->
         let head2 = add_whynot head_without_whynot in
         let tail2 = add_whynot tail_without_whynot in
-        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula
-    | Unfold_litt_proof (head1, s, tail1, p1), Unfold_dual_proof (head2, _s, tail2, p2) ->
+        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
+    | Unfold_litt_proof (head1, s, tail1, p1), Unfold_dual_proof (head2, _s, tail2, p2) when List.mem_assoc s notations ->
         let formula = Raw_sequent.to_formula (List.assoc s notations) in
-        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula
-    | Unfold_dual_proof (head1, s, tail1, p1), Unfold_litt_proof (head2, _s, tail2, p2) ->
+        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
+    | Unfold_dual_proof (head1, s, tail1, p1), Unfold_litt_proof (head2, _s, tail2, p2) when List.mem_assoc s notations ->
         let formula = dual (Raw_sequent.to_formula (List.assoc s notations)) in
-        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula
+        cut_element head1 tail1 head2 tail2 formula p1 p2 permutation_without_cut_formula cut_trans
     | Exchange_proof (_, _display_permutation, exchange_permutation, p), _ ->
-        eliminate_cut_key_case cut_head cut_formula cut_tail p cut_p2 (permute perm1 exchange_permutation) perm2 notations
+        eliminate_cut_key_case cut_head cut_formula cut_tail p cut_p2 (permute perm1 exchange_permutation) perm2 notations cut_trans
     | _, Exchange_proof (_, _display_permutation, exchange_permutation, p) ->
-        eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 p perm1 (permute perm2 exchange_permutation) notations
+        eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 p perm1 (permute perm2 exchange_permutation) notations cut_trans
     | _ -> raise (Failure "Can not eliminate cut key-case on these two proofs")
 
 
-let rec cut_elimination_key_case notations = function
+let rec cut_elimination_key_case notations cut_trans = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
-        eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 (identity (List.length cut_head + 1)) (identity (List.length cut_tail + 1)) notations
+        eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 (identity (List.length cut_head + 1)) (identity (List.length cut_tail + 1)) notations cut_trans
     | Exchange_proof (s, display_permutation, exchange_permutation, p) ->
-        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, cut_elimination_key_case notations p))
+        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, cut_elimination_key_case notations cut_trans p))
     | _-> raise (Transform_exception "Can only eliminate cut key-case on Cut_proof or Exchange_proof")
+
+(* ELIMINATE CUT FULL *)
+
+let eliminate_cut notations cut_head cut_formula cut_tail cut_p1 cut_p2 cut_trans =
+    let cut_proof = Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) in
+    if can_commute_with_cut (List.length cut_head) cut_tail notations cut_p1
+    then cut_elimination true notations cut_trans cut_proof
+    else if can_commute_with_cut 0 cut_head notations cut_p2
+    then cut_elimination false notations cut_trans cut_proof
+    else if can_cut_key_case (List.length cut_head) 0 notations cut_p1 cut_p2
+    then cut_elimination_key_case notations cut_trans cut_proof
+    else cut_proof
+
+let rec eliminate_cut_full acyclic_notations = function
+    | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
+        eliminate_cut acyclic_notations cut_head cut_formula cut_tail cut_p1 cut_p2 (eliminate_cut_full acyclic_notations)
+    | Exchange_proof (s, display_permutation, exchange_permutation, p) ->
+        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, eliminate_cut_full acyclic_notations p))
+    | _-> raise (Transform_exception "Can only eliminate cut full on Cut_proof or Exchange_proof")
+
+(* ELIMINATE ALL CUTS *)
+
+let rec eliminate_all_cuts_in_proof acyclic_notations = function
+    | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
+        let p1 = eliminate_all_cuts_in_proof acyclic_notations cut_p1 in
+        let p2 = eliminate_all_cuts_in_proof acyclic_notations cut_p2 in
+        eliminate_cut acyclic_notations cut_head cut_formula cut_tail p1 p2 (eliminate_cut_full acyclic_notations)
+    | Exchange_proof (s, display_permutation, exchange_permutation, p) ->
+        merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, eliminate_all_cuts_in_proof acyclic_notations p))
+    | proof -> set_premises proof (List.map (eliminate_all_cuts_in_proof acyclic_notations) (get_premises proof))
 
 (* OPERATIONS *)
 
-let get_transformation_options_json proof notations =
-    Proof.to_json ~transform_options:true ~notations:notations proof;;
+let get_transformation_options_json proof notations not_cyclic =
+    Proof.to_json ~add_options:(get_transform_options_as_json notations not_cyclic) proof;;
+
+let check_all_cuts_elimination notations not_cyclic proof=
+    not_cyclic && has_cut_that_can_be_eliminated notations not_cyclic proof
+
+let check_simplification proof =
+    proof <> Proof_simplification.simplify proof
 
 let apply_transformation_with_exceptions proof cyclic_notations acyclic_notations = function
     | Expand_axiom -> expand_axiom_on_proof (cyclic_notations @ acyclic_notations) proof
     | Expand_axiom_full -> expand_axiom_full acyclic_notations proof
-    | Eliminate_cut_left -> cut_elimination true (cyclic_notations @ acyclic_notations) proof
-    | Eliminate_cut_right -> cut_elimination false (cyclic_notations @ acyclic_notations) proof
-    | Eliminate_cut_key_case -> cut_elimination_key_case (cyclic_notations @ acyclic_notations) proof
+    | Eliminate_cut_left -> cut_elimination true (cyclic_notations @ acyclic_notations) (fun p -> p) proof
+    | Eliminate_cut_right -> cut_elimination false (cyclic_notations @ acyclic_notations) (fun p -> p) proof
+    | Eliminate_cut_key_case -> cut_elimination_key_case (cyclic_notations @ acyclic_notations) (fun p -> p) proof
+    | Eliminate_cut_full -> eliminate_cut_full acyclic_notations proof
+    | Eliminate_all_cuts -> eliminate_all_cuts_in_proof acyclic_notations proof
+    | Simplify -> Proof_simplification.simplify proof
+    | Substitute (alias, raw_formula) -> Proof.replace_in_proof alias (Raw_sequent.to_formula raw_formula) proof
+    ;;
+
+let apply_transformation_on_notations notations = function
+    | Substitute (alias, raw_formula) -> Notations.replace_in_notations alias raw_formula notations
+    | _ -> notations
     ;;
 
 (* HANDLERS *)
 
 let get_proof_transformation_options request_as_json =
     try let proof_with_notations = Proof_with_notations.from_json request_as_json in
-        let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations in
-        true, `Assoc ["proofWithTransformationOptions", proof_with_transformation_options]
+        let proof_variables = Proof.get_unique_variable_names proof_with_notations.proof in
+        let cyclic_notations, _ = Notations.split_cyclic_acyclic proof_with_notations.notations (Some proof_variables) in
+        let not_cyclic = (List.length cyclic_notations = 0) in
+        let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations not_cyclic in
+        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.notations not_cyclic proof_with_notations.proof in
+        let can_simplify = check_simplification proof_with_notations.proof in
+        let notations_as_string = Notations.to_json ~stringify:true proof_with_notations.notations in
+        true, `Assoc [
+            "proofWithTransformationOptions", proof_with_transformation_options;
+            "canSimplify", `Bool can_simplify;
+            "canEliminateAllCuts", `Bool can_eliminate_all_cuts;
+            "notationsAsString", notations_as_string]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad request: " ^ m);;
 
 let apply_transformation request_as_json =
@@ -593,7 +732,8 @@ let apply_transformation request_as_json =
         let transform_request = Transform_request.from_json transform_request_as_json in
         let cyclic_notations, acyclic_notations = Notations.split_cyclic_acyclic proof_with_notations.notations None in
         let proof = apply_transformation_with_exceptions proof_with_notations.proof cyclic_notations acyclic_notations transform_request in
-        true, `Assoc ["proof", Proof.to_json proof]
+        let notations = apply_transformation_on_notations proof_with_notations.notations transform_request in
+        true, `Assoc ["proof", Proof.to_json proof; "notations", Notations.to_json notations]
     with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m)
         | Request_utils.Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Transform_request.Json_exception m -> false, `String ("Bad transformation request: " ^ m)

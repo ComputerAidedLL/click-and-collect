@@ -1,6 +1,5 @@
 open Sequent
 open Rule_request
-open Transform_request
 
 (* PROOF *)
 
@@ -64,7 +63,7 @@ let get_premises = function
     | Cut_proof (_, _, _, p1, p2) -> [p1; p2]
     | Unfold_litt_proof (_, _, _, p) -> [p]
     | Unfold_dual_proof (_, _, _, p) -> [p]
-    | Hypothesis_proof _ -> raise (Failure "Can not get premises of hypothesis");;
+    | Hypothesis_proof _ -> [];;
 
 let set_premises proof premises = match proof, premises with
     | Axiom_proof _, [] -> proof
@@ -85,7 +84,7 @@ let set_premises proof premises = match proof, premises with
     | Cut_proof (head, e, tail, _, _), [p1; p2] -> Cut_proof (head, e, tail, p1, p2)
     | Unfold_litt_proof (head, s, tail, _), [p] -> Unfold_litt_proof (head, s, tail, p)
     | Unfold_dual_proof (head, s, tail, _), [p] -> Unfold_dual_proof (head, s, tail, p)
-    | Hypothesis_proof _, _ -> raise (Failure "Can not set premises of hypothesis")
+    | Hypothesis_proof _, [] -> proof
     | _ -> raise (Failure "Number of premises mismatch with given proof");;
 
 let get_conclusion = function
@@ -112,15 +111,57 @@ let get_conclusion = function
     | Hypothesis_proof sequent -> sequent;;
 
 
+(* REPLACEMENTS *)
+
+let rec replace_in_proof a f = function
+    | Axiom_proof e ->
+        Axiom_proof (replace_in_formula a f e)
+    | One_proof ->
+        One_proof
+    | Top_proof (head, tail) ->
+        Top_proof (replace_in_sequent a f head, replace_in_sequent a f tail)
+    | Bottom_proof (head, tail, p) ->
+        Bottom_proof (replace_in_sequent a f head, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Tensor_proof (head, e1, e2, tail, p1, p2) ->
+        Tensor_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Par_proof (head, e1, e2, tail, p)  ->
+        Par_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | With_proof (head, e1, e2, tail, p1, p2) ->
+        With_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Plus_left_proof (head, e1, e2, tail, p) ->
+        Plus_left_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Plus_right_proof (head, e1, e2, tail, p) ->
+        Plus_right_proof (replace_in_sequent a f head, replace_in_formula a f e1, replace_in_formula a f e2, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) ->
+        Promotion_proof (replace_in_sequent a f head_without_whynot, replace_in_formula a f e, replace_in_sequent a f tail_without_whynot, replace_in_proof a f p)
+    | Dereliction_proof (head, e, tail, p) ->
+        Dereliction_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Weakening_proof (head, e, tail, p) ->
+        Weakening_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Contraction_proof (head, e, tail, p) ->
+        Contraction_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Exchange_proof (sequent, display_permutation, permutation, p) ->
+        Exchange_proof (replace_in_sequent a f sequent, display_permutation, permutation, replace_in_proof a f p)
+    | Cut_proof (head, e, tail, p1, p2) ->
+        Cut_proof (replace_in_sequent a f head, replace_in_formula a f e, replace_in_sequent a f tail, replace_in_proof a f p1, replace_in_proof a f p2)
+    | Unfold_litt_proof (head, s, tail, p) ->
+        if s = a then raise (Failure "Can not substitute an atom that is notation name") else
+        Unfold_litt_proof (replace_in_sequent a f head, s, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Unfold_dual_proof (head, s, tail, p) ->
+        if s = a then raise (Failure "Can not substitute an atom that is notation name") else
+        Unfold_dual_proof (replace_in_sequent a f head, s, replace_in_sequent a f tail, replace_in_proof a f p)
+    | Hypothesis_proof s ->
+        Hypothesis_proof (replace_in_sequent a f s);;
+
 (* VARIABLES *)
+
 let rec get_variable_names proof =
     let variables = Sequent.get_unique_variable_names (get_conclusion proof) in
-    match proof with
-        | Hypothesis_proof _ -> variables
-        | _ -> variables @ List.concat_map get_variable_names (get_premises proof);;
+    variables @ List.concat_map get_variable_names (get_premises proof);;
 
 let get_unique_variable_names proof =
     List.sort_uniq String.compare (get_variable_names proof);;
+
 
 (* SEQUENT & RULE_REQUEST -> PROOF *)
 
@@ -301,11 +342,9 @@ let apply_reversible_rule notations proof =
 
 let rec rec_apply_reversible_rule notations proof =
     let new_proof = apply_reversible_rule notations proof in
-    match new_proof with
-        | Hypothesis_proof _ -> new_proof
-        | _ -> let premises = get_premises new_proof in
-            let new_premises = List.map (rec_apply_reversible_rule notations) premises in
-            set_premises new_proof new_premises;;
+    let premises = get_premises new_proof in
+    let new_premises = List.map (rec_apply_reversible_rule notations) premises in
+    set_premises new_proof new_premises;;
 
 (* AUTO WEAK MODE *)
 exception AutoWeakNotApplicable;;
@@ -349,81 +388,6 @@ let get_rule_request = function
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
-(* PROOF -> TRANSFORM OPTION *)
-
-let rec can_commute_with_cut length_to_formula cut_context = function
-    | Axiom_proof _ -> true
-    | Top_proof (head, _tail)
-    | Bottom_proof (head, _tail, _)
-    | Tensor_proof (head, _, _, _tail, _, _)
-    | Par_proof (head, _, _, _tail, _)
-    | With_proof (head, _, _, _tail, _, _)
-    | Plus_left_proof (head, _, _, _tail, _)
-    | Plus_right_proof (head, _, _, _tail, _)
-    | Dereliction_proof (head, _, _tail, _)
-    | Weakening_proof (head, _, _tail, _)
-    | Contraction_proof (head, _, _tail, _)
-    | Unfold_litt_proof (head, _, _tail, _)
-    | Unfold_dual_proof (head, _, _tail, _)
-        when length_to_formula <> List.length head -> true
-    | Promotion_proof (head, _, _tail, _p)
-        when has_whynot_context cut_context && length_to_formula <> List.length head -> true
-    | Weakening_proof (_head, _, _tail, _)
-    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true
-    | Cut_proof (_head, _, _tail, _, _) -> true
-    | Exchange_proof (_, _display_permutation, permutation, p)
-        -> can_commute_with_cut (List.nth permutation length_to_formula) cut_context p
-    | _ -> false;;
-
-let rec can_cut_key_case length1 length2 p1 p2 = match p1, p2 with
-    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head -> true
-    | Bottom_proof (head, _, _), One_proof when length1 = List.length head -> true
-    | Tensor_proof (head1, _, _, _, _, _), Par_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Par_proof (head1, _, _, _, _), Tensor_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | With_proof (head1, _, _, _, _, _), Plus_left_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Plus_left_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | With_proof (head1, _, _, _, _, _), Plus_right_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Plus_right_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Promotion_proof (head1, _, _, _), Dereliction_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Dereliction_proof (head1, _, _, _), Promotion_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Unfold_litt_proof (head1, _, _, _), Unfold_dual_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Unfold_dual_proof (head1, _, _, _), Unfold_litt_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Exchange_proof (_, _display_permutation, permutation, p), p2 ->
-        can_cut_key_case (List.nth permutation length1) length2 p p2
-    | p1, Exchange_proof (_, _display_permutation, permutation, p) ->
-        can_cut_key_case length1 (List.nth permutation length2) p1 p
-    | _ -> false;;
-
-let get_transform_options notations = function
-    | Axiom_proof f -> let expand_axiom_enabled = match f with
-        | Litt s | Dual s -> List.mem_assoc s notations
-        | _ -> true in
-        [Expand_axiom, expand_axiom_enabled]
-    | Cut_proof (head, _formula, tail, p1, p2) ->
-        let commute_left = can_commute_with_cut (List.length head) tail p1 in
-        let commute_right = can_commute_with_cut 0 head p2 in
-        let cut_key_case = can_cut_key_case (List.length head) 0 p1 p2 in
-        [Eliminate_cut_left, commute_left; Eliminate_cut_key_case, cut_key_case; Eliminate_cut_right, commute_right]
-    | _ -> [];;
-
-let get_transform_options_as_json notations proof =
-    let transform_options = get_transform_options notations proof in
-    `List (List.map (fun (transform_option, enabled) -> `Assoc [
-        ("transformation", `String (Transform_request.to_string transform_option));
-        ("enabled", `Bool enabled)
-        ]) transform_options)
-
-
 (* JSON -> PROOF *)
 
 exception Json_exception of string;;
@@ -461,7 +425,7 @@ let rec from_json notations json =
 
 (* PROOF -> JSON *)
 
-let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) proof =
+let rec to_json ?add_options:(add_options=fun _proof -> []) proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
     match proof with
@@ -471,9 +435,8 @@ let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) proof =
         let rule_request = get_rule_request proof in
         let rule_request_as_json = Rule_request.to_json rule_request in
         let premises = get_premises proof in
-        let premises_as_json = List.map (to_json ~transform_options:t_o ~notations:notations) premises in
-        let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
-            (if t_o then [("transformOptions", get_transform_options_as_json notations proof)] else []) in
+        let premises_as_json = List.map (to_json ~add_options:add_options) premises in
+        let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @ (add_options proof) in
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc applied_rule)];;
 

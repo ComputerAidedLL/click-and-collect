@@ -365,9 +365,7 @@ function autoProveSequent($sequentTable) {
     let options = $container.data('options');
 
     // Sequent json that was stored in div may have been permuted before rule applying
-    let sequentWithoutPermutation = $sequentTable.data('sequentWithoutPermutation');
-    let permutationBeforeRule = getSequentPermutation($sequentTable);
-    let sequent = permuteSequent(sequentWithoutPermutation, permutationBeforeRule);
+    let sequent = $sequentTable.data('sequentWithoutPermutation');
     let notations = getNotations($container);
 
     let $turnstile = $sequentTable.find('.turnstile');
@@ -388,7 +386,8 @@ function autoProveSequent($sequentTable) {
             if (data.success) {
                 clearSavedProof();
                 cleanPedagogicMessage($container);
-                addPremises($sequentTable, data['proof'], permutationBeforeRule, options);
+                let $sequentContainer = removeSequentTable($sequentTable);
+                createSubProof(data['proof'], $sequentContainer, options);
             } else {
                 if (data['is_provable']) {
                     markAsNotAutoProvable($sequentTable);

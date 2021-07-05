@@ -52,17 +52,18 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .close-section { cursor: pointer; color: #777; display: flex; justify-content: flex-end; margin-right: 1em; }
 
 /* PROOF */
+.proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding: 1.6em 2.4em 0.8em 2.4em; margin: 0 auto 1em; }
 .proof.complete { background:#CFC; }
-.proof.proof-transformation { border: 2px dashed #66a3e0; }
-.proof { text-align:center; text-indent: 0; display:table; white-space:nowrap; padding: 0.8em 0.3em 0.8em 2.4em; margin: 0 auto 1em; }
+.proof.proof-transformation { border: 2px dashed #66a3e0; padding: 1.6em 6em 0.8em 6em; }
 .proof table { margin: auto; }
 .proof table.binary-rule { width:100%; }
-.proof td { padding:0; border:0; margin:0; text-align:center; }
-.proof .sequent { display: inline-block; margin-top: 0.2em; }
+.proof td { position: relative; padding:0; }
+.proof .sequent { margin-top: 0.2em; }
 .proof .sibling { display: inline-block; vertical-align:bottom; }
-.proof .tagBox { position:relative; top:-0.6em; text-align: left; color: #333; width: 1.5em; padding-right:1em; vertical-align: top; }
-.proof.proof-transformation .tagBox { width: 4.2em; }
-.proof .tagBox.contraction, .proof .tagBox.unfold_litt, .proof .tagBox.unfold_dual { top: -0.4em; }
+.proof .sibling:first-child { margin-right: 3em; }
+.proof.proof-transformation .sibling:first-child { margin-right: 6em; }
+.proof .tagBox { position:absolute; bottom: 69%; left: 100%; text-align: left; }
+.proof .tagBox.contraction, .proof .tagBox.unfold_litt, .proof .tagBox.unfold_dual { top: -31%; }
 .proof .tagBox .tag { margin-left: 0.2em; font-size: 0.9em; display: inline-block; }
 .transform { color: #66a3e0; display: inline-block; }
 .transform-button { margin-left: 0.1em; border: 1px #66a3e0 solid; border-radius: 0.2em; }
@@ -90,8 +91,8 @@ input[type=text], .code { background-color: #FFF; font-family: "Courier New", sa
 .export-bar span, .option-label, .option-info { color: #777; margin-left: 0.5em; vertical-align: middle; }
 img.export { height: 1em; margin: 0 0.2em -0.2em 0.2em; cursor: pointer; }
 .option-info { font-weight: bold; cursor: pointer; }
-.undo-redo { color: #ccc; margin: 0 0.2em; font-size: 1.5em; display: inline-block; }
-.undo-redo.enabled { color: #777; cursor: pointer; }
+.transform-global-button { color: #ccc; margin: 0 0.2em; font-size: 1.5em; display: inline-block; }
+.transform-global-button.enabled { color: #777; cursor: pointer; }
 
 .notation-bar { margin-top: 1em; }
 .notation-label, .notation-add { vertical-align: middle; color: #777; }
