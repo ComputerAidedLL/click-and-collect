@@ -6,6 +6,90 @@ open Permutations
 
 exception Transform_exception of string;;
 
+(* PROOF -> TRANSFORM OPTION *)
+
+let rec can_commute_with_cut length_to_formula cut_context notations = function
+    | Axiom_proof _ -> true
+    | Top_proof (head, _tail)
+    | Bottom_proof (head, _tail, _)
+    | Tensor_proof (head, _, _, _tail, _, _)
+    | Par_proof (head, _, _, _tail, _)
+    | With_proof (head, _, _, _tail, _, _)
+    | Plus_left_proof (head, _, _, _tail, _)
+    | Plus_right_proof (head, _, _, _tail, _)
+    | Dereliction_proof (head, _, _tail, _)
+    | Weakening_proof (head, _, _tail, _)
+    | Contraction_proof (head, _, _tail, _)
+        when length_to_formula <> List.length head -> true
+    | Promotion_proof (head, _, _tail, _p)
+        when has_whynot_context cut_context && length_to_formula <> List.length head -> true
+    | Unfold_litt_proof (head, s, _tail, _)
+    | Unfold_dual_proof (head, s, _tail, _)
+        when List.mem_assoc s notations && length_to_formula <> List.length head -> true
+    | Weakening_proof (_head, _, _tail, _)
+    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true
+    | Cut_proof (_head, _, _tail, _, _) -> true
+    | Exchange_proof (_, _display_permutation, permutation, p)
+        -> can_commute_with_cut (List.nth permutation length_to_formula) cut_context notations p
+    | _ -> false;;
+
+let rec can_cut_key_case length1 length2 notations p1 p2 = match p1, p2 with
+    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head -> true
+    | Bottom_proof (head, _, _), One_proof when length1 = List.length head -> true
+    | Tensor_proof (head1, _, _, _, _, _), Par_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Par_proof (head1, _, _, _, _), Tensor_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | With_proof (head1, _, _, _, _, _), Plus_left_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Plus_left_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | With_proof (head1, _, _, _, _, _), Plus_right_proof (head2, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Plus_right_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Promotion_proof (head1, _, _, _), Dereliction_proof (head2, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Dereliction_proof (head1, _, _, _), Promotion_proof (head2, _, _, _)
+        when length1 = List.length head1 && length2 = List.length head2 -> true
+    | Unfold_litt_proof (head1, s, _, _), Unfold_dual_proof (head2, _s, _, _)
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+    | Unfold_dual_proof (head1, s, _, _), Unfold_litt_proof (head2, _s, _, _)
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+    | Exchange_proof (_, _display_permutation, permutation, p), p2 ->
+        can_cut_key_case (List.nth permutation length1) length2 notations p p2
+    | p1, Exchange_proof (_, _display_permutation, permutation, p) ->
+        can_cut_key_case length1 (List.nth permutation length2) notations p1 p
+    | _ -> false;;
+
+let get_transform_options notations not_cyclic = function
+    | Axiom_proof f -> let expand_axiom_enabled = match f with
+        | Litt s | Dual s -> List.mem_assoc s notations
+        | _ -> true in
+        [Expand_axiom, expand_axiom_enabled; Expand_axiom_full, expand_axiom_enabled && not_cyclic]
+    | Cut_proof (head, _formula, tail, p1, p2) ->
+        let commute_left = can_commute_with_cut (List.length head) tail notations p1 in
+        let commute_right = can_commute_with_cut 0 head notations p2 in
+        let cut_key_case = can_cut_key_case (List.length head) 0 notations p1 p2 in
+        let cut_full = not_cyclic && (commute_left || commute_right || cut_key_case) in
+        [Eliminate_cut_left, commute_left;
+        Eliminate_cut_key_case, cut_key_case;
+        Eliminate_cut_right, commute_right;
+        Eliminate_cut_full, cut_full]
+    | _ -> [];;
+
+let get_transform_options_as_json notations not_cyclic proof =
+    let transform_options = get_transform_options notations not_cyclic proof in
+    ["transformOptions", `List (List.map (fun (transform_option, enabled) -> `Assoc [
+        ("transformation", `String (Transform_request.to_string transform_option));
+        ("enabled", `Bool enabled)
+        ]) transform_options)]
+
+let rec has_cut_that_can_be_eliminated notations not_cyclic proof =
+    let transform_options = get_transform_options notations not_cyclic proof in
+    if List.mem_assoc Eliminate_cut_full transform_options && List.assoc Eliminate_cut_full transform_options then true
+    else List.exists (has_cut_that_can_be_eliminated notations not_cyclic) (get_premises proof)
+
 (* AXIOM EXPANSION *)
 
 let expand_axiom notations = function
@@ -576,7 +660,7 @@ let eliminate_cut notations cut_head cut_formula cut_tail cut_p1 cut_p2 cut_tran
     then cut_elimination false notations cut_trans cut_proof
     else if can_cut_key_case (List.length cut_head) 0 notations cut_p1 cut_p2
     then cut_elimination_key_case notations cut_trans cut_proof
-    else raise (Transform_exception "Can not eliminate this cut neither on left, neither on right, neither on key-case")
+    else cut_proof
 
 let rec eliminate_cut_full acyclic_notations = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
@@ -599,10 +683,10 @@ let rec eliminate_all_cuts_in_proof acyclic_notations = function
 (* OPERATIONS *)
 
 let get_transformation_options_json proof notations not_cyclic =
-    Proof.to_json ~transform_options:true ~notations:notations ~not_cyclic:not_cyclic proof;;
+    Proof.to_json ~add_options:(get_transform_options_as_json notations not_cyclic) proof;;
 
-let check_all_cuts_elimination proof not_cyclic =
-    has_cut proof && not_cyclic
+let check_all_cuts_elimination notations not_cyclic proof=
+    not_cyclic && has_cut_that_can_be_eliminated notations not_cyclic proof
 
 let check_simplification proof =
     proof <> Proof_simplification.simplify proof
@@ -632,7 +716,7 @@ let get_proof_transformation_options request_as_json =
         let cyclic_notations, _ = Notations.split_cyclic_acyclic proof_with_notations.notations (Some proof_variables) in
         let not_cyclic = (List.length cyclic_notations = 0) in
         let proof_with_transformation_options = get_transformation_options_json proof_with_notations.proof proof_with_notations.notations not_cyclic in
-        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.proof not_cyclic in
+        let can_eliminate_all_cuts = check_all_cuts_elimination proof_with_notations.notations not_cyclic proof_with_notations.proof in
         let can_simplify = check_simplification proof_with_notations.proof in
         let notations_as_string = Notations.to_json ~stringify:true proof_with_notations.notations in
         true, `Assoc [

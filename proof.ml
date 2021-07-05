@@ -1,6 +1,5 @@
 open Sequent
 open Rule_request
-open Transform_request
 
 (* PROOF *)
 
@@ -112,11 +111,7 @@ let get_conclusion = function
     | Hypothesis_proof sequent -> sequent;;
 
 
-(* OPERATIONS *)
-
-let rec has_cut = function
-    | Cut_proof _ -> true
-    | proof -> List.exists has_cut (get_premises proof);;
+(* REPLACEMENTS *)
 
 let rec replace_in_proof a f = function
     | Axiom_proof e ->
@@ -393,85 +388,6 @@ let get_rule_request = function
     | Hypothesis_proof _ -> raise (Failure "Can not get rule request of hypothesis");;
 
 
-(* PROOF -> TRANSFORM OPTION *)
-
-let rec can_commute_with_cut length_to_formula cut_context notations = function
-    | Axiom_proof _ -> true
-    | Top_proof (head, _tail)
-    | Bottom_proof (head, _tail, _)
-    | Tensor_proof (head, _, _, _tail, _, _)
-    | Par_proof (head, _, _, _tail, _)
-    | With_proof (head, _, _, _tail, _, _)
-    | Plus_left_proof (head, _, _, _tail, _)
-    | Plus_right_proof (head, _, _, _tail, _)
-    | Dereliction_proof (head, _, _tail, _)
-    | Weakening_proof (head, _, _tail, _)
-    | Contraction_proof (head, _, _tail, _)
-        when length_to_formula <> List.length head -> true
-    | Promotion_proof (head, _, _tail, _p)
-        when has_whynot_context cut_context && length_to_formula <> List.length head -> true
-    | Unfold_litt_proof (head, s, _tail, _)
-    | Unfold_dual_proof (head, s, _tail, _)
-        when List.mem_assoc s notations && length_to_formula <> List.length head -> true
-    | Weakening_proof (_head, _, _tail, _)
-    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true
-    | Cut_proof (_head, _, _tail, _, _) -> true
-    | Exchange_proof (_, _display_permutation, permutation, p)
-        -> can_commute_with_cut (List.nth permutation length_to_formula) cut_context notations p
-    | _ -> false;;
-
-let rec can_cut_key_case length1 length2 notations p1 p2 = match p1, p2 with
-    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head -> true
-    | Bottom_proof (head, _, _), One_proof when length1 = List.length head -> true
-    | Tensor_proof (head1, _, _, _, _, _), Par_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Par_proof (head1, _, _, _, _), Tensor_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | With_proof (head1, _, _, _, _, _), Plus_left_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Plus_left_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | With_proof (head1, _, _, _, _, _), Plus_right_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Plus_right_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Promotion_proof (head1, _, _, _), Dereliction_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Dereliction_proof (head1, _, _, _), Promotion_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
-    | Unfold_litt_proof (head1, s, _, _), Unfold_dual_proof (head2, _s, _, _)
-        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
-    | Unfold_dual_proof (head1, s, _, _), Unfold_litt_proof (head2, _s, _, _)
-        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
-    | Exchange_proof (_, _display_permutation, permutation, p), p2 ->
-        can_cut_key_case (List.nth permutation length1) length2 notations p p2
-    | p1, Exchange_proof (_, _display_permutation, permutation, p) ->
-        can_cut_key_case length1 (List.nth permutation length2) notations p1 p
-    | _ -> false;;
-
-let get_transform_options notations not_cyclic = function
-    | Axiom_proof f -> let expand_axiom_enabled = match f with
-        | Litt s | Dual s -> List.mem_assoc s notations
-        | _ -> true in
-        [Expand_axiom, expand_axiom_enabled; Expand_axiom_full, expand_axiom_enabled && not_cyclic]
-    | Cut_proof (head, _formula, tail, p1, p2) ->
-        let commute_left = can_commute_with_cut (List.length head) tail notations p1 in
-        let commute_right = can_commute_with_cut 0 head notations p2 in
-        let cut_key_case = can_cut_key_case (List.length head) 0 notations p1 p2 in
-        [Eliminate_cut_left, commute_left;
-        Eliminate_cut_key_case, cut_key_case;
-        Eliminate_cut_right, commute_right;
-        Eliminate_cut_full, not_cyclic]
-    | _ -> [];;
-
-let get_transform_options_as_json notations not_cyclic proof =
-    let transform_options = get_transform_options notations not_cyclic proof in
-    `List (List.map (fun (transform_option, enabled) -> `Assoc [
-        ("transformation", `String (Transform_request.to_string transform_option));
-        ("enabled", `Bool enabled)
-        ]) transform_options)
-
-
 (* JSON -> PROOF *)
 
 exception Json_exception of string;;
@@ -509,7 +425,7 @@ let rec from_json notations json =
 
 (* PROOF -> JSON *)
 
-let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) ?not_cyclic:(not_cyclic=false) proof =
+let rec to_json ?add_options:(add_options=fun _proof -> []) proof =
     let sequent = get_conclusion proof in
     let sequent_as_json = Raw_sequent.sequent_to_json sequent in
     match proof with
@@ -519,9 +435,8 @@ let rec to_json ?transform_options:(t_o=false) ?notations:(notations=[]) ?not_cy
         let rule_request = get_rule_request proof in
         let rule_request_as_json = Rule_request.to_json rule_request in
         let premises = get_premises proof in
-        let premises_as_json = List.map (to_json ~transform_options:t_o ~notations:notations ~not_cyclic:not_cyclic) premises in
-        let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @
-            (if t_o then [("transformOptions", get_transform_options_as_json notations not_cyclic proof)] else []) in
+        let premises_as_json = List.map (to_json ~add_options:add_options) premises in
+        let applied_rule = [("ruleRequest", rule_request_as_json); ("premises", `List premises_as_json)] @ (add_options proof) in
         `Assoc [("sequent", sequent_as_json);
                 ("appliedRule", `Assoc applied_rule)];;
 
