@@ -245,17 +245,20 @@ let rec rec_commute_down_weakenings proof =
         let new_tail_without_whynot = remove_whynot new_tail in
         let new_proof = get_commuted_proof (rec_commute_down_weakenings (Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, second_weakening))) in
         true, Weakening_proof (new_head_wk2, f2, new_tail_wk2, new_proof)
-    | Dereliction_proof (head, e, tail, Weakening_proof (head_wk, formula, tail_wk, p)) ->
-        if List.length head = List.length head_wk
-        then
-            (* derelected formula is weakened just after: we can weaken immediately *)
-            let new_proof = get_commuted_proof (rec_commute_down_weakenings p) in
-            true, Weakening_proof (head_wk, e, tail_wk, new_proof)
-        else
-            let new_head_wk, new_tail_wk, new_head, new_tail =
-                new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 1 in
-            let new_proof = get_commuted_proof (rec_commute_down_weakenings (Dereliction_proof (new_head, e, new_tail, p))) in
-            true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Dereliction_proof (head, e, tail, Weakening_proof (head_wk, formula, tail_wk, p))
+        when List.length head <> List.length head_wk ->
+        let new_head_wk, new_tail_wk, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail head_wk tail_wk (Whynot e) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Dereliction_proof (new_head, e, new_tail, p))) in
+        true, Weakening_proof (new_head_wk, formula, new_tail_wk, new_proof)
+    | Dereliction_proof (head, e, tail, Weakening_proof (head_wk1, f1, tail_wk1, Weakening_proof (head_wk2, f2, tail_wk2, p))) ->
+        let new_head_wk2, new_tail_wk2, new_head_wk1, new_tail_wk1 =
+            new_head_wk_tail_wk_head_tail head_wk1 tail_wk1 head_wk2 tail_wk2 (Whynot f1) 0 in
+        let second_weakening = Weakening_proof (new_head_wk1, f1, new_tail_wk1, p) in
+        let new_head_wk2, new_tail_wk2, new_head, new_tail =
+            new_head_wk_tail_wk_head_tail head tail new_head_wk2 new_tail_wk2 (Whynot e) 1 in
+        let new_proof = get_commuted_proof (rec_commute_down_weakenings (Dereliction_proof (new_head, e, new_tail, second_weakening))) in
+        true, Weakening_proof (new_head_wk2, f2, new_tail_wk2, new_proof)
     | Contraction_proof (head, e, tail, Weakening_proof (head_wk, formula, tail_wk, p)) ->
         if List.length head = List.length head_wk || List.length head + 1 = List.length head_wk
         then
