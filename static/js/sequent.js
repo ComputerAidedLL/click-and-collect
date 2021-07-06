@@ -86,6 +86,10 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
         // Build formula
         let $span = $('<span>', {'class': 'main-formula'})
             .html(createFormulaHTML(formulaAsJson, true));
+        if (formulaAsJson['is_cut_formula']) {
+            $span.addClass('cut-formula');
+            delete formulaAsJson['is_cut_formula'];
+        }
         $li.append($span);
         let $commaSpan = $('<span>', {'class': 'comma'});
         $li.append($commaSpan);
