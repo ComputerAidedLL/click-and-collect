@@ -9,85 +9,112 @@ exception Transform_exception of string;;
 (* PROOF -> TRANSFORM OPTION *)
 
 let rec can_commute_with_cut length_to_formula cut_context notations = function
-    | Axiom_proof _ -> true
-    | Top_proof (head, _tail)
-    | Bottom_proof (head, _tail, _)
-    | Tensor_proof (head, _, _, _tail, _, _)
-    | Par_proof (head, _, _, _tail, _)
-    | With_proof (head, _, _, _tail, _, _)
-    | Plus_left_proof (head, _, _, _tail, _)
-    | Plus_right_proof (head, _, _, _tail, _)
-    | Dereliction_proof (head, _, _tail, _)
-    | Weakening_proof (head, _, _tail, _)
-    | Contraction_proof (head, _, _tail, _)
-        when length_to_formula <> List.length head -> true
+    | Axiom_proof _ -> true, "Eliminate ax-cut"
+    | Top_proof (head, _tail) when length_to_formula <> List.length head -> true, "Commute with ⊤ rule"
+    | Bottom_proof (head, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ⊥ rule"
+    | Tensor_proof (head, _, _, _tail, _, _) when length_to_formula <> List.length head -> true, "Commute with ⊗ rule"
+    | Par_proof (head, _, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ⅋ rule"
+    | With_proof (head, _, _, _tail, _, _) when length_to_formula <> List.length head -> true, "Commute with & rule"
+    | Plus_left_proof (head, _, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ⊕ rule"
+    | Plus_right_proof (head, _, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ⊕ rule"
+    | Dereliction_proof (head, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ?d rule"
+    | Weakening_proof (head, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ?w rule"
+    | Contraction_proof (head, _, _tail, _) when length_to_formula <> List.length head -> true, "Commute with ?c rule"
     | Promotion_proof (head, _, _tail, _p)
-        when has_whynot_context cut_context && length_to_formula <> List.length head -> true
+        when has_whynot_context cut_context && length_to_formula <> List.length head -> true, "Commute with ! rule"
     | Unfold_litt_proof (head, s, _tail, _)
     | Unfold_dual_proof (head, s, _tail, _)
-        when List.mem_assoc s notations && length_to_formula <> List.length head -> true
-    | Weakening_proof (_head, _, _tail, _)
-    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true
-    | Cut_proof (_head, _, _tail, _, _) -> true
+        when List.mem_assoc s notations && length_to_formula <> List.length head -> true, "Commute with def rule"
+    | Weakening_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true, "Eliminate ?w-cut"
+    | Contraction_proof (_head, _, _tail, _) when has_whynot_context cut_context -> true, "Split ?c-cut"
+    | Cut_proof (_head, _, _tail, _, _) -> true, "Commute with cut rule"
     | Exchange_proof (_, _display_permutation, permutation, p)
         -> can_commute_with_cut (List.nth permutation length_to_formula) cut_context notations p
-    | _ -> false;;
+    | _ -> false, "Commute with rule";;
 
 let rec can_cut_key_case length1 length2 notations p1 p2 = match p1, p2 with
-    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head -> true
-    | Bottom_proof (head, _, _), One_proof when length1 = List.length head -> true
+    | One_proof, Bottom_proof (head, _, _) when length2 = List.length head ->
+        true, "Eliminate 1/⊥ key-case"
+    | Bottom_proof (head, _, _), One_proof when length1 = List.length head ->
+        true, "Eliminate ⊥/1 key-case"
     | Tensor_proof (head1, _, _, _, _, _), Par_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate ⊗/⅋ key-case"
     | Par_proof (head1, _, _, _, _), Tensor_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate ⅋/⊗ key-case"
     | With_proof (head1, _, _, _, _, _), Plus_left_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate &/⊕ key-case"
     | Plus_left_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate ⊕/& key-case"
     | With_proof (head1, _, _, _, _, _), Plus_right_proof (head2, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate &/⊕ key-case"
     | Plus_right_proof (head1, _, _, _, _), With_proof (head2, _, _, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate ⊕/& key-case"
     | Promotion_proof (head1, _, _, _), Dereliction_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate !/?d key-case"
     | Dereliction_proof (head1, _, _, _), Promotion_proof (head2, _, _, _)
-        when length1 = List.length head1 && length2 = List.length head2 -> true
+        when length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate ?d/! key-case"
     | Unfold_litt_proof (head1, s, _, _), Unfold_dual_proof (head2, _s, _, _)
-        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate def/def key-case"
     | Unfold_dual_proof (head1, s, _, _), Unfold_litt_proof (head2, _s, _, _)
-        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 -> true
+        when List.mem_assoc s notations && length1 = List.length head1 && length2 = List.length head2 ->
+        true, "Eliminate def/def key-case"
     | Exchange_proof (_, _display_permutation, permutation, p), p2 ->
         can_cut_key_case (List.nth permutation length1) length2 notations p p2
     | p1, Exchange_proof (_, _display_permutation, permutation, p) ->
         can_cut_key_case length1 (List.nth permutation length2) notations p1 p
-    | _ -> false;;
+    | _ -> false, "Eliminate key-case";;
 
 let get_transform_options notations not_cyclic = function
     | Axiom_proof f -> let expand_axiom_enabled = match f with
         | Litt s | Dual s -> List.mem_assoc s notations
         | _ -> true in
-        [Expand_axiom, expand_axiom_enabled; Expand_axiom_full, expand_axiom_enabled && not_cyclic]
+        [Expand_axiom, (expand_axiom_enabled, "One step axiom expansion");
+        Expand_axiom_full, (expand_axiom_enabled && not_cyclic, "Full axiom expansion")]
     | Cut_proof (head, _formula, tail, p1, p2) ->
-        let commute_left = can_commute_with_cut (List.length head) tail notations p1 in
-        let commute_right = can_commute_with_cut 0 head notations p2 in
-        let cut_key_case = can_cut_key_case (List.length head) 0 notations p1 p2 in
+        let commute_left, commute_left_message = can_commute_with_cut (List.length head) tail notations p1 in
+        let commute_right, commute_right_message = can_commute_with_cut 0 head notations p2 in
+        let cut_key_case, cut_key_case_message = can_cut_key_case (List.length head) 0 notations p1 p2 in
         let cut_full = not_cyclic && (commute_left || commute_right || cut_key_case) in
-        [Eliminate_cut_left, commute_left;
-        Eliminate_cut_key_case, cut_key_case;
-        Eliminate_cut_right, commute_right;
-        Eliminate_cut_full, cut_full]
+        [Eliminate_cut_left, (commute_left, commute_left_message ^ " on the left");
+        Eliminate_cut_key_case, (cut_key_case, cut_key_case_message);
+        Eliminate_cut_right, (commute_right, commute_right_message ^ " on the right");
+        Eliminate_cut_full, (cut_full, "Fully eliminate this cut")]
     | _ -> [];;
+
+let can_commute_on_left notations = function
+    | Cut_proof (head, _formula, tail, p1, _p2) -> let enabled, _ = can_commute_with_cut (List.length head) tail notations p1 in enabled
+    | _ -> false
+
+let can_commute_on_right notations = function
+    | Cut_proof (head, _formula, _tail, _p1, p2) -> let enabled, _ = can_commute_with_cut 0 head notations p2 in enabled
+    | _ -> false
+
+let can_eliminate_key_case notations = function
+    | Cut_proof (head, _formula, _tail, p1, p2) -> let enabled, _ = can_cut_key_case (List.length head) 0 notations p1 p2 in enabled
+    | _ -> false
 
 let get_transform_options_as_json notations not_cyclic proof =
     let transform_options = get_transform_options notations not_cyclic proof in
-    ["transformOptions", `List (List.map (fun (transform_option, enabled) -> `Assoc [
+    ["transformOptions", `List (List.map (fun (transform_option, (enabled, title)) -> `Assoc [
         ("transformation", `String (Transform_request.to_string transform_option));
-        ("enabled", `Bool enabled)
+        ("enabled", `Bool enabled);
+        ("title", `String title)
         ]) transform_options)]
 
 let rec has_cut_that_can_be_eliminated notations not_cyclic proof =
     let transform_options = get_transform_options notations not_cyclic proof in
-    if List.mem_assoc Eliminate_cut_full transform_options && List.assoc Eliminate_cut_full transform_options then true
+    if List.mem_assoc Eliminate_cut_full transform_options
+        && let enabled, _ = List.assoc Eliminate_cut_full transform_options in enabled
+    then true
     else List.exists (has_cut_that_can_be_eliminated notations not_cyclic) (get_premises proof)
 
 (* AXIOM EXPANSION *)
@@ -654,11 +681,11 @@ let rec cut_elimination_key_case notations cut_trans = function
 
 let eliminate_cut notations cut_head cut_formula cut_tail cut_p1 cut_p2 cut_trans =
     let cut_proof = Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) in
-    if can_commute_with_cut (List.length cut_head) cut_tail notations cut_p1
+    if can_commute_on_left notations cut_proof
     then cut_elimination true notations cut_trans cut_proof
-    else if can_commute_with_cut 0 cut_head notations cut_p2
+    else if can_commute_on_right notations cut_proof
     then cut_elimination false notations cut_trans cut_proof
-    else if can_cut_key_case (List.length cut_head) 0 notations cut_p1 cut_p2
+    else if can_eliminate_key_case notations cut_proof
     then cut_elimination_key_case notations cut_trans cut_proof
     else cut_proof
 

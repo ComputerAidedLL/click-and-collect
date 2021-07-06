@@ -24,30 +24,12 @@ const RULES = {
 };
 
 const TRANSFORM_OPTIONS = {
-    'expand_axiom': {
-        'button': '⇫',
-        'title': 'One step axiom expansion'
-    },
-    'expand_axiom_full': {
-        'button': '⇯',
-        'title': 'Full axiom expansion'
-    },
-    'eliminate_cut_left': {
-        'button': '←',
-        'title': 'Commute this cut with rule on the left'
-    },
-    'eliminate_cut_right': {
-        'button': '→',
-        'title': 'Commute this cut with rule on the right'
-    },
-    'eliminate_cut_key_case': {
-        'button': '↑',
-        'title': 'Eliminate cut key-case'
-    },
-    'eliminate_cut_full': {
-        'button': '✄',
-        'title': 'Fully eliminate this cut'
-    }
+    'expand_axiom': '⇫',
+    'expand_axiom_full': '⇯',
+    'eliminate_cut_left': '←',
+    'eliminate_cut_right': '→',
+    'eliminate_cut_key_case': '↑',
+    'eliminate_cut_full': '✄',
 };
 
 const ABBREVIATIONS = {
@@ -282,8 +264,8 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
             let transformation = transformOption.transformation;
             let $transformSpan = $('<span>', {'class': 'transform-button'})
                 .addClass(transformOption.enabled ? 'enabled' : 'disabled')
-                .text(TRANSFORM_OPTIONS[transformation].button);
-            $transformSpan.attr('title', TRANSFORM_OPTIONS[transformation].title);
+                .text(TRANSFORM_OPTIONS[transformation]);
+            $transformSpan.attr('title', transformOption.title);
             if (transformOption.enabled) {
                 $transformSpan.on('click', function () { applyTransformation($sequentTable, { transformation }); })
             }
