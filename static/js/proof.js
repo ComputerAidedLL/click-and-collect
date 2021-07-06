@@ -305,6 +305,12 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
         let $div = $('<div>');
         $div.insertBefore($sequentTable);
         $sequentTable.addClass('binary-rule');
+
+        if (ruleRequest.rule === 'cut') {
+            premises[0].sequent['cons'].slice(-1)[0]['is_cut_formula'] = true;
+            premises[1].sequent['cons'][0]['is_cut_formula'] = true;
+        }
+
         for (let premise of premises) {
             let $sibling = $('<div>', {'class': 'sibling'})
             $div.append($sibling);
