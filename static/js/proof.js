@@ -258,7 +258,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
             clearSavedProof();
             undoRule($sequentTable);
         })
-    } else if (options.proofTransformation.value) {
+    } else if (options.proofTransformation?.value) {
         let transformDiv = $('<div>', {'class': 'transform'});
         for (let transformOption of proofAsJson.appliedRule['transformOptions']) {
             let transformation = transformOption.transformation;
