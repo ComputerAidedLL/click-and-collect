@@ -826,6 +826,88 @@ let apply_reversible_first notations rule_request proof =
     end
     | _ -> raise (Transform_exception "Not a reversible rule")
 
+(* LOCAL FOCUSING *)
+
+let rec commute_down_plus position formulas notations = function
+    | Axiom_proof e -> commute_down_plus position formulas notations (expand_axiom notations e)
+    | One_proof -> raise (Failure "One_proof not expected")
+    | Top_proof (head, tail) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        Top_proof (new_head, new_tail)
+    | Bottom_proof (head, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas (-1) head tail in
+        Bottom_proof (new_head, new_tail, commute_down_plus new_position formulas notations p)
+    | Tensor_proof (head, e1, e2, tail, p1, p2) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        if position < List.length head then
+            Tensor_proof (new_head, e1, e2, tail, commute_down_plus position formulas notations p1, p2)
+        else Tensor_proof (head, e1, e2, new_tail, p1, commute_down_plus (position - List.length head) formulas notations p2)
+    | Par_proof (head, e1, e2, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 1 head tail in
+        Par_proof (new_head, e1, e2, new_tail, commute_down_plus new_position formulas notations p)
+    | With_proof (head, e1, e2, tail, p1, p2) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        let new_p1 = commute_down_plus new_position formulas notations p1 in
+        let new_p2 = commute_down_plus new_position formulas notations p2 in
+        With_proof (new_head, e1, e2, new_tail, new_p1, new_p2)
+    | Plus_left_proof (head, e1, e2, tail, p) ->
+        if List.length head = position
+        then p
+        else
+            let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+            Plus_left_proof (new_head, e1, e2, new_tail, commute_down_plus new_position formulas notations p)
+    | Plus_right_proof (head, e1, e2, tail, p) ->
+        if List.length head = position
+        then p
+        else
+            let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+            Plus_right_proof (new_head, e1, e2, new_tail, commute_down_plus new_position formulas notations p)
+    | Promotion_proof _ -> raise (Failure "Promotion_proof not expected")
+    | Dereliction_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Dereliction_proof (new_head, e, new_tail, commute_down_plus new_position formulas notations p)
+    | Weakening_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas (-1) head tail in
+        Weakening_proof (new_head, e, new_tail, commute_down_plus new_position formulas notations p)
+    | Contraction_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 1 head tail in
+        Contraction_proof (new_head, e, new_tail, commute_down_plus new_position formulas notations p)
+    | Unfold_litt_proof (head, s, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Unfold_litt_proof (new_head, s, new_tail, commute_down_plus new_position formulas notations p)
+    | Unfold_dual_proof (head, s, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Unfold_dual_proof (new_head, s, new_tail, commute_down_plus new_position formulas notations p)
+    | Cut_proof (head, f, tail, p1, p2) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        if position < List.length head then
+            Cut_proof (new_head, f, tail, commute_down_plus position formulas notations p1, p2)
+        else Cut_proof (head, f, new_tail, p1, commute_down_plus (position - List.length head + 1) formulas notations p2)
+    | Exchange_proof (_, _display_permutation, permutation, p) ->
+        let new_perm = perm_plus_element position permutation in
+        let new_position = List.nth permutation position in
+        let new_proof = commute_down_plus new_position formulas notations p in
+        Exchange_proof (get_conclusion new_proof, new_perm, new_perm, new_proof)
+    | Hypothesis_proof sequent -> let new_sequent, _, _ = replace_at_length position formulas 0 sequent [] in
+        Hypothesis_proof new_sequent
+
+let local_focusing notations rule_request proof =
+    let sequent = get_conclusion proof in
+    match rule_request with
+    | Rule_request.Plus_left formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | Plus (e1, e2) -> Plus_left_proof (head, e1, e2, tail, commute_down_plus formula_position [e1] notations proof)
+        | _ -> raise (Transform_exception "Can not apply 'plus_left' rule")
+    end
+    | Rule_request.Plus_right formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | Plus (e1, e2) -> Plus_right_proof (head, e1, e2, tail, commute_down_plus formula_position [e2] notations proof)
+        | _ -> raise (Transform_exception "Can not apply 'plus_right' rule")
+    end
+    | _ -> raise (Transform_exception "Not a reversible rule")
+
 (* OPERATIONS *)
 
 let get_transformation_options_json proof notations not_cyclic =
@@ -848,6 +930,7 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Simplify -> Proof_simplification.simplify proof
     | Substitute (alias, raw_formula) -> Proof.replace_in_proof alias (Raw_sequent.to_formula raw_formula) proof
     | Apply_reversible_first rule_request -> apply_reversible_first (cyclic_notations @ acyclic_notations) rule_request proof
+    | Local_focusing rule_request -> local_focusing (cyclic_notations @ acyclic_notations) rule_request proof
     ;;
 
 let apply_transformation_on_notations notations = function
@@ -885,4 +968,5 @@ let apply_transformation request_as_json =
         | Request_utils.Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Transform_request.Json_exception m -> false, `String ("Bad transformation request: " ^ m)
         | Transform_exception m -> false, `String ("Transform exception: " ^ m)
+        | Rule_exception (false, m) -> false, `String ("Transform exception: rule exception: " ^ m)
         | Pedagogic_exception m -> true, `Assoc ["error_message", `String m];;

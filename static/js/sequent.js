@@ -236,6 +236,12 @@ function getRules(formulaAsJson, options) {
             case 'ofcourse':
                 return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true, 'transformation': 'apply_reversible_first'}]}];
 
+            case 'plus':
+                return [
+                    {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true, 'transformation': 'local_focusing'}]},
+                    {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true, 'transformation': 'local_focusing'}]}
+                ];
+
             default:
                 return [];
         }
