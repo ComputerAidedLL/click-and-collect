@@ -778,8 +778,12 @@ let rec commute_down_reversible position formulas notations = function
             Cut_proof (new_head, f, tail, commute_down_reversible position formulas notations p1, p2)
         else Cut_proof (head, f, new_tail, p1, commute_down_reversible (position - List.length head + 1) formulas notations p2)
     | Exchange_proof (_, _display_permutation, permutation, p) ->
-        let new_perm = perm_plus_element position permutation in
         let new_position = List.nth permutation position in
+        let new_perm = match formulas with
+        | [] -> perm_minus_element new_position permutation
+        | [_] -> permutation
+        | [_; _] -> perm_plus_element new_position permutation
+        | _ -> raise (Failure "formulas with more than 2 elements") in
         let new_proof = commute_down_reversible new_position formulas notations p in
         Exchange_proof (get_conclusion new_proof, new_perm, new_perm, new_proof)
     | Hypothesis_proof sequent -> let new_sequent, _, _ = replace_at_length position formulas 0 sequent [] in
