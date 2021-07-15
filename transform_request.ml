@@ -12,7 +12,7 @@ type transform_request =
     | Simplify
     | Substitute of string * raw_formula
     | Apply_reversible_first of rule_request
-    | Local_focusing of rule_request
+    | Global_focusing
     ;;
 
 (* JSON -> TRANSFORM REQUEST *)
@@ -39,10 +39,7 @@ let from_json transform_request_as_json =
                 let rule_request_as_json = Request_utils.get_key transform_request_as_json "ruleRequest" in
                 let rule_request = Rule_request.from_json rule_request_as_json in
                 Apply_reversible_first (rule_request)
-            | "local_focusing" ->
-                let rule_request_as_json = Request_utils.get_key transform_request_as_json "ruleRequest" in
-                let rule_request = Rule_request.from_json rule_request_as_json in
-                Local_focusing (rule_request)
+            | "global_focusing" -> Global_focusing
             | _ -> raise (Json_exception ("unknown transformation '" ^ transformation ^ "'"))
     with Request_utils.Bad_request_exception m -> raise (Json_exception ("bad request: " ^ m))
         | Raw_sequent.Json_exception m -> raise (Json_exception ("bad rule request: " ^ m))
@@ -61,5 +58,5 @@ let to_string = function
     | Simplify -> "simplify"
     | Substitute (alias, raw_formula) -> Printf.sprintf "substitute %s ::= %s" alias (Raw_sequent.raw_formula_to_ascii false raw_formula)
     | Apply_reversible_first (rule_request) -> Printf.sprintf "apply_reversible_first %s" (Rule_request.to_string rule_request)
-    | Local_focusing (rule_request) -> Printf.sprintf "local_focusing %s" (Rule_request.to_string rule_request)
+    | Global_focusing -> "global_focusing"
     ;;

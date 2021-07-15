@@ -1073,6 +1073,9 @@
       "transformRequest":{"transformation":"apply_reversible_first","rr":{"r":"par","fp":1}}},
     {"proof":{"s":{"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"A"}]},"ar":{"rr":{"r":"exchange","permutation":[1,0],"displayPermutation":[1,0]},"p":[{"s":{"cons":[{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"cut","formula":{"t":"one"},"fp":0},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}},{"s":{"cons":[{"t":"bottom"},{"t":"litt","v":"A"},{"t":"dual","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"exchange","permutation":[1,2,0],"displayPermutation":[1,2,0]},"p":[{"s":{"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"bottom"},{"t":"litt","v":"A"}]},"ar":{"rr":{"r":"bottom","fp":1},"p":[{"s":{"cons":[{"t":"dual","v":{"t":"litt","v":"A"}},{"t":"litt","v":"A"}]},"ar":{"rr":{"r":"axiom"},"p":[]}}]}}]}}]}}]}},
       "notations":[],
-      "transformRequest":{"transformation":"eliminate_cut_full"}}
+      "transformRequest":{"transformation":"eliminate_cut_full"}},
+    {"proof":{"s":{"cons":[{"t":"tensor","v1":{"t":"one"},"v2":{"t":"bottom"}},{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}},{"s":{"cons":[{"t":"bottom"},{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":0},"p":[{"s":{"cons":[{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":1},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}}]}}]}}]}},
+      "notations":[],
+      "transformRequest":{"transformation":"global_focusing","rr":{"r":"tensor","fp":0}}}
   ]
 }

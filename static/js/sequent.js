@@ -238,9 +238,12 @@ function getRules(formulaAsJson, options) {
 
             case 'plus':
                 return [
-                    {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true, 'transformation': 'local_focusing'}]},
-                    {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true, 'transformation': 'local_focusing'}]}
+                    {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true, 'transformation': 'global_focusing'}]},
+                    {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true, 'transformation': 'global_focusing'}]}
                 ];
+
+            case 'tensor':
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true, 'transformation': 'global_focusing'}]}];
 
             default:
                 return [];
