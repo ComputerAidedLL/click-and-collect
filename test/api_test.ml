@@ -228,6 +228,16 @@ let call_api_apply_transformation () =
         Alcotest.(check string) "check proof first sequent" proof_first_sequent got_proof_first_sequent in
     List.iter run_test test_samples
 
+let call_api_apply_transformation_and_check_result () =
+    let json_file = Yojson.Basic.from_file "test/api_test_data.json" in
+    let test_samples = json_file |> member "apply_transformation_and_check_result" |> to_list in
+    let run_test test_sample =
+        let request = test_sample |> member "request" in
+        let response_as_string = call_api_post "apply_transformation" (Yojson.Basic.to_string request) 200 in
+        let expected_result = test_sample |> member "expected_result" |> Yojson.Basic.to_string in
+        Alcotest.(check string) "check proof match" expected_result response_as_string in
+    List.iter run_test test_samples
+
 let test_parse_sequent = [
     "Test full response", `Quick, call_api_parse_sequent_full_response;
     "Test sequent", `Quick, call_api_parse_sequent;
@@ -266,6 +276,7 @@ let test_compress_uncompress = [
 
 let test_apply_transformation = [
     "Test apply transformation", `Quick, call_api_apply_transformation;
+    "Test apply transformation and check result", `Quick, call_api_apply_transformation_and_check_result;
 ]
 
 (* Run it *)

@@ -47,6 +47,11 @@ function createSequent(sequent, $sequentTable, options) {
         }, function () {
             autoProveSequent($sequentTable);
         });
+    } else if (options.proofTransformation?.value) {
+        $thesisSpan.addClass('clickable');
+        $thesisSpan.on('click', function () {
+            applyTransformation($sequentTable, {transformation: 'global_focusing'});
+        });
     }
     $sequentDiv.append($thesisSpan);
 
@@ -223,7 +228,7 @@ function getRules(formulaAsJson, options) {
             default:
                 return [];
         }
-    } else if (options.proofTransformation.value) {
+    } else if (options.proofTransformation?.value) {
         switch (formulaAsJson.type) {
             case 'par':
             case 'with':
@@ -235,15 +240,6 @@ function getRules(formulaAsJson, options) {
 
             case 'ofcourse':
                 return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true, 'transformation': 'apply_reversible_first'}]}];
-
-            case 'plus':
-                return [
-                    {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true, 'transformation': 'global_focusing'}]},
-                    {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true, 'transformation': 'global_focusing'}]}
-                ];
-
-            case 'tensor':
-                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true, 'transformation': 'global_focusing'}]}];
 
             default:
                 return [];
@@ -311,7 +307,7 @@ function buildApplyRuleCallBack(ruleConfig, $li, options) {
 
         if (options.withInteraction) {
             applyRule(ruleRequest, $sequentTable);
-        } else if (options.proofTransformation.value) {
+        } else if (options.proofTransformation?.value) {
             applyTransformation($sequentTable, {transformation: ruleConfigCopy.transformation, ruleRequest});
         }
     }
