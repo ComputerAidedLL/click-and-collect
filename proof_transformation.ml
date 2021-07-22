@@ -840,7 +840,7 @@ let rec slice_list_at_position_with_length position length = function
 let head_tail_of_proof_position proof position length =
     let sequent = get_conclusion proof in
     let head, tail = slice_list_at_position_with_length position length sequent in
-    proof, head, tail
+    head, tail
 
 let new_head_tail position length formulas head tail position_offset =
     if position > List.length head
@@ -849,49 +849,83 @@ let new_head_tail position length formulas head tail position_offset =
     else let head1, head2 = slice_list_at_position_with_length position length head in
         head1 @ formulas @ head2, tail, position
 
+let within_positions position length head =
+    List.mem (List.length head) (List.init length (fun n -> n + position))
+
 exception CanNotCommute
 
 let rec jump_over_reversible position length formulas apply_premisse = function
-    (* TODO ? *)
-    | Top_proof (head, tail) when List.length head <> position || List.length head >= position + length ->
+    | Axiom_proof _ -> raise CanNotCommute
+    | One_proof -> raise CanNotCommute
+    | Top_proof (head, _tail) when within_positions position length head -> raise CanNotCommute
+    | Top_proof (head, tail) ->
         let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in
         Top_proof (new_head, new_tail)
-    | Bottom_proof (head, _tail, p) when List.length head = position && length = 1 ->
-        jump_over_reversible position 0 formulas (fun (proof, new_head, new_tail) -> apply_premisse (Bottom_proof (new_head, new_tail, proof), new_head, new_tail)) p
+    | Bottom_proof (head, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position (length - 1) [Bottom] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Bottom_proof (new_head, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
     | Bottom_proof (head, tail, p) ->
         let new_head, new_tail, new_position = new_head_tail position length formulas head tail (-1) in
-        Bottom_proof (new_head, new_tail, apply_premisse (head_tail_of_proof_position p new_position length))
-    (* TODO ? *)
-    | Par_proof (head, e1, e2, tail, p) when List.length head <> position || List.length head >= position + length ->
+        Bottom_proof (new_head, new_tail, apply_premisse (p, new_position, length))
+    | Par_proof (head, e1, e2, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position (length + 1) [Par (e1,e2)] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Par_proof (new_head, e1, e2, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Par_proof (head, e1, e2, tail, p) ->
         let new_head, new_tail, new_position = new_head_tail position length formulas head tail 1 in
-        Par_proof (new_head, e1, e2, new_tail, apply_premisse (head_tail_of_proof_position p new_position length))
-    (* TODO ? *)
+        Par_proof (new_head, e1, e2, new_tail, apply_premisse (p, new_position, length))
+    (* TODO With_proof at position *)
     | With_proof (head, e1, e2, tail, p1, p2) when List.length head <> position || List.length head >= position + length ->
         let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in
-        With_proof (new_head, e1, e2, new_tail, apply_premisse (head_tail_of_proof_position p1 position length), apply_premisse (head_tail_of_proof_position p2 position length))
-    (* TODO ? *)
-    | Promotion_proof (head_without_whynot, e, tail_without_whynot, p)
-        when (List.length head_without_whynot <> position || List.length head_without_whynot >= position + length) && has_whynot_context formulas ->
+        With_proof (new_head, e1, e2, new_tail, apply_premisse (p1, position, length), apply_premisse (p2, position, length))
+    | Promotion_proof (head_without_whynot, e, _tail_without_whynot, p) when within_positions position length head_without_whynot ->
+        let new_proof = jump_over_reversible position length [Ofcourse e] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Promotion_proof (remove_whynot new_head, e, remove_whynot new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) when has_whynot_context formulas ->
         let new_head_without_whynot, new_tail_without_whynot, _ = new_head_tail position length (remove_whynot formulas) head_without_whynot tail_without_whynot 0 in
-        Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, apply_premisse (head_tail_of_proof_position p position length))
-    (* TODO ? *)
-    | Weakening_proof (head, e, tail, p) when List.length head <> position || List.length head >= position + length ->
+        Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, apply_premisse (p, position, length))
+    | Weakening_proof (head, e, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position (length - 1) [Whynot e] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Weakening_proof (new_head, e, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Weakening_proof (head, e, tail, p) ->
         let new_head, new_tail, new_position = new_head_tail position length formulas head tail (-1) in
-        Weakening_proof (new_head, e, new_tail, apply_premisse (head_tail_of_proof_position p new_position length))
-    (* TODO ? *)
-    | Contraction_proof (head, e, tail, p) when List.length head <> position || List.length head >= position + length ->
+        Weakening_proof (new_head, e, new_tail, apply_premisse (p, new_position, length))
+    | Contraction_proof (head, e, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position (length + 1) [Whynot e] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Contraction_proof (new_head, e, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Contraction_proof (head, e, tail, p) ->
         let new_head, new_tail, new_position = new_head_tail position length formulas head tail 1 in
-        Contraction_proof (new_head, e, new_tail, apply_premisse (head_tail_of_proof_position p new_position length))
-    (* TODO ? *)
-    | Unfold_litt_proof (head, s, tail, p) when List.length head <> position || List.length head >= position + length ->
+        Contraction_proof (new_head, e, new_tail, apply_premisse (p, new_position, length))
+    | Unfold_litt_proof (head, s, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position length [Litt s] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Unfold_litt_proof (new_head, s, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Unfold_litt_proof (head, s, tail, p) ->
         let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in
-        Unfold_litt_proof (new_head, s, new_tail, apply_premisse (head_tail_of_proof_position p position length))
-    (* TODO ? *)
-    | Unfold_dual_proof (head, s, tail, p) when List.length head <> position || List.length head >= position + length ->
+        Unfold_litt_proof (new_head, s, new_tail, apply_premisse (p, position, length))
+    | Unfold_dual_proof (head, s, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position length [Dual s] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Unfold_dual_proof (new_head, s, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
+    | Unfold_dual_proof (head, s, tail, p) ->
         let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in
-        Unfold_dual_proof (new_head, s, new_tail, apply_premisse (head_tail_of_proof_position p position length))
-    | Dereliction_proof (head, e, _tail, p) when List.length head = position && length = 1 ->
-        jump_over_reversible position 1 formulas (fun (proof, new_head, new_tail) -> apply_premisse (Dereliction_proof (new_head, e, new_tail, proof), new_head, new_tail)) p
+        Unfold_dual_proof (new_head, s, new_tail, apply_premisse (p, position, length))
+    | Dereliction_proof (head, e, _tail, p) when within_positions position length head ->
+        let new_proof = jump_over_reversible position length [Whynot e] (fun (proof, position, length) ->
+            let new_head, new_tail = head_tail_of_proof_position proof position length in
+            Dereliction_proof (new_head, e, new_tail, proof)) p in
+        jump_over_reversible position length formulas apply_premisse new_proof
     (* TODO non-reversible ? *)
     | _ -> raise CanNotCommute
 
@@ -903,25 +937,30 @@ let rec global_focusing notations proof =
         set_premises proof (List.map (global_focusing notations) (get_premises proof))
     | Tensor_proof (head, e1, e2, tail, p1, p2) -> begin
         try jump_over_reversible (List.length head) 1 ([Tensor (e1, e2)] @ tail)
-            (fun (p, new_head, new_tail) -> Tensor_proof (new_head, e1, e2, new_tail, p, p2)) p1
+            (fun (p, position, length) -> let new_head, new_tail = head_tail_of_proof_position p position length in
+                 Tensor_proof (new_head, e1, e2, new_tail, p, p2)) p1
         with CanNotCommute ->
         try jump_over_reversible 0 1 (head @ [Tensor (e1, e2)])
-            (fun (p, new_head, new_tail) -> Tensor_proof (new_head, e1, e2, new_tail, p1, p)) p2
+            (fun (p, position, length) -> let new_head, new_tail = head_tail_of_proof_position p position length in
+                 Tensor_proof (new_head, e1, e2, new_tail, p1, p)) p2
         with CanNotCommute -> Tensor_proof (head, e1, e2, tail, global_focusing notations p1, global_focusing notations p2)
     end
     | Plus_left_proof (head, e1, e2, tail, p) -> begin
         try jump_over_reversible (List.length head) 1 [Plus (e1, e2)]
-            (fun (proof, new_head, new_tail) -> Plus_left_proof (new_head, e1, e2, new_tail, proof)) p
+            (fun (proof, position, length) -> let new_head, new_tail = head_tail_of_proof_position proof position length in
+                 Plus_left_proof (new_head, e1, e2, new_tail, proof)) p
         with CanNotCommute -> Plus_left_proof (head, e1, e2, tail, global_focusing notations p)
     end
     | Plus_right_proof (head, e1, e2, tail, p) -> begin
         try jump_over_reversible (List.length head) 1 [Plus (e1, e2)]
-            (fun (proof, new_head, new_tail) -> Plus_right_proof (new_head, e1, e2, new_tail, proof)) p
+            (fun (proof, position, length) -> let new_head, new_tail = head_tail_of_proof_position proof position length in
+                 Plus_right_proof (new_head, e1, e2, new_tail, proof)) p
         with CanNotCommute -> Plus_right_proof (head, e1, e2, tail, global_focusing notations p)
     end
     | Dereliction_proof (head, e, tail, p) -> begin
         try jump_over_reversible (List.length head) 1 [Whynot (e)]
-            (fun (proof, new_head, new_tail) -> Dereliction_proof (new_head, e, new_tail, proof)) p
+            (fun (proof, position, length) -> let new_head, new_tail = head_tail_of_proof_position proof position length in
+                 Dereliction_proof (new_head, e, new_tail, proof)) p
         with CanNotCommute -> Dereliction_proof (head, e, tail, global_focusing notations p)
     end
 

@@ -1076,7 +1076,10 @@
       "transformRequest":{"transformation":"eliminate_cut_full"}},
     {"proof":{"s":{"cons":[{"t":"tensor","v1":{"t":"one"},"v2":{"t":"bottom"}},{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}},{"s":{"cons":[{"t":"bottom"},{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":0},"p":[{"s":{"cons":[{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":1},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}}]}}]}}]}},
       "notations":[],
-      "transformRequest":{"transformation":"global_focusing","rr":{"r":"tensor","fp":0}}}
+      "transformRequest":{"transformation":"global_focusing","rr":{"r":"tensor","fp":0}}},
+    {"proof":{"s":{"cons":[{"t":"tensor","v1":{"t":"one"},"v2":{"t":"par","v1":{"t":"par","v1":{"t":"one"},"v2":{"t":"bottom"}},"v2":{"t":"bottom"}}},{"t":"whynot","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"tensor","fp":0},"p":[{"s":{"cons":[{"t":"one"}]},"ar":null},{"s":{"cons":[{"t":"par","v1":{"t":"par","v1":{"t":"one"},"v2":{"t":"bottom"}},"v2":{"t":"bottom"}},{"t":"whynot","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"par","fp":0},"p":[{"s":{"cons":[{"t":"par","v1":{"t":"one"},"v2":{"t":"bottom"}},{"t":"bottom"},{"t":"whynot","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"par","fp":0},"p":[{"s":{"cons":[{"t":"one"},{"t":"bottom"},{"t":"bottom"},{"t":"whynot","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"bottom","fp":2},"p":[{"s":{"cons":[{"t":"one"},{"t":"bottom"},{"t":"whynot","v":{"t":"litt","v":"A"}}]},"ar":{"rr":{"r":"weakening","fp":2},"p":[{"s":{"cons":[{"t":"one"},{"t":"bottom"}]},"ar":{"rr":{"r":"bottom","fp":1},"p":[{"s":{"cons":[{"t":"one"}]},"ar":{"rr":{"r":"one"},"p":[]}}]}}]}}]}}]}}]}}]}},
+      "notations":[],
+      "transformRequest":{"transformation":"global_focusing"}}
   ],
   "apply_transformation_and_check_result": [
     {
