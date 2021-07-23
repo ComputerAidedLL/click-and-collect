@@ -869,7 +869,7 @@ let rec increment = function
 
 exception CanNotCommute
 
-let rec commute_proof recursive_positions replacement proof_to_apply = function
+let rec commute_proof notations recursive_positions replacement proof_to_apply = function
     | Axiom_proof _ -> raise CanNotCommute
     | One_proof -> raise CanNotCommute
     | Top_proof (head, _tail) when List.mem (List.length head) recursive_positions -> raise CanNotCommute
@@ -877,124 +877,132 @@ let rec commute_proof recursive_positions replacement proof_to_apply = function
         let new_head, new_tail = replace replacement head tail in
         Top_proof (new_head, new_tail)
     | Bottom_proof (head, tail, p) when List.mem (List.length head) recursive_positions ->
-        let new_proof = commute_proof (remove_last recursive_positions) (List.length head, 0, [Bottom]) (fun (proof, replacement_back) ->
+        let new_proof = commute_proof notations (remove_last recursive_positions) (List.length head, 0, [Bottom]) (fun (proof, replacement_back) ->
             let new_head, new_tail = replace replacement_back head tail in
             Bottom_proof (new_head, new_tail, proof)) p in
-        commute_proof recursive_positions replacement proof_to_apply new_proof
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
     | Bottom_proof (head, tail, p) ->
         let new_head, new_tail = replace replacement head tail in
         Bottom_proof (new_head, new_tail, proof_to_apply (p, (new_position replacement head, 1, [])))
     | Par_proof (head, e1, e2, tail, p) when List.mem (List.length head) recursive_positions ->
-        let new_proof = commute_proof (increment recursive_positions) (List.length head, 2, [Par (e1, e2)]) (fun (proof, replacement_back) ->
+        let new_proof = commute_proof notations (increment recursive_positions) (List.length head, 2, [Par (e1, e2)]) (fun (proof, replacement_back) ->
             let new_head, new_tail = replace replacement_back head tail in
             Par_proof (new_head, e1, e2, new_tail, proof)) p in
-        commute_proof recursive_positions replacement proof_to_apply new_proof
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
     | Par_proof (head, e1, e2, tail, p) ->
         let new_head, new_tail = replace replacement head tail in
         Par_proof (new_head, e1, e2, new_tail, proof_to_apply (p, (new_position replacement head, 1, [e1; e2])))
-(*    | Tensor_proof (head, e1, e2, tail, p1, p2) when List.mem (List.length head) recursive_positions -> begin*)
-(*        try jump_over_reversible (List.length head) 1 ([Tensor (e1, e2)] @ tail)*)
-(*            (fun (p, new_head, _) ->*)
-(*                 Tensor_proof (new_head, e1, e2, tail, p, p2)) p1*)
-(*        with CanNotCommute ->*)
-(*        jump_over_reversible 0 1 (head @ [Tensor (e1, e2)])*)
-(*            (fun (p, new_head, new_tail) ->*)
-(*                log_sequent "new_head tensor" new_head;*)
-(*                log_sequent "new_tail tensor" new_tail;*)
-(*                 Tensor_proof (head, e1, e2, new_tail, p1, p)) p2*)
-(*    end*)
-(*    | Tensor_proof _ ->*)
-(*        raise CanNotCommute*)
+    | Tensor_proof (head, e1, e2, tail, p1, p2) when List.mem (List.length head) recursive_positions -> begin
+        let new_proof =
+            try commute_proof notations [List.length head] (List.length head, 1, [Tensor (e1, e2)] @ tail)
+                (fun (p, replacement_back) ->
+                    let new_head, new_tail = replace replacement_back head tail in
+                     Tensor_proof (new_head, e1, e2, new_tail, p, p2)) p1
+            with CanNotCommute ->
+            commute_proof notations [0] (0, 1, head @ [Tensor (e1, e2)])
+                (fun (p, replacement_back) ->
+                    let new_head, new_tail = replace replacement_back head tail in
+                     Tensor_proof (new_head, e1, e2, new_tail, p1, p)) p2 in
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
+    end
+    | Tensor_proof _ -> raise CanNotCommute
 (*    | With_proof (head, _e1, _e2, _tail, _p1, _p2) when List.mem (List.length head) recursive_positions ->*)
 (*        raise (Failure "TODO not implemented yet")*)
 (*    | With_proof (head, e1, e2, tail, p1, p2) ->*)
 (*        let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in*)
 (*        With_proof (new_head, e1, e2, new_tail, apply_premisse (head_tail_of_proof_position p1 position length), apply_premisse (head_tail_of_proof_position p2 position length))*)
     | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) when List.mem (List.length head_without_whynot) recursive_positions ->
-        let new_proof = commute_proof recursive_positions (List.length head_without_whynot, 1, [Ofcourse e]) (fun (proof, replacement_back) ->
+        let new_proof = commute_proof notations recursive_positions (List.length head_without_whynot, 1, [Ofcourse e]) (fun (proof, replacement_back) ->
             let new_head_without_whynot, new_tail_without_whynot = replace replacement_back head_without_whynot tail_without_whynot in
             Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, proof)) p in
-        commute_proof recursive_positions replacement proof_to_apply new_proof
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
     | Promotion_proof (head_without_whynot, e, tail_without_whynot, p) when has_whynot_formulas replacement ->
         let new_head_without_whynot, new_tail_without_whynot = replace (remove_whynot_in_replacement replacement) head_without_whynot tail_without_whynot in
         Promotion_proof (new_head_without_whynot, e, new_tail_without_whynot, proof_to_apply (p, (new_position replacement head_without_whynot, 1, [e])))
     | Dereliction_proof (head, e, tail, p) when List.mem (List.length head) recursive_positions ->
-        let new_proof = commute_proof recursive_positions (List.length head, 1, [Whynot e]) (fun (proof, replacement_back) ->
+        let new_proof = commute_proof notations recursive_positions (List.length head, 1, [Whynot e]) (fun (proof, replacement_back) ->
             let new_head, new_tail = replace replacement_back head tail in
             Dereliction_proof (new_head, e, new_tail, proof)) p in
-        commute_proof recursive_positions replacement proof_to_apply new_proof
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
     | Dereliction_proof _ -> raise CanNotCommute
     | Weakening_proof (head, e, tail, p) when List.mem (List.length head) recursive_positions ->
-        let new_proof = commute_proof (remove_last recursive_positions) (List.length head, 0, [Whynot e]) (fun (proof, replacement_back) ->
+        let new_proof = commute_proof notations (remove_last recursive_positions) (List.length head, 0, [Whynot e]) (fun (proof, replacement_back) ->
             let new_head, new_tail = replace replacement_back head tail in
             Weakening_proof (new_head, e, new_tail, proof)) p in
-        commute_proof recursive_positions replacement proof_to_apply new_proof
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
     | Weakening_proof (head, e, tail, p) ->
         let new_head, new_tail = replace replacement head tail in
         Weakening_proof (new_head, e, new_tail, proof_to_apply (p, (new_position replacement head, 1, [])))
-(*    | Contraction_proof (head, e, _tail, p) when List.mem (List.length head) recursive_positions ->*)
-(*        let new_proof = jump_over_reversible position (length + 1) [Whynot e] (fun (proof, new_head, new_tail) ->*)
-(*            Contraction_proof (new_head, e, new_tail, proof)) p in*)
-(*        jump_over_reversible position length formulas apply_premisse new_proof*)
-(*    | Contraction_proof (head, e, tail, p) ->*)
-(*        let new_head, new_tail, new_position = new_head_tail position length formulas head tail 1 in*)
-(*        Contraction_proof (new_head, e, new_tail, apply_premisse (head_tail_of_proof_position p new_position length))*)
-(*    | Unfold_litt_proof (head, s, _tail, p) when List.mem (List.length head) recursive_positions ->*)
-(*        let new_proof = jump_over_reversible position length [Litt s] (fun (proof, new_head, new_tail) ->*)
-(*            Unfold_litt_proof (new_head, s, new_tail, proof)) p in*)
-(*        jump_over_reversible position length formulas apply_premisse new_proof*)
-(*    | Unfold_litt_proof (head, s, tail, p) ->*)
-(*        let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in*)
-(*        Unfold_litt_proof (new_head, s, new_tail, apply_premisse (head_tail_of_proof_position p position length))*)
-(*    | Unfold_dual_proof (head, s, _tail, p) when List.mem (List.length head) recursive_positions ->*)
-(*        let new_proof = jump_over_reversible position length [Dual s] (fun (proof, new_head, new_tail) ->*)
-(*            Unfold_dual_proof (new_head, s, new_tail, proof)) p in*)
-(*        jump_over_reversible position length formulas apply_premisse new_proof*)
-(*    | Unfold_dual_proof (head, s, tail, p) ->*)
-(*        let new_head, new_tail, _ = new_head_tail position length formulas head tail 0 in*)
-(*        Unfold_dual_proof (new_head, s, new_tail, apply_premisse (head_tail_of_proof_position p position length))*)
+    | Contraction_proof (head, e, tail, p) when List.mem (List.length head) recursive_positions ->
+        let new_proof = commute_proof notations (increment recursive_positions) (List.length head, 2, [Whynot e]) (fun (proof, replacement_back) ->
+            let new_head, new_tail = replace replacement_back head tail in
+            Contraction_proof (new_head, e, new_tail, proof)) p in
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
+    | Contraction_proof (head, e, tail, p) ->
+        let new_head, new_tail = replace replacement head tail in
+        Contraction_proof (new_head, e, new_tail, proof_to_apply (p, (new_position replacement head, 1, [Whynot e; Whynot e])))
+    | Unfold_litt_proof (head, s, tail, p) when List.mem (List.length head) recursive_positions ->
+        let new_proof = commute_proof notations recursive_positions (List.length head, 1, [Litt s]) (fun (proof, replacement_back) ->
+            let new_head, new_tail = replace replacement_back head tail in
+            Unfold_litt_proof (new_head, s, new_tail, proof)) p in
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
+    | Unfold_litt_proof (head, s, tail, p) ->
+        let f = Raw_sequent.to_formula (List.assoc s notations) in
+        let new_head, new_tail = replace replacement head tail in
+        Unfold_litt_proof (new_head, s, new_tail, proof_to_apply (p, (new_position replacement head, 1, [f])))
+    | Unfold_dual_proof (head, s, tail, p) when List.mem (List.length head) recursive_positions ->
+        let new_proof = commute_proof notations recursive_positions (List.length head, 1, [Dual s]) (fun (proof, replacement_back) ->
+            let new_head, new_tail = replace replacement_back head tail in
+            Unfold_dual_proof (new_head, s, new_tail, proof)) p in
+        commute_proof notations recursive_positions replacement proof_to_apply new_proof
+    | Unfold_dual_proof (head, s, tail, p) ->
+        let f = Raw_sequent.to_formula (List.assoc s notations) in
+        let new_head, new_tail = replace replacement head tail in
+        Unfold_dual_proof (new_head, s, new_tail, proof_to_apply (p, (new_position replacement head, 1, [dual f])))
     (* TODO non-reversible ? *)
     | _ -> raise CanNotCommute
 
 
-let rec global_focusing proof =
+let rec global_focusing notations proof =
     match proof with
     | Axiom_proof _ | One_proof | Top_proof _ | Hypothesis_proof _ -> proof
     | Par_proof _ | With_proof _ | Bottom_proof _ | Contraction_proof _ | Weakening_proof _ | Promotion_proof _
     | Unfold_litt_proof _ | Unfold_dual_proof _ | Exchange_proof _ | Cut_proof _ ->
-        set_premises proof (List.map global_focusing (get_premises proof))
+        set_premises proof (List.map (global_focusing notations) (get_premises proof))
     | Tensor_proof (head, e1, e2, tail, p1, p2) -> begin
-        try commute_proof [List.length head] (List.length head, 1, [Tensor (e1, e2)] @ tail)
+        let new_p1 = global_focusing notations p1 in
+        let new_p2 = global_focusing notations p2 in
+        try commute_proof notations [List.length head] (List.length head, 1, [Tensor (e1, e2)] @ tail)
             (fun (p, replacement_back) ->
                 let new_head, new_tail = replace replacement_back head tail in
-                 Tensor_proof (new_head, e1, e2, new_tail, p, p2)) p1
+                 Tensor_proof (new_head, e1, e2, new_tail, p, new_p2)) new_p1
         with CanNotCommute ->
-        try commute_proof [0] (0, 1, head @ [Tensor (e1, e2)])
+        try commute_proof notations [0] (0, 1, head @ [Tensor (e1, e2)])
             (fun (p, replacement_back) ->
                 let new_head, new_tail = replace replacement_back head tail in
-                 Tensor_proof (new_head, e1, e2, new_tail, p1, p)) p2
-        with CanNotCommute -> Tensor_proof (head, e1, e2, tail, global_focusing p1, global_focusing p2)
+                 Tensor_proof (new_head, e1, e2, new_tail, new_p1, p)) new_p2
+        with CanNotCommute -> Tensor_proof (head, e1, e2, tail, new_p1, new_p2)
     end
     | Plus_left_proof (head, e1, e2, tail, p) -> begin
-        try commute_proof [List.length head] (List.length head, 1, [Plus (e1, e2)])
+        try commute_proof notations [List.length head] (List.length head, 1, [Plus (e1, e2)])
             (fun (proof, replacement_back) ->
                  let new_head, new_tail = replace replacement_back head tail in
                  Plus_left_proof (new_head, e1, e2, new_tail, proof)) p
-        with CanNotCommute -> Plus_left_proof (head, e1, e2, tail, global_focusing p)
+        with CanNotCommute -> Plus_left_proof (head, e1, e2, tail, global_focusing notations p)
     end
     | Plus_right_proof (head, e1, e2, tail, p) -> begin
-        try commute_proof [List.length head] (List.length head, 1, [Plus (e1, e2)])
+        try commute_proof notations [List.length head] (List.length head, 1, [Plus (e1, e2)])
             (fun (proof, replacement_back) ->
                  let new_head, new_tail = replace replacement_back head tail in
                  Plus_right_proof (new_head, e1, e2, new_tail, proof)) p
-        with CanNotCommute -> Plus_right_proof (head, e1, e2, tail, global_focusing p)
+        with CanNotCommute -> Plus_right_proof (head, e1, e2, tail, global_focusing notations p)
     end
     | Dereliction_proof (head, e, tail, p) -> begin
-        try commute_proof [List.length head] (List.length head, 1, [Whynot (e)])
+        try commute_proof notations [List.length head] (List.length head, 1, [Whynot (e)])
             (fun (proof, replacement_back) ->
                  let new_head, new_tail = replace replacement_back head tail in
                  Dereliction_proof (new_head, e, new_tail, proof)) p
-        with CanNotCommute -> Dereliction_proof (head, e, tail, global_focusing p)
+        with CanNotCommute -> Dereliction_proof (head, e, tail, global_focusing notations p)
     end
 
 
@@ -1020,7 +1028,7 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Simplify -> Proof_simplification.simplify proof
     | Substitute (alias, raw_formula) -> Proof.replace_in_proof alias (Raw_sequent.to_formula raw_formula) proof
     | Apply_reversible_first rule_request -> apply_reversible_first (cyclic_notations @ acyclic_notations) rule_request proof
-    | Global_focusing -> global_focusing proof
+    | Global_focusing -> global_focusing (cyclic_notations @ acyclic_notations) proof
     ;;
 
 let apply_transformation_on_notations notations = function
