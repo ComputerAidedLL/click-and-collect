@@ -67,6 +67,20 @@ server {
 ```
 - Allow https by adding a certificate `sudo certbot --nginx`
 
+## Use
+### URL parmaters
+- `withInteractions`: enabled by default, `0` to disable interaction on proof.
+- `exportButtons`: enabled by default, `0` to hide export buttons.
+- `checkProvability`: enabled by default, `0` to disable provability checks.
+- `autoReverse`: option available by default, `1` to toggle on auto-reverse, `0` to hide option.
+- `cutMode`: option available by default, `1` to toggle on cut mode, `0` to hide option.
+- `proofTransformation`: option available by default, `1` to toggle on proof transformation mode, `0` to hide option.
+- `s`: contain sequent to prove as string.
+- `n`: contain notations. `n=0` to disable notations, `n=n1,v1&n=n2,v2&...` to add notations.
+- `p`: contain compressed proof.
+
+**Example:** A minimal interactive `A*A^,A|A^ ` sequent -> http://localhost:3000/?s=A*A%5E%2CA%7CA%5E+&proofTransformation=0&cutMode=0&autoReverse=0&n=0&exportButtons=0&checkProvability=0
+
 ## Contribute
 ### Modify Coq nanoyalla package
 Whenever a file in `nanoyalla/` directory package is modified, nanoyalla version should be incremented that way:

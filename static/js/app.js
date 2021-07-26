@@ -85,40 +85,32 @@ function parseSequentAsString(sequentAsString, $container) {
 function initMainProof(proofAsJson) {
     cleanMainProof();
 
-    // We get autoReverse option in URL
-    let autoReverse = getQueryParamInUrl('auto_reverse') === '1';
+    let options = {};
 
-    // We get cut mode option in URL
-    let cutMode = getQueryParamInUrl('cut_mode') === '1';
+    for (let option of ['withInteraction', 'exportButtons', 'checkProvability']) {
+        if (getQueryParamInUrl(option) !== '0') {
+            options[option] = true;
+        }
+    }
 
-    // We get proof transformation option in URL
-    let proofTransformation = getQueryParamInUrl('proof_transformation') === '1';
+    for (let option of ['autoReverse', 'cutMode', 'proofTransformation']) {
+        if (getQueryParamInUrl(option) !== '0') {
+            options[option] = {
+                value: getQueryParamInUrl(option) === '1',
+                onToggle: onOptionToggle(option)
+            };
+        }
+    }
 
-    // We get notations from URL
-    let notations = getQueryPairListParamInUrl('n');
-
-    initProof(proofAsJson, $('#main-proof-container'), {
-        withInteraction: true,
-        exportButtons: true,
-        checkProvability: true,
-        autoReverse: {
-            value: autoReverse,
-            onToggle: onOptionToggle('auto_reverse')
-        },
-        cutMode: {
-            value: cutMode,
-            onToggle: onOptionToggle('cut_mode')
-        },
-        proofTransformation: {
-            value: proofTransformation,
-            onToggle: onOptionToggle('proof_transformation')
-        },
-        notations: {
-            formulasAsString: notations,
+    if (getQueryParamInUrl('n') !== '0') {
+        options.notations = {
+            formulasAsString: getQueryPairListParamInUrl('n'),
             onAdd: onNotationAdd,
             onUpdate: onNotationUpdate
-        }
-    });
+        };
+    }
+
+    initProof(proofAsJson, $('#main-proof-container'), options);
 }
 
 function cleanMainProof() {
