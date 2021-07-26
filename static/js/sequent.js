@@ -32,11 +32,11 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequent, $sequentTable, options) {
+function createSequent(sequent, ancestorList, $sequentTable, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'});
 
     if ('hyp' in sequent) {
-        createFormulaList(sequent, 'hyp', $sequentDiv, options);
+        createFormulaList(sequent, null, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
@@ -51,13 +51,13 @@ function createSequent(sequent, $sequentTable, options) {
     $sequentDiv.append($thesisSpan);
 
     if ('cons' in sequent) {
-        createFormulaList(sequent, 'cons', $sequentDiv, options);
+        createFormulaList(sequent, ancestorList, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
+function createFormulaList(sequent, ancestorList, sequentPart, $sequentDiv, options) {
     let $firstPoint = $('<span>', {'class': 'first-point'});
     $sequentDiv.append($firstPoint);
 
@@ -81,6 +81,11 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
         let $li = $('<li>')
             .data('initialPosition', i)
             .data('formula', formulaAsJson);
+
+        if (ancestorList !== null) {
+            $li.data('ancestorPosition', ancestorList[i]);
+        }
+
         $ul.append($li);
 
         // Build formula
@@ -223,7 +228,7 @@ function getRules(formulaAsJson, options) {
             default:
                 return [];
         }
-    } else if (options.proofTransformation.value) {
+    } else if (options.proofTransformation?.value) {
         switch (formulaAsJson.type) {
             case 'par':
             case 'with':
@@ -245,6 +250,13 @@ function getRules(formulaAsJson, options) {
 }
 
 function addEventsAndStyle($li, formulaAsJson, options) {
+    if (options.proofTransformation?.value) {
+        $li.hover(
+            function () { hoverAncestorsAndDescendents($li, true); },
+            function () { hoverAncestorsAndDescendents($li, false); }
+        );
+    }
+
     let rules = getRules(formulaAsJson, options);
 
     if (rules.length === 0) {
@@ -302,7 +314,7 @@ function buildApplyRuleCallBack(ruleConfig, $li, options) {
 
         if (options.withInteraction) {
             applyRule(ruleRequest, $sequentTable);
-        } else if (options.proofTransformation.value) {
+        } else if (options.proofTransformation?.value) {
             applyTransformation($sequentTable, {transformation: ruleConfigCopy.transformation, ruleRequest});
         }
     }
@@ -434,6 +446,50 @@ function autoProveSequent($sequentTable) {
         },
         error: onAjaxError
     });
+}
+
+// ***************
+// HOVER ANCESTORS
+// ***************
+
+function hoverAncestorsAndDescendents($li, toggleOn) {
+    let $sequentTable = $li.closest('table');
+    recHoverAncestors($sequentTable, $li.data('ancestorPosition'), toggleOn);
+    let liPosition = $li.prevAll('li').length;
+    recHoverDescendents($sequentTable, liPosition, toggleOn)
+}
+
+function highlight($li, toggleOn) {
+    if (toggleOn) {
+        $li.addClass('highlight');
+    } else {
+        $li.removeClass('highlight');
+    }
+}
+
+function recHoverAncestors($sequentTable, ancestorPosition, toggleOn) {
+    if (ancestorPosition === -1) {
+        return;
+    }
+
+    let $parentSequentTable = getParentSequentTable($sequentTable);
+    if ($parentSequentTable !== null) {
+        let $li = $parentSequentTable.find('li').eq(ancestorPosition);
+        highlight($li, toggleOn);
+        recHoverAncestors($parentSequentTable, $li.data('ancestorPosition'), toggleOn);
+    }
+}
+
+function recHoverDescendents($sequentTable, ancestorPosition, toggleOn) {
+    let $premisesTables = getPremisesSequentTable($sequentTable);
+    for (let $premiseTable of $premisesTables) {
+        $premiseTable.find('li').each(function (position, li) {
+            if ($(li).data('ancestorPosition') === ancestorPosition) {
+                highlight($(li), toggleOn);
+                recHoverDescendents($premiseTable, position, toggleOn);
+            }
+        });
+    }
 }
 
 // **************

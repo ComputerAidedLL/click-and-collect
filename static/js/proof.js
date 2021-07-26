@@ -95,7 +95,7 @@ function buildProof(proofAsJson, $container) {
 }
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
-    let $sequentTable = createSequentTable(proofAsJson.sequent, options);
+    let $sequentTable = createSequentTable(proofAsJson.sequent, proofAsJson.ancestorList || null, options);
     $subProofDivContainer.prepend($sequentTable);
 
     if (proofAsJson.appliedRule) {
@@ -103,7 +103,15 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
 
         if (proofAsJson.appliedRule.ruleRequest.rule === 'exchange') {
             permutationBeforeRule = {'hyp': [], 'cons': invertPermutation(proofAsJson.appliedRule.ruleRequest.permutation)};
+            let ancestorsLists = proofAsJson.appliedRule['ancestorsLists'] || null;
             proofAsJson = proofAsJson.appliedRule.premises[0];
+            if (ancestorsLists) {
+                for (let i = 0; i < proofAsJson.appliedRule['ancestorsLists'].length; i++) {
+                    for (let j = 0; j < proofAsJson.appliedRule['ancestorsLists'][i].length; j++) {
+                        proofAsJson.appliedRule['ancestorsLists'][i][j] = ancestorsLists[0][proofAsJson.appliedRule['ancestorsLists'][i][j]];
+                    }
+                }
+            }
         }
 
         if (proofAsJson.appliedRule) {
@@ -121,12 +129,12 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
     }
 }
 
-function createSequentTable(sequent, options) {
+function createSequentTable(sequent, ancestorList, options) {
     let $sequentTable = $('<table>')
         .data('sequentWithoutPermutation', sequent);
 
     let $td = $('<td>');
-    $td.append(createSequent(sequent, $sequentTable, options));
+    $td.append(createSequent(sequent, ancestorList, $sequentTable, options));
     $sequentTable.append($td);
 
     let $tagBox = $('<div>', {'class': 'tagBox'})
@@ -276,6 +284,7 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
 
     // Add premises
     let premises = proofAsJson.appliedRule.premises;
+    addPremisesAncestorsLists(premises, proofAsJson.appliedRule['ancestorsLists'] || []);
     if (premises.length === 0) {
         if (options.withInteraction) {
             markParentSequentsAsProved($sequentTable);
@@ -297,6 +306,22 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
             $div.append($sibling);
             createSubProof(premise, $sibling, options)
         }
+    }
+}
+
+function addPremisesAncestorsLists(premises, ancestorsLists) {
+    if (ancestorsLists.length === 0) {
+        return premises;
+    }
+
+    if (ancestorsLists.length !== premises.length) {
+        console.error('ancestors and premises do not have same length', ancestorsLists, premises);
+
+        return;
+    }
+
+    for (let i = 0; i < premises.length; i++) {
+        premises[i].ancestorList = ancestorsLists[i];
     }
 }
 
@@ -520,13 +545,7 @@ function getParentSequentTable($sequentTable) {
 }
 
 function getPremisesSequentTable($sequentTable) {
-    let ruleRequest = $sequentTable.data('ruleRequest') || null;
-    if (ruleRequest === null) {
-        return [];
-    }
-
     let $prev = $sequentTable.prev();
-
     if ($prev.prop('tagName') === 'TABLE') {
         return [$prev];
     }
@@ -534,10 +553,10 @@ function getPremisesSequentTable($sequentTable) {
     let $premises = [];
     $prev.children('div.sibling').each(function (i, sibling) {
         let $siblingTable = $(sibling).children('table').last();
-        $premises = $premises.concat($siblingTable);
+        $premises.push($siblingTable);
     })
 
-    if ($premises.length < 2) {
+    if ($premises.length === 1) {
         // Proof has not been completely set up
         return null;
     }
