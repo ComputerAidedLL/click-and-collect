@@ -5,6 +5,7 @@ open Transform_request
 open Permutations
 
 exception Transform_exception of string;;
+exception Pedagogic_exception of string;;
 
 (* PROOF -> TRANSFORM OPTION *)
 
@@ -669,7 +670,6 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 p perm1 (permute perm2 exchange_permutation) notations cut_trans
     | _ -> raise (Failure "Can not eliminate cut key-case on these two proofs")
 
-
 let rec cut_elimination_key_case notations cut_trans = function
     | Cut_proof (cut_head, cut_formula, cut_tail, cut_p1, cut_p2) ->
         eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 (identity (List.length cut_head + 1)) (identity (List.length cut_tail + 1)) notations cut_trans
@@ -707,6 +707,125 @@ let rec eliminate_all_cuts_in_proof acyclic_notations = function
         merge_exchange (Exchange_proof (s, display_permutation, exchange_permutation, eliminate_all_cuts_in_proof acyclic_notations p))
     | proof -> set_premises proof (List.map (eliminate_all_cuts_in_proof acyclic_notations) (get_premises proof))
 
+(* COMMUTE DOWN REVERSIBLE RULES *)
+
+let replace_at_length position formulas offset head tail =
+    if position < List.length head then
+         let head1, _, head2 = head_formula_tail position head in
+         head1 @ formulas @ head2, tail, position
+    else let tail1, _, tail2 = head_formula_tail (position - List.length head - 1) tail in
+        head, tail1 @ formulas @ tail2, position + offset
+
+let rec commute_down_reversible position formulas is_left_with notations = function
+    | Axiom_proof e -> commute_down_reversible position formulas is_left_with notations (expand_axiom notations e)
+    | One_proof -> raise (Failure "One_proof not expected")
+    | Top_proof (head, tail) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        Top_proof (new_head, new_tail)
+    | Bottom_proof (head, tail, p) ->
+        if List.length head = position
+        then p
+        else let new_head, new_tail, new_position = replace_at_length position formulas (-1) head tail in
+            Bottom_proof (new_head, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Tensor_proof (head, e1, e2, tail, p1, p2) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        if position < List.length head then
+            Tensor_proof (new_head, e1, e2, tail, commute_down_reversible position formulas is_left_with notations p1, p2)
+        else Tensor_proof (head, e1, e2, new_tail, p1, commute_down_reversible (position - List.length head) formulas is_left_with notations p2)
+    | Par_proof (head, e1, e2, tail, p) ->
+        if List.length head = position
+        then p
+        else let new_head, new_tail, new_position = replace_at_length position formulas 1 head tail in
+            Par_proof (new_head, e1, e2, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | With_proof (head, e1, e2, tail, p1, p2) ->
+        if List.length head = position
+        then if is_left_with then p1 else p2
+        else let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+            let new_p1 = commute_down_reversible new_position formulas is_left_with notations p1 in
+            let new_p2 = commute_down_reversible new_position formulas is_left_with notations p2 in
+            With_proof (new_head, e1, e2, new_tail, new_p1, new_p2)
+    | Plus_left_proof (head, e1, e2, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Plus_left_proof (new_head, e1, e2, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Plus_right_proof (head, e1, e2, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Plus_right_proof (new_head, e1, e2, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Promotion_proof (head_without_whynot, _e, _tail_without_whynot, p) ->
+        if List.length head_without_whynot = position
+        then p
+        else raise (Failure "Promotion_proof not expected")
+    | Dereliction_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Dereliction_proof (new_head, e, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Weakening_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas (-1) head tail in
+        Weakening_proof (new_head, e, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Contraction_proof (head, e, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 1 head tail in
+        Contraction_proof (new_head, e, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Unfold_litt_proof (head, s, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Unfold_litt_proof (new_head, s, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Unfold_dual_proof (head, s, tail, p) ->
+        let new_head, new_tail, new_position = replace_at_length position formulas 0 head tail in
+        Unfold_dual_proof (new_head, s, new_tail, commute_down_reversible new_position formulas is_left_with notations p)
+    | Cut_proof (head, f, tail, p1, p2) ->
+        let new_head, new_tail, _ = replace_at_length position formulas 0 head tail in
+        if position < List.length head then
+            Cut_proof (new_head, f, tail, commute_down_reversible position formulas is_left_with notations p1, p2)
+        else Cut_proof (head, f, new_tail, p1, commute_down_reversible (position - List.length head + 1) formulas is_left_with notations p2)
+    | Exchange_proof (_, _display_permutation, permutation, p) ->
+        let new_position = List.nth permutation position in
+        let new_perm = match formulas with
+        | [] -> perm_minus_element new_position permutation
+        | [_] -> permutation
+        | [_; _] -> perm_plus_element new_position permutation
+        | _ -> raise (Failure "formulas with more than 2 elements") in
+        let new_proof = commute_down_reversible new_position formulas is_left_with notations p in
+        Exchange_proof (get_conclusion new_proof, new_perm, new_perm, new_proof)
+    | Hypothesis_proof sequent -> let new_sequent, _, _ = replace_at_length position formulas 0 sequent [] in
+        Hypothesis_proof new_sequent
+
+let apply_reversible_first notations rule_request proof =
+    let sequent = get_conclusion proof in
+    match rule_request with
+    | Rule_request.Bottom formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | Bottom -> Bottom_proof (head, tail, commute_down_reversible formula_position [] false notations proof)
+        | _ -> raise (Transform_exception "Can not apply 'bottom' rule")
+    end
+    | Rule_request.Top formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | Top -> Top_proof (head, tail)
+        | _ -> raise (Transform_exception "Can not apply 'top' rule")
+    end
+    | Rule_request.Par formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | Par (e1, e2) -> Par_proof (head, e1, e2, tail, commute_down_reversible formula_position [e1; e2] false notations proof)
+        | _ -> raise (Transform_exception "Can not apply 'par' rule")
+    end
+    | Rule_request.With formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        match formula with
+        | With (e1, e2) -> let p1 = commute_down_reversible formula_position [e1] true notations proof in
+            let p2 = commute_down_reversible formula_position [e2] false notations proof in
+            With_proof (head, e1, e2, tail, p1, p2)
+        | _ -> raise (Transform_exception "Can not apply 'with' rule")
+    end
+    | Rule_request.Promotion formula_position -> begin
+        let head, formula, tail = head_formula_tail formula_position sequent in
+        try let head_without_whynot = remove_whynot head in
+            let tail_without_whynot = remove_whynot tail in
+            match formula with
+            | Ofcourse e -> Promotion_proof (head_without_whynot, e, tail_without_whynot, commute_down_reversible formula_position [e] false notations proof)
+            | _ -> raise (Transform_exception "Can not apply 'promotion' rule on non Ofcourse formula")
+        with Not_whynot -> raise (Pedagogic_exception "Can not apply 'promotion' rule: the context must contain formulas starting by '?' only.")
+    end
+    | _ -> raise (Transform_exception "Not a reversible rule")
+
 (* OPERATIONS *)
 
 let get_transformation_options_json proof notations not_cyclic =
@@ -728,6 +847,7 @@ let apply_transformation_with_exceptions proof cyclic_notations acyclic_notation
     | Eliminate_all_cuts -> eliminate_all_cuts_in_proof acyclic_notations proof
     | Simplify -> Proof_simplification.simplify proof
     | Substitute (alias, raw_formula) -> Proof.replace_in_proof alias (Raw_sequent.to_formula raw_formula) proof
+    | Apply_reversible_first rule_request -> apply_reversible_first (cyclic_notations @ acyclic_notations) rule_request proof
     ;;
 
 let apply_transformation_on_notations notations = function
@@ -764,4 +884,5 @@ let apply_transformation request_as_json =
     with Proof_with_notations.Json_exception m -> false, `String ("Bad proof with notations: " ^ m)
         | Request_utils.Bad_request_exception m -> false, `String ("Bad request: " ^ m)
         | Transform_request.Json_exception m -> false, `String ("Bad transformation request: " ^ m)
-        | Transform_exception m -> false, `String ("Transform exception: " ^ m);;
+        | Transform_exception m -> false, `String ("Transform exception: " ^ m)
+        | Pedagogic_exception m -> true, `Assoc ["error_message", `String m];;

@@ -94,9 +94,9 @@ function createFormulaList(sequent, sequentPart, $sequentDiv, options) {
         let $commaSpan = $('<span>', {'class': 'comma'});
         $li.append($commaSpan);
 
+        // Add events (click, double-click), and classes for hover
+        addEventsAndStyle($li, formulaAsJson, options);
         if (options.withInteraction) {
-            // Add events (click, double-click), and classes for hover
-            addEventsAndStyle($li, formulaAsJson);
             addCutOnClick($commaSpan, false);
         }
     }
@@ -175,55 +175,83 @@ function createLittHTML(littName) {
 // RULES
 // *****
 
-function getRules(formulaAsJson) {
-    switch (formulaAsJson.type) {
-        case 'litt':
-        case 'dual':
-            return [{'element': 'main-formula', 'onclick': [{'rule': 'axiom', 'needPosition': false}]}];
+function getRules(formulaAsJson, options) {
+    if (options.withInteraction) {
+        switch (formulaAsJson.type) {
+            case 'litt':
+            case 'dual':
+                return [{'element': 'main-formula', 'onclick': [{'rule': 'axiom', 'needPosition': false}]}];
 
-        case 'tensor':
-        case 'par':
-        case 'with':
-            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
+            case 'tensor':
+            case 'par':
+            case 'with':
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
 
-        case 'plus':
-            return [
-                {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true}]},
-                {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true}]}
-            ];
+            case 'plus':
+                return [
+                    {'element': 'left-formula', 'onclick': [{'rule': 'plus_left', 'needPosition': true}]},
+                    {'element': 'right-formula', 'onclick': [{'rule': 'plus_right', 'needPosition': true}]}
+                ];
 
-        case 'one':
-        case 'zero': // click on zero will display a pedagogic error
-            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': false}]}];
+            case 'one':
+            case 'zero': // click on zero will display a pedagogic error
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': false}]}];
 
-        case 'top':
-        case 'bottom':
-            return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
+            case 'top':
+            case 'bottom':
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true}]}];
 
-        case 'ofcourse':
-            return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true}]}];
+            case 'ofcourse':
+                return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true}]}];
 
-        case 'whynot':
-            return [
-                {'element': 'primaryConnector', 'onclick': [
-                    {'rule': 'weakening', 'needPosition': true},
-                    {'rule': 'contraction', 'needPosition': true}
-                ]},
-                {'element': 'sub-formula', 'onclick': [
-                    {'rule': 'dereliction', 'needPosition': true},
-                    {'rule': 'contraction', 'needPosition': true}
-                ]}
-            ];
+            case 'whynot':
+                return [
+                    {
+                        'element': 'primaryConnector', 'onclick': [
+                            {'rule': 'weakening', 'needPosition': true},
+                            {'rule': 'contraction', 'needPosition': true}
+                        ]
+                    },
+                    {
+                        'element': 'sub-formula', 'onclick': [
+                            {'rule': 'dereliction', 'needPosition': true},
+                            {'rule': 'contraction', 'needPosition': true}
+                        ]
+                    }
+                ];
 
-        default:
-            return [];
+            default:
+                return [];
+        }
+    } else if (options.proofTransformation.value) {
+        switch (formulaAsJson.type) {
+            case 'par':
+            case 'with':
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true, 'transformation': 'apply_reversible_first'}]}];
+
+            case 'top':
+            case 'bottom':
+                return [{'element': 'main-formula', 'onclick': [{'rule': formulaAsJson.type, 'needPosition': true, 'transformation': 'apply_reversible_first'}]}];
+
+            case 'ofcourse':
+                return [{'element': 'main-formula', 'onclick': [{'rule': 'promotion', 'needPosition': true, 'transformation': 'apply_reversible_first'}]}];
+
+            default:
+                return [];
+        }
     }
+
+    return [];
 }
 
-function addEventsAndStyle($li, formulaAsJson) {
-    $li.find('span.' + 'main-formula').first().addClass('hoverable');
+function addEventsAndStyle($li, formulaAsJson, options) {
+    let rules = getRules(formulaAsJson, options);
 
-    let rules = getRules(formulaAsJson);
+    if (rules.length === 0) {
+        return;
+    }
+
+    $li.find('span.' + 'main-formula').first().addClass('hoverable');
     for (let ruleEvent of rules) {
         let $spanForEvent = $li.find('span.' + ruleEvent.element).first();
 
@@ -236,18 +264,18 @@ function addEventsAndStyle($li, formulaAsJson) {
         // Add click and double click events
         if (ruleEvent.onclick.length === 1) {
             // Single click
-            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li));
+            $spanForEvent.on('click', buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options));
         } else {
             // Single click AND Double click event
-            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li);
-            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li);
+            let singleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[0], $li, options);
+            let doubleClickCallBack = buildApplyRuleCallBack(ruleEvent.onclick[1], $li, options);
 
             addClickAndDoubleClickEvent($spanForEvent, singleClickCallBack, doubleClickCallBack);
         }
     }
 }
 
-function buildApplyRuleCallBack(ruleConfig, $li) {
+function buildApplyRuleCallBack(ruleConfig, $li, options) {
     return function() {
         let ruleConfigCopy = JSON.parse(JSON.stringify(ruleConfig)); // deep copy element
         if (ruleConfigCopy.rule === 'axiom') {
@@ -272,7 +300,11 @@ function buildApplyRuleCallBack(ruleConfig, $li) {
             ruleRequest['formulaPosition'] = $li.parent().children().index($li);
         }
 
-        applyRule(ruleRequest, $sequentTable);
+        if (options.withInteraction) {
+            applyRule(ruleRequest, $sequentTable);
+        } else if (options.proofTransformation.value) {
+            applyTransformation($sequentTable, {transformation: ruleConfigCopy.transformation, ruleRequest});
+        }
     }
 }
 

@@ -274,7 +274,6 @@ function addPremises($sequentTable, proofAsJson, permutationBeforeRule, options)
         $td.children('.tagBox').append(transformDiv);
     }
 
-
     // Add premises
     let premises = proofAsJson.appliedRule.premises;
     if (premises.length === 0) {
@@ -1093,10 +1092,14 @@ function applyTransformation($sequentTable, transformRequest) {
         data: compressJson(JSON.stringify({ proof, notations, transformRequest })),
         success: function(data)
         {
-            clearSavedProof();
-            cleanPedagogicMessage($container);
-            saveNotations($container, data['notations']);
-            replaceAndReloadProof($sequentTable, data['proof'], $container);
+            if (data['error_message']) {
+                displayPedagogicError(data['error_message'], $container);
+            } else {
+                clearSavedProof();
+                cleanPedagogicMessage($container);
+                saveNotations($container, data['notations']);
+                replaceAndReloadProof($sequentTable, data['proof'], $container);
+            }
         },
         error: onAjaxError
     });
