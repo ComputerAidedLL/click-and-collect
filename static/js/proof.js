@@ -95,7 +95,12 @@ function buildProof(proofAsJson, $container) {
 }
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
-    let $sequentTable = createSequentTable(proofAsJson.sequent, proofAsJson.ancestorList || null, options);
+    let displayPermutation = getSequentIdentityPermutation(proofAsJson.sequent);
+    if (proofAsJson.appliedRule?.ruleRequest?.rule === 'exchange') {
+        let invertedPermutation = invertPermutation(proofAsJson.appliedRule.ruleRequest.permutation);
+        displayPermutation = {'hyp': [], 'cons': permute(invertedPermutation, proofAsJson.appliedRule.ruleRequest.displayPermutation)};
+    }
+    let $sequentTable = createSequentTable(proofAsJson.sequent, displayPermutation, proofAsJson.ancestorList || null, options);
     $subProofDivContainer.prepend($sequentTable);
 
     if (proofAsJson.appliedRule) {
@@ -129,12 +134,12 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
     }
 }
 
-function createSequentTable(sequent, ancestorList, options) {
+function createSequentTable(sequent, displayPermutation, ancestorList, options) {
     let $sequentTable = $('<table>')
         .data('sequentWithoutPermutation', sequent);
 
     let $td = $('<td>');
-    $td.append(createSequent(sequent, ancestorList, $sequentTable, options));
+    $td.append(createSequent(sequent, displayPermutation, ancestorList, $sequentTable, options));
     $sequentTable.append($td);
 
     let $tagBox = $('<div>', {'class': 'tagBox'})

@@ -32,11 +32,11 @@ const NEUTRAL_ELEMENTS = {
 // DISPLAY SEQUENT
 // ***************
 
-function createSequent(sequent, ancestorList, $sequentTable, options) {
+function createSequent(sequent, displayPermutation, ancestorList, $sequentTable, options) {
     let $sequentDiv = $('<div>', {'class': 'sequent'});
 
     if ('hyp' in sequent) {
-        createFormulaList(sequent, null, 'hyp', $sequentDiv, options);
+        createFormulaList(sequent, displayPermutation, null, 'hyp', $sequentDiv, options);
     }
 
     let $thesisSpan = $('<span class="turnstile">⊢</span>');
@@ -51,13 +51,13 @@ function createSequent(sequent, ancestorList, $sequentTable, options) {
     $sequentDiv.append($thesisSpan);
 
     if ('cons' in sequent) {
-        createFormulaList(sequent, ancestorList, 'cons', $sequentDiv, options);
+        createFormulaList(sequent, displayPermutation, ancestorList, 'cons', $sequentDiv, options);
     }
 
     return $sequentDiv;
 }
 
-function createFormulaList(sequent, ancestorList, sequentPart, $sequentDiv, options) {
+function createFormulaList(sequent, displayPermutation, ancestorList, sequentPart, $sequentDiv, options) {
     let $firstPoint = $('<span>', {'class': 'first-point'});
     $sequentDiv.append($firstPoint);
 
@@ -77,9 +77,10 @@ function createFormulaList(sequent, ancestorList, sequentPart, $sequentDiv, opti
     }
 
     for (let i = 0; i < sequent[sequentPart].length; i++) {
-        let formulaAsJson = sequent[sequentPart][i];
+        let position = displayPermutation[sequentPart][i];
+        let formulaAsJson = sequent[sequentPart][position];
         let $li = $('<li>')
-            .data('initialPosition', i)
+            .data('initialPosition', position)
             .data('formula', formulaAsJson);
 
         if (ancestorList !== null) {
