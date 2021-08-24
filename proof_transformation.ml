@@ -580,8 +580,8 @@ let rec eliminate_cut_key_case cut_head cut_formula cut_tail cut_p1 cut_p2 perm1
         @ List.map (fun n -> List.length cut_head + n) (perm_minus_element cut_formula_position2 perm2) in
 
     match cut_p1, cut_p2 with
-    | One_proof, Bottom_proof (_head, _tail, p) -> p
-    | Bottom_proof (_head, _tail, p), One_proof -> p
+    | One_proof, Bottom_proof (head, tail, p) | Bottom_proof (head, tail, p), One_proof ->
+        build_exchange (head @ tail) permutation_without_cut_formula p
     | Tensor_proof (head1, e1, e2, tail1, p1, p2), Par_proof (head2, _dual_e1, _dual_e2, tail2, p) ->
         (* head2 @ [dual e1] @ [dual e2] @ tail2    *)
         (* ------------------------------------- Ex *)
