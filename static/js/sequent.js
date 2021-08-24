@@ -454,6 +454,7 @@ function autoProveSequent($sequentTable) {
 // ***************
 
 function hoverAncestorsAndDescendents($li, toggleOn) {
+    highlight($li, toggleOn);
     let $sequentTable = $li.closest('table');
     recHoverAncestors($sequentTable, $li.data('ancestorPosition'), toggleOn);
     let liPosition = $li.prevAll('li').length;
