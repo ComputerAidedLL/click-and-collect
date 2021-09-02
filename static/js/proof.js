@@ -96,11 +96,13 @@ function buildProof(proofAsJson, $container) {
 
 function createSubProof(proofAsJson, $subProofDivContainer, options) {
     let displayPermutation = getSequentIdentityPermutation(proofAsJson.sequent);
+    let ancestorList = proofAsJson.ancestorList;
     if (proofAsJson.appliedRule?.ruleRequest?.rule === 'exchange') {
         let invertedPermutation = invertPermutation(proofAsJson.appliedRule.ruleRequest.permutation);
         displayPermutation = {'hyp': [], 'cons': permute(invertedPermutation, proofAsJson.appliedRule.ruleRequest.displayPermutation)};
+        ancestorList = ancestorList ? permute(ancestorList, invertedPermutation) : ancestorList;
     }
-    let $sequentTable = createSequentTable(proofAsJson.sequent, displayPermutation, proofAsJson.ancestorList || null, options);
+    let $sequentTable = createSequentTable(proofAsJson.sequent, displayPermutation, ancestorList || null, options);
     $subProofDivContainer.prepend($sequentTable);
 
     if (proofAsJson.appliedRule) {
@@ -108,15 +110,7 @@ function createSubProof(proofAsJson, $subProofDivContainer, options) {
 
         if (proofAsJson.appliedRule.ruleRequest.rule === 'exchange') {
             permutationBeforeRule = {'hyp': [], 'cons': invertPermutation(proofAsJson.appliedRule.ruleRequest.permutation)};
-            let ancestorsLists = proofAsJson.appliedRule['ancestorsLists'] || null;
             proofAsJson = proofAsJson.appliedRule.premises[0];
-            if (ancestorsLists) {
-                for (let i = 0; i < proofAsJson.appliedRule['ancestorsLists'].length; i++) {
-                    for (let j = 0; j < proofAsJson.appliedRule['ancestorsLists'][i].length; j++) {
-                        proofAsJson.appliedRule['ancestorsLists'][i][j] = ancestorsLists[0][proofAsJson.appliedRule['ancestorsLists'][i][j]];
-                    }
-                }
-            }
         }
 
         if (proofAsJson.appliedRule) {
