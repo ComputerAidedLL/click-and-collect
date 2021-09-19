@@ -34,7 +34,7 @@ let proof_to_coq proof_with_notations =
     let header = "(* This Coq file has been generated using the C1ick ⅋ c⊗LLec⊥ tool. *)\n"
         ^ "(* https://click-and-collect.linear-logic.org/ *)\n"
         ^ "(* First download and install NanoYalla version 1.1.3, see README.md: *)\n"
-        ^ "(* https://click-and-collect.linear-logic.org/download/nanoyalla.zip *)\n\n" in
+        ^ "(* https://click-and-collect.linear-logic.org/static/download/nanoyalla.zip *)\n\n" in
     let start_file_line = "From NanoYalla Require Import macrollcut.\n\nImport LLNotations.\n\nSection TheProof.\n\n" in
 
     let variable_line = proof_variables variables in
