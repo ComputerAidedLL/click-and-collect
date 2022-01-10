@@ -223,7 +223,7 @@ function getRules(formulaAsJson, options) {
             default:
                 return [];
         }
-    } else if (options.proofTransformation.value) {
+    } else if (options.proofTransformation?.value) {
         switch (formulaAsJson.type) {
             case 'par':
             case 'with':
@@ -302,7 +302,7 @@ function buildApplyRuleCallBack(ruleConfig, $li, options) {
 
         if (options.withInteraction) {
             applyRule(ruleRequest, $sequentTable);
-        } else if (options.proofTransformation.value) {
+        } else if (options.proofTransformation?.value) {
             applyTransformation($sequentTable, {transformation: ruleConfigCopy.transformation, ruleRequest});
         }
     }
